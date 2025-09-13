@@ -329,6 +329,22 @@ const VolunteerDashboard: React.FC = () => {
                     </Card>
                   ))}
                 </Box>
+                
+                {/* See More Rewards Button */}
+                <Box sx={{ mt: 2, textAlign: 'center' }}>
+                  <Button
+                    variant="text"
+                    onClick={() => navigate('/volunteer/rewards')}
+                    sx={{
+                      color: '#4CAF50',
+                      textTransform: 'none',
+                      fontSize: '0.9rem',
+                      fontWeight: 'bold'
+                    }}
+                  >
+                    See More Rewards →
+                  </Button>
+                </Box>
               </CardContent>
             </Card>
 
