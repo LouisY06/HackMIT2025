@@ -6,6 +6,10 @@ import LandingPage from './components/LandingPage';
 import VolunteerLogin from './components/VolunteerLogin';
 import StoreLogin from './components/StoreLogin';
 import StoreDashboard from './components/StoreDashboard';
+import StoreCreatePackage from './components/StoreCreatePackage';
+import StorePackages from './components/StorePackages';
+import StoreImpact from './components/StoreImpact';
+import StoreGlobalImpact from './components/StoreGlobalImpact';
 import FoodBankLogin from './components/FoodBankLogin';
 
 const theme = createTheme({
@@ -29,6 +33,10 @@ function App() {
           <Route path="/volunteer" element={<VolunteerLogin />} />
           <Route path="/store" element={<StoreLogin />} />
           <Route path="/store/dashboard" element={<StoreDashboard />} />
+          <Route path="/store/create-package" element={<StoreCreatePackage />} />
+          <Route path="/store/packages" element={<StorePackages />} />
+          <Route path="/store/impact" element={<StoreImpact />} />
+          <Route path="/store/global-impact" element={<StoreGlobalImpact />} />
           <Route path="/foodbank" element={<FoodBankLogin />} />
         </Routes>
       </Router>

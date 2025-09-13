@@ -1,0 +1,348 @@
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import {
+  Box,
+  Typography,
+  Container,
+  Button,
+  Card,
+  CardContent,
+  TextField,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  Alert,
+  CircularProgress,
+} from '@mui/material';
+
+interface PackageFormData {
+  weight_lbs: string;
+  food_type: string;
+  pickup_window_start: string;
+  pickup_window_end: string;
+  special_instructions: string;
+}
+
+const StoreCreatePackage: React.FC = () => {
+  const navigate = useNavigate();
+  const [formData, setFormData] = useState<PackageFormData>({
+    weight_lbs: '',
+    food_type: '',
+    pickup_window_start: '',
+    pickup_window_end: '',
+    special_instructions: '',
+  });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+  const [qrCodePath, setQrCodePath] = useState('');
+
+  const foodTypes = [
+    'Bakery Items',
+    'Fresh Produce',
+    'Prepared Meals',
+    'Dairy Products',
+    'Canned Goods',
+    'Frozen Items',
+    'Mixed Items',
+    'Other'
+  ];
+
+  const handleInputChange = (field: keyof PackageFormData, value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+    setError('');
+  };
+
+  const handleSubmit = async () => {
+    setLoading(true);
+    setError('');
+    
+    try {
+      // Validate form
+      if (!formData.weight_lbs || !formData.food_type || !formData.pickup_window_start || !formData.pickup_window_end) {
+        setError('Please fill in all required fields');
+        setLoading(false);
+        return;
+      }
+
+      // Submit to backend
+      const response = await fetch('http://localhost:5001/api/packages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          store_name: 'Flour Bakery', // This would come from user context
+          store_email: 'sarah@flourbakery.com', // This would come from Firebase auth
+          ...formData,
+          weight_lbs: parseFloat(formData.weight_lbs),
+        }),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        setSuccess('Package created successfully! QR code generated.');
+        setQrCodePath(result.qr_code_image_path);
+        // Don't auto-redirect, let user see the QR code
+      } else {
+        setError(result.error || 'Failed to create package');
+      }
+    } catch (err) {
+      setError('Network error. Please make sure the backend server is running.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCancel = () => {
+    navigate('/store/dashboard');
+  };
+
+  return (
+    <Box sx={{ minHeight: '100vh', bgcolor: '#f8f9fa' }}>
+      {/* Top Navigation Bar */}
+      <Box
+        sx={{
+          bgcolor: 'white',
+          borderBottom: '1px solid #e0e0e0',
+          px: 3,
+          py: 2,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+        }}
+      >
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+          <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#4CAF50' }}>
+            🌱 Waste→Worth
+          </Typography>
+          <Box sx={{ display: 'flex', gap: 3 }}>
+            <Button onClick={() => navigate('/store/dashboard')} sx={{ color: '#666' }}>
+              🏠 Dashboard
+            </Button>
+            <Button sx={{ color: '#4CAF50', fontWeight: 'bold' }}>
+              + Create Package
+            </Button>
+            <Button onClick={() => navigate('/store/packages')} sx={{ color: '#666' }}>
+              📦 Packages
+            </Button>
+            <Button onClick={() => navigate('/store/impact')} sx={{ color: '#666' }}>
+              📊 Impact
+            </Button>
+            <Button onClick={() => navigate('/store/global-impact')} sx={{ color: '#666' }}>
+              📈 Global Impact
+            </Button>
+          </Box>
+        </Box>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          <Typography variant="body2" sx={{ color: '#666' }}>
+            Sarah Williams
+          </Typography>
+          <Typography variant="body2" sx={{ color: '#666' }}>
+            Partner
+          </Typography>
+          <Button onClick={() => navigate('/store')} sx={{ color: '#666' }}>
+            🚪 Logout
+          </Button>
+        </Box>
+      </Box>
+
+      <Container maxWidth="lg" sx={{ py: 4 }}>
+        <Box sx={{ mb: 4 }}>
+          <Button onClick={() => navigate('/store/dashboard')} sx={{ mb: 2, color: '#666' }}>
+            ← Back to Dashboard
+          </Button>
+          <Typography variant="h4" sx={{ fontWeight: 'bold', mb: 2 }}>
+            Create New Package
+          </Typography>
+          <Typography variant="body1" sx={{ color: '#666' }}>
+            List surplus food for volunteer pickup
+          </Typography>
+        </Box>
+
+        {error && (
+          <Alert severity="error" sx={{ mb: 3, borderRadius: 3 }}>
+            {error}
+          </Alert>
+        )}
+
+        {success && (
+          <Alert severity="success" sx={{ mb: 3, borderRadius: 3 }}>
+            {success}
+          </Alert>
+        )}
+
+        {qrCodePath && (
+          <Card sx={{ borderRadius: 3, p: 4, mb: 3 }}>
+            <CardContent>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3 }}>
+                <Typography sx={{ fontSize: 24 }}>📱</Typography>
+                <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
+                  Generated QR Code
+                </Typography>
+              </Box>
+              
+              <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+                <Box
+                  component="img"
+                  src={`http://localhost:5001/uploads/${qrCodePath.split('/').pop()}`}
+                  alt="Package QR Code"
+                  sx={{
+                    maxWidth: 300,
+                    maxHeight: 300,
+                    border: '2px solid #e0e0e0',
+                    borderRadius: 3,
+                    p: 2,
+                  }}
+                />
+                <Typography variant="body2" sx={{ color: '#666', textAlign: 'center' }}>
+                  Volunteers can scan this QR code to view package details and confirm pickup
+                </Typography>
+              </Box>
+            </CardContent>
+          </Card>
+        )}
+
+        <Card sx={{ borderRadius: 3, p: 4 }}>
+          <CardContent>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 4 }}>
+              <Typography sx={{ fontSize: 24 }}>📦</Typography>
+              <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
+                Package Information
+              </Typography>
+            </Box>
+
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+              <Box sx={{ display: 'flex', gap: 3, flexWrap: 'wrap' }}>
+                <Box sx={{ flex: '1 1 300px', minWidth: '300px' }}>
+                  <TextField
+                    fullWidth
+                    label="Weight (lbs) *"
+                    placeholder="e.g., 5.5"
+                    type="number"
+                    value={formData.weight_lbs}
+                    onChange={(e) => handleInputChange('weight_lbs', e.target.value)}
+                    sx={{ 
+                      '& .MuiOutlinedInput-root': { borderRadius: 3 }
+                    }}
+                  />
+                </Box>
+
+                <Box sx={{ flex: '1 1 300px', minWidth: '300px' }}>
+                  <FormControl fullWidth>
+                    <InputLabel>Food Type *</InputLabel>
+                    <Select
+                      value={formData.food_type}
+                      label="Food Type *"
+                      onChange={(e) => handleInputChange('food_type', e.target.value)}
+                      sx={{ borderRadius: 3 }}
+                    >
+                      <MenuItem value="">Select food type</MenuItem>
+                      {foodTypes.map((type) => (
+                        <MenuItem key={type} value={type}>
+                          {type}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </Box>
+              </Box>
+
+              <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2 }}>
+                Pickup Window *
+              </Typography>
+
+              <Box sx={{ display: 'flex', gap: 3, flexWrap: 'wrap' }}>
+                <Box sx={{ flex: '1 1 200px', minWidth: '200px' }}>
+                  <TextField
+                    fullWidth
+                    label="From"
+                    type="time"
+                    value={formData.pickup_window_start}
+                    onChange={(e) => handleInputChange('pickup_window_start', e.target.value)}
+                    InputLabelProps={{ shrink: true }}
+                    sx={{ 
+                      '& .MuiOutlinedInput-root': { borderRadius: 3 }
+                    }}
+                  />
+                </Box>
+
+                <Box sx={{ flex: '1 1 200px', minWidth: '200px' }}>
+                  <TextField
+                    fullWidth
+                    label="To"
+                    type="time"
+                    value={formData.pickup_window_end}
+                    onChange={(e) => handleInputChange('pickup_window_end', e.target.value)}
+                    InputLabelProps={{ shrink: true }}
+                    sx={{ 
+                      '& .MuiOutlinedInput-root': { borderRadius: 3 }
+                    }}
+                  />
+                </Box>
+              </Box>
+
+              <TextField
+                fullWidth
+                label="Special Instructions"
+                placeholder="Any special handling instructions for volunteers..."
+                multiline
+                rows={4}
+                value={formData.special_instructions}
+                onChange={(e) => handleInputChange('special_instructions', e.target.value)}
+                sx={{ 
+                  '& .MuiOutlinedInput-root': { borderRadius: 3 }
+                }}
+              />
+            </Box>
+
+            <Box sx={{ display: 'flex', gap: 2, mt: 4, justifyContent: 'flex-end' }}>
+              <Button
+                variant="outlined"
+                onClick={handleCancel}
+                disabled={loading}
+                sx={{
+                  borderRadius: 3,
+                  px: 4,
+                  py: 1.5,
+                  borderColor: '#ccc',
+                  color: '#666',
+                }}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="contained"
+                onClick={handleSubmit}
+                disabled={loading}
+                sx={{
+                  borderRadius: 3,
+                  px: 4,
+                  py: 1.5,
+                  bgcolor: '#4CAF50',
+                  '&:hover': { bgcolor: '#45a049' },
+                }}
+              >
+                {loading ? (
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <CircularProgress size={20} color="inherit" />
+                    Creating...
+                  </Box>
+                ) : (
+                  'Create Package & Generate QR'
+                )}
+              </Button>
+            </Box>
+          </CardContent>
+        </Card>
+      </Container>
+    </Box>
+  );
+};
+
+export default StoreCreatePackage;
