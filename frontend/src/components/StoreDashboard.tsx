@@ -70,23 +70,77 @@ const StoreDashboard: React.FC = () => {
           </Box>
           
           <Box sx={{ display: 'flex', gap: 2 }}>
-            {['Dashboard', 'Create Package', 'Packages', 'Impact', 'Global Impact'].map((item) => (
-              <Button
-                key={item}
-                variant={item === 'Dashboard' ? 'contained' : 'text'}
-                sx={{
-                  color: item === 'Dashboard' ? 'white' : '#666',
-                  backgroundColor: item === 'Dashboard' ? '#4CAF50' : 'transparent',
-                  textTransform: 'none',
-                  fontWeight: 'bold',
-                  '&:hover': {
-                    backgroundColor: item === 'Dashboard' ? '#45a049' : 'rgba(0,0,0,0.04)',
-                  },
-                }}
-              >
-                {item}
-              </Button>
-            ))}
+            <Button
+              onClick={() => navigate('/store/dashboard')}
+              variant="contained"
+              sx={{
+                color: 'white',
+                backgroundColor: '#4CAF50',
+                textTransform: 'none',
+                fontWeight: 'bold',
+                '&:hover': {
+                  backgroundColor: '#45a049',
+                },
+              }}
+            >
+              Dashboard
+            </Button>
+            <Button
+              onClick={handleCreatePackage}
+              variant="text"
+              sx={{
+                color: '#666',
+                textTransform: 'none',
+                fontWeight: 'bold',
+                '&:hover': {
+                  backgroundColor: 'rgba(0,0,0,0.04)',
+                },
+              }}
+            >
+              Create Package
+            </Button>
+            <Button
+              onClick={handleViewPackages}
+              variant="text"
+              sx={{
+                color: '#666',
+                textTransform: 'none',
+                fontWeight: 'bold',
+                '&:hover': {
+                  backgroundColor: 'rgba(0,0,0,0.04)',
+                },
+              }}
+            >
+              Packages
+            </Button>
+            <Button
+              onClick={handleImpactReport}
+              variant="text"
+              sx={{
+                color: '#666',
+                textTransform: 'none',
+                fontWeight: 'bold',
+                '&:hover': {
+                  backgroundColor: 'rgba(0,0,0,0.04)',
+                },
+              }}
+            >
+              Impact
+            </Button>
+            <Button
+              onClick={handleGlobalImpact}
+              variant="text"
+              sx={{
+                color: '#666',
+                textTransform: 'none',
+                fontWeight: 'bold',
+                '&:hover': {
+                  backgroundColor: 'rgba(0,0,0,0.04)',
+                },
+              }}
+            >
+              Global Impact
+            </Button>
           </Box>
         </Box>
 

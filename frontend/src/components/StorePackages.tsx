@@ -169,6 +169,42 @@ const StorePackages: React.FC = () => {
     }
   };
 
+  const handlePrintQrCode = () => {
+    if (selectedPackage?.qr_code_image_path) {
+      const printWindow = window.open('', '_blank');
+      if (printWindow) {
+        printWindow.document.write(`
+          <html>
+            <head>
+              <title>Package QR Code - pkg-${selectedPackage.id}</title>
+              <style>
+                body { font-family: Arial, sans-serif; text-align: center; padding: 20px; }
+                .package-info { margin: 20px 0; }
+                .qr-code { margin: 20px 0; }
+                .qr-code img { max-width: 300px; border: 2px solid #e0e0e0; padding: 10px; }
+              </style>
+            </head>
+            <body>
+              <h2>Package QR Code</h2>
+              <div class="package-info">
+                <p><strong>Package ID:</strong> pkg-${selectedPackage.id}</p>
+                <p><strong>Food Type:</strong> ${selectedPackage.food_type}</p>
+                <p><strong>Weight:</strong> ${selectedPackage.weight_lbs} lbs</p>
+                <p><strong>Pickup Window:</strong> ${selectedPackage.pickup_window_start} - ${selectedPackage.pickup_window_end}</p>
+              </div>
+              <div class="qr-code">
+                <img src="http://localhost:5001/uploads/${selectedPackage.qr_code_image_path.split('/').pop()}" alt="QR Code" />
+              </div>
+              <p><em>Show this QR code to volunteers for pickup verification</em></p>
+            </body>
+          </html>
+        `);
+        printWindow.document.close();
+        printWindow.print();
+      }
+    }
+  };
+
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: '#f8f9fa' }}>
       {/* Top Navigation Bar */}
@@ -454,7 +490,7 @@ const StorePackages: React.FC = () => {
             left: 0,
             right: 0,
             bottom: 0,
-            bgcolor: 'rgba(0, 0, 0, 0.5)',
+            bgcolor: 'rgba(0, 0, 0, 0.6)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -464,77 +500,118 @@ const StorePackages: React.FC = () => {
         >
           <Card
             sx={{
-              maxWidth: 500,
+              maxWidth: 480,
               width: '90%',
-              borderRadius: 3,
-              p: 4,
+              borderRadius: 4,
+              boxShadow: '0 10px 30px rgba(0, 0, 0, 0.3)',
+              bgcolor: '#f8f9fa',
             }}
             onClick={(e) => e.stopPropagation()}
           >
-            <CardContent>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-                <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
-                  Package QR Code
-                </Typography>
-                <IconButton onClick={handleCloseQrModal} sx={{ color: '#666' }}>
+            <CardContent sx={{ p: 4 }}>
+              {/* Header */}
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 3 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Typography sx={{ fontSize: 24 }}>📱</Typography>
+                  <Box>
+                    <Typography variant="h5" sx={{ fontWeight: 'bold', color: '#333', mb: 0.5 }}>
+                      Package QR Code
+                    </Typography>
+                    <Typography variant="body2" sx={{ color: '#666' }}>
+                      Show this QR code to volunteers for pickup verification
+                    </Typography>
+                  </Box>
+                </Box>
+                <IconButton 
+                  onClick={handleCloseQrModal} 
+                  sx={{ 
+                    color: '#666',
+                    bgcolor: '#f0f0f0',
+                    '&:hover': { bgcolor: '#e0e0e0' },
+                    borderRadius: 2,
+                  }}
+                >
                   ✕
                 </IconButton>
               </Box>
 
-              <Box sx={{ textAlign: 'center', mb: 3 }}>
-                <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 1 }}>
-                  pkg-{selectedPackage.id}
+              {/* Package Details */}
+              <Box sx={{ mb: 4 }}>
+                <Typography variant="body1" sx={{ fontWeight: 'bold', color: '#333', mb: 1 }}>
+                  Package ID: pkg-{selectedPackage.id}
                 </Typography>
-                <Typography variant="body2" sx={{ color: '#666', mb: 2 }}>
-                  {selectedPackage.food_type} • {selectedPackage.weight_lbs} lbs
+                <Typography variant="body1" sx={{ fontWeight: 'bold', color: '#333', mb: 1 }}>
+                  Food Type: {selectedPackage.food_type}
+                </Typography>
+                <Typography variant="body1" sx={{ fontWeight: 'bold', color: '#333', mb: 1 }}>
+                  Weight: {selectedPackage.weight_lbs} lbs
+                </Typography>
+                <Typography variant="body1" sx={{ fontWeight: 'bold', color: '#333' }}>
+                  Pickup Window: {selectedPackage.pickup_window_start} - {selectedPackage.pickup_window_end}
                 </Typography>
               </Box>
 
-              <Box sx={{ display: 'flex', justifyContent: 'center', mb: 3 }}>
-                <Box
-                  component="img"
-                  src={`http://localhost:5001/uploads/${selectedPackage.qr_code_image_path.split('/').pop()}`}
-                  alt={`QR Code for Package ${selectedPackage.id}`}
+              {/* QR Code */}
+              <Box sx={{ display: 'flex', justifyContent: 'center', mb: 4 }}>
+                <Card
                   sx={{
-                    maxWidth: 300,
-                    maxHeight: 300,
-                    border: '2px solid #e0e0e0',
+                    bgcolor: 'white',
                     borderRadius: 3,
-                    p: 2,
+                    p: 3,
+                    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
                   }}
-                />
+                >
+                  <Box
+                    component="img"
+                    src={`http://localhost:5001/uploads/${selectedPackage.qr_code_image_path.split('/').pop()}`}
+                    alt={`QR Code for Package ${selectedPackage.id}`}
+                    sx={{
+                      width: 250,
+                      height: 250,
+                      display: 'block',
+                    }}
+                  />
+                </Card>
               </Box>
 
+              {/* Action Buttons */}
               <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center' }}>
                 <Button
-                  variant="outlined"
-                  onClick={handleCloseQrModal}
+                  variant="contained"
+                  onClick={handlePrintQrCode}
+                  startIcon={<span>🖨️</span>}
                   sx={{
                     borderRadius: 3,
-                    px: 3,
+                    bgcolor: '#333',
+                    color: 'white',
+                    '&:hover': { bgcolor: '#555' },
+                    px: 4,
                     py: 1.5,
+                    fontWeight: 'bold',
                   }}
                 >
-                  Close
+                  Print
                 </Button>
                 <Button
-                  variant="contained"
+                  variant="outlined"
                   onClick={handleDownloadQrCode}
+                  startIcon={<span>📥</span>}
                   sx={{
                     borderRadius: 3,
-                    bgcolor: '#4CAF50',
-                    '&:hover': { bgcolor: '#45a049' },
-                    px: 3,
+                    borderColor: '#333',
+                    color: '#333',
+                    '&:hover': { 
+                      borderColor: '#555',
+                      bgcolor: '#f5f5f5'
+                    },
+                    px: 4,
                     py: 1.5,
+                    fontWeight: 'bold',
                   }}
                 >
-                  📥 Download QR Code
+                  Download
                 </Button>
               </Box>
-
-              <Typography variant="body2" sx={{ color: '#666', textAlign: 'center', mt: 2 }}>
-                Volunteers can scan this QR code to view package details and confirm pickup
-              </Typography>
             </CardContent>
           </Card>
         </Box>
