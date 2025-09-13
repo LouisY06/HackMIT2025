@@ -5,6 +5,7 @@ import CssBaseline from '@mui/material/CssBaseline';
 import LandingPage from './components/LandingPage';
 import VolunteerLogin from './components/VolunteerLogin';
 import VolunteerDashboard from './components/VolunteerDashboard';
+import VolunteerFindPickups from './components/VolunteerFindPickups';
 import StoreLogin from './components/StoreLogin';
 import StoreDashboard from './components/StoreDashboard';
 import StoreCreatePackage from './components/StoreCreatePackage';
@@ -33,6 +34,7 @@ function App() {
           <Route path="/" element={<LandingPage />} />
           <Route path="/volunteer" element={<VolunteerLogin />} />
           <Route path="/volunteer/dashboard" element={<VolunteerDashboard />} />
+          <Route path="/volunteer/find-pickups" element={<VolunteerFindPickups />} />
           <Route path="/store" element={<StoreLogin />} />
           <Route path="/store/dashboard" element={<StoreDashboard />} />
           <Route path="/store/create-package" element={<StoreCreatePackage />} />

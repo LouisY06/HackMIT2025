@@ -236,6 +236,7 @@ const VolunteerDashboard: React.FC = () => {
                 variant="outlined"
                 fullWidth
                 sx={{ mb: 2 }}
+                onClick={() => navigate('/volunteer/find-pickups')}
               >
                 📍 Find Nearby Pickups
               </Button>
