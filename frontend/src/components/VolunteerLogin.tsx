@@ -75,9 +75,9 @@ const VolunteerLogin: React.FC = () => {
       >
         {/* Navigation */}
         <Box sx={{ display: 'flex', alignItems: 'center', mb: 4 }}>
-          <Button
-            startIcon={<ArrowBack />}
-            onClick={() => navigate('/')}
+      <Button
+        startIcon={<ArrowBack />}
+        onClick={() => navigate('/')}
             sx={{ 
               color: 'white', 
               mr: 2,
@@ -90,7 +90,7 @@ const VolunteerLogin: React.FC = () => {
             }}
           >
             Back to roles
-          </Button>
+      </Button>
           <Typography variant="h6" sx={{ color: 'white', fontWeight: 'bold' }}>
             WASTE→WORTH PLATFORM
           </Typography>
@@ -306,10 +306,10 @@ const VolunteerLogin: React.FC = () => {
               sx={{ textAlign: 'center', color: '#999', fontSize: '0.8rem' }}
             >
               This is a demo app. Data won't be saved permanently.
-            </Typography>
-          </CardContent>
-        </Card>
-      </Container>
+          </Typography>
+        </CardContent>
+      </Card>
+    </Container>
     </Box>
   );
 };
