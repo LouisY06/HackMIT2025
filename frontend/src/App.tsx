@@ -5,6 +5,7 @@ import CssBaseline from '@mui/material/CssBaseline';
 import LandingPage from './components/LandingPage';
 import VolunteerLogin from './components/VolunteerLogin';
 import StoreLogin from './components/StoreLogin';
+import StoreDashboard from './components/StoreDashboard';
 import FoodBankLogin from './components/FoodBankLogin';
 
 const theme = createTheme({
@@ -27,6 +28,7 @@ function App() {
           <Route path="/" element={<LandingPage />} />
           <Route path="/volunteer" element={<VolunteerLogin />} />
           <Route path="/store" element={<StoreLogin />} />
+          <Route path="/store/dashboard" element={<StoreDashboard />} />
           <Route path="/foodbank" element={<FoodBankLogin />} />
         </Routes>
       </Router>
