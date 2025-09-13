@@ -6,6 +6,7 @@ import LandingPage from './components/LandingPage';
 import VolunteerLogin from './components/VolunteerLogin';
 import VolunteerDashboard from './components/VolunteerDashboard';
 import VolunteerFindPickups from './components/VolunteerFindPickups';
+import VolunteerRewards from './components/VolunteerRewards';
 import StoreLogin from './components/StoreLogin';
 import StoreDashboard from './components/StoreDashboard';
 import StoreCreatePackage from './components/StoreCreatePackage';
@@ -35,6 +36,7 @@ function App() {
           <Route path="/volunteer" element={<VolunteerLogin />} />
           <Route path="/volunteer/dashboard" element={<VolunteerDashboard />} />
           <Route path="/volunteer/find-pickups" element={<VolunteerFindPickups />} />
+          <Route path="/volunteer/rewards" element={<VolunteerRewards />} />
           <Route path="/store" element={<StoreLogin />} />
           <Route path="/store/dashboard" element={<StoreDashboard />} />
           <Route path="/store/create-package" element={<StoreCreatePackage />} />
