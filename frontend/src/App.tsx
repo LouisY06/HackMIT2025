@@ -4,6 +4,7 @@ import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import LandingPage from './components/LandingPage';
 import VolunteerLogin from './components/VolunteerLogin';
+import VolunteerDashboard from './components/VolunteerDashboard';
 import StoreLogin from './components/StoreLogin';
 import StoreDashboard from './components/StoreDashboard';
 import StoreCreatePackage from './components/StoreCreatePackage';
@@ -31,6 +32,7 @@ function App() {
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/volunteer" element={<VolunteerLogin />} />
+          <Route path="/volunteer/dashboard" element={<VolunteerDashboard />} />
           <Route path="/store" element={<StoreLogin />} />
           <Route path="/store/dashboard" element={<StoreDashboard />} />
           <Route path="/store/create-package" element={<StoreCreatePackage />} />
