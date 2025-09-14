@@ -139,7 +139,9 @@ const StoreCreatePackage: React.FC = () => {
       setError('');
     } catch (err) {
       console.error('Error accessing camera:', err);
-      setError('Unable to access camera. Please check permissions and try again.');
+      setError('📷 Camera access denied or not available. You can still create packages manually below.');
+      // Don't show camera UI if access fails
+      setShowCamera(false);
     }
   }, []);
 
@@ -211,6 +213,16 @@ const StoreCreatePackage: React.FC = () => {
     setSuccess('');
     startCamera();
   };
+
+  // Auto-start camera when component mounts
+  React.useEffect(() => {
+    startCamera();
+    
+    // Cleanup function to stop camera when component unmounts
+    return () => {
+      stopCamera();
+    };
+  }, [startCamera, stopCamera]);
 
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: '#f8f9fa' }}>
@@ -362,24 +374,32 @@ const StoreCreatePackage: React.FC = () => {
             </Box>
             
             <Typography variant="body2" sx={{ color: '#666', mb: 3 }}>
-              Take a photo of your food to automatically identify the type and estimate weight using AI
+              {showCamera ? 'Position your food in the camera frame and tap capture for AI analysis' : 'Take a photo of your food to automatically identify the type and estimate weight using AI'}
             </Typography>
 
-            {!showCamera && !capturedImage && (
-              <Button
-                variant="contained"
-                startIcon={<Camera />}
-                onClick={startCamera}
-                sx={{
-                  backgroundColor: '#2196F3',
-                  '&:hover': { backgroundColor: '#1976D2' },
-                  borderRadius: 2,
-                  px: 3,
-                  py: 1.5
-                }}
-              >
-                📸 Take Photo for AI Analysis
-              </Button>
+            {!showCamera && !capturedImage && !error && (
+              <Box sx={{ textAlign: 'center', py: 3 }}>
+                <CircularProgress sx={{ color: '#2196F3' }} />
+                <Typography variant="body2" sx={{ mt: 1, color: '#666' }}>
+                  Starting camera...
+                </Typography>
+              </Box>
+            )}
+
+            {!showCamera && !capturedImage && error && (
+              <Box sx={{ textAlign: 'center', py: 3 }}>
+                <Typography variant="body2" sx={{ mb: 2, color: '#666' }}>
+                  Camera not available, but you can still create packages manually.
+                </Typography>
+                <Button
+                  variant="outlined"
+                  startIcon={<Camera />}
+                  onClick={startCamera}
+                  sx={{ borderRadius: 2 }}
+                >
+                  Try Camera Again
+                </Button>
+              </Box>
             )}
 
             {showCamera && (
@@ -397,23 +417,30 @@ const StoreCreatePackage: React.FC = () => {
                 />
                 <canvas ref={canvasRef} style={{ display: 'none' }} />
                 
-                <Box sx={{ display: 'flex', gap: 2, mt: 2 }}>
+                <Box sx={{ display: 'flex', gap: 2, mt: 2, justifyContent: 'center' }}>
                   <Button
                     variant="contained"
                     onClick={capturePhoto}
+                    size="large"
                     sx={{
                       backgroundColor: '#4CAF50',
-                      '&:hover': { backgroundColor: '#45a049' }
+                      '&:hover': { backgroundColor: '#45a049' },
+                      borderRadius: 3,
+                      px: 4,
+                      py: 1.5,
+                      fontSize: '1.1rem',
+                      fontWeight: 'bold'
                     }}
                   >
-                    📷 Capture
+                    📷 Capture & Analyze
                   </Button>
                   <Button
                     variant="outlined"
                     onClick={stopCamera}
                     startIcon={<X />}
+                    sx={{ borderRadius: 3 }}
                   >
-                    Cancel
+                    Skip AI Analysis
                   </Button>
                 </Box>
               </Box>
