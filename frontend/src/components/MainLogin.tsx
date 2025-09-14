@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Typography, Card, CardContent, Button, Container } from '@mui/material';
+import { Box, Typography, Card, CardContent, Button, Container, Chip, Divider } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Truck, Store, Heart } from 'lucide-react';

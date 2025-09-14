@@ -1,0 +1,12 @@
+backend/
+*.md
+.git/
+.env*
+railway.toml
+.railwayignore
+force-vercel-deploy.sh
+Procfile
+*.py
+packages.db
+*.sqlite
+*.db

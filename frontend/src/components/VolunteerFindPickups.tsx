@@ -28,6 +28,7 @@ import { Package, Leaf, Timer } from 'lucide-react';
 import GoogleMapsComponent from './GoogleMapsComponent';
 import { auth } from '../config/firebase';
 import QRCodeScanner from './QRCodeScanner';
+import { API_BASE_URL } from '../config/api';
 
 const VolunteerFindPickups: React.FC = () => {
   const navigate = useNavigate();
@@ -95,7 +96,7 @@ const VolunteerFindPickups: React.FC = () => {
         const location = await getUserLocation();
         setUserLocation(location);
 
-        const response = await fetch('http://localhost:5001/api/packages/available');
+        const response = await fetch(`${API_BASE_URL}/api/packages/available`);
         const data = await response.json();
         
         
@@ -229,7 +230,7 @@ const VolunteerFindPickups: React.FC = () => {
       }
 
       // Assign the package to the volunteer
-      const response = await fetch(`http://localhost:5001/api/packages/${selectedPackageId}/assign`, {
+      const response = await fetch(`${API_BASE_URL}/api/packages/${selectedPackageId}/assign`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -286,19 +287,33 @@ const VolunteerFindPickups: React.FC = () => {
     }}>
       {/* Header/Navigation */}
       <AppBar position="static" sx={{ backgroundColor: '#4CAF50' }}>
-        <Toolbar>
-          <Box sx={{ display: 'flex', alignItems: 'center', mr: 4 }}>
+        <Toolbar sx={{ 
+          flexDirection: { xs: 'column', sm: 'row' },
+          gap: { xs: 1, sm: 0 },
+          py: { xs: 1, sm: 0 }
+        }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', mr: { sm: 4 } }}>
             <Typography variant="h6" sx={{ color: 'white', fontWeight: 'bold', mr: 1 }}>
               Waste→Worth
             </Typography>
             <Typography sx={{ color: 'white' }}>🌿</Typography>
           </Box>
           
-          <Box sx={{ display: 'flex', gap: 2, flex: 1 }}>
+          <Box sx={{ 
+            display: 'flex', 
+            gap: { xs: 1, sm: 2 }, 
+            flex: 1,
+            flexWrap: { xs: 'wrap', sm: 'nowrap' },
+            justifyContent: { xs: 'center', sm: 'flex-start' }
+          }}>
             <Button 
               color="inherit" 
               onClick={() => navigate('/volunteer/dashboard')}
-              sx={{ '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.1)' } }}
+              sx={{ 
+                '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.1)' },
+                fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                px: { xs: 1, sm: 2 }
+              }}
             >
               Dashboard
             </Button>
@@ -306,7 +321,9 @@ const VolunteerFindPickups: React.FC = () => {
               color="inherit" 
               sx={{ 
                 backgroundColor: 'rgba(255, 255, 255, 0.2)', 
-                '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.3)' }
+                '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.3)' },
+                fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                px: { xs: 1, sm: 2 }
               }}
             >
               📱 Find Tasks
@@ -314,28 +331,52 @@ const VolunteerFindPickups: React.FC = () => {
             <Button 
               color="inherit" 
               onClick={() => navigate('/volunteer/rewards')}
-              sx={{ '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.1)' } }}
+              sx={{ 
+                '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.1)' },
+                fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                px: { xs: 1, sm: 2 }
+              }}
             >
               Rewards
             </Button>
             <Button 
               color="inherit" 
               onClick={() => navigate('/volunteer/leaderboard')}
-              sx={{ '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.1)' } }}
+              sx={{ 
+                '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.1)' },
+                fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                px: { xs: 1, sm: 2 }
+              }}
             >
               Leaderboard
             </Button>
             <Button 
               color="inherit" 
               onClick={() => navigate('/volunteer/global-impact')}
-              sx={{ '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.1)' } }}
+              sx={{ 
+                '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.1)' },
+                fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                px: { xs: 1, sm: 2 }
+              }}
             >
               Global Impact
             </Button>
           </Box>
 
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <Typography variant="body2" sx={{ color: 'white' }}>
+          <Box sx={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: { xs: 1, sm: 2 },
+            flexDirection: { xs: 'row', sm: 'row' }
+          }}>
+            <Typography 
+              variant="body2" 
+              sx={{ 
+                color: 'white',
+                fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                display: { xs: 'none', sm: 'block' }
+              }}
+            >
               Marcus Chen Level 3
             </Typography>
             <Chip 
@@ -343,10 +384,11 @@ const VolunteerFindPickups: React.FC = () => {
               sx={{ 
                 backgroundColor: '#FFF9C4', 
                 color: '#F57F17',
-                fontWeight: 'bold'
+                fontWeight: 'bold',
+                fontSize: { xs: '0.7rem', sm: '0.8125rem' }
               }} 
             />
-            <IconButton onClick={handleLogout} color="inherit">
+            <IconButton onClick={handleLogout} color="inherit" size="small">
               <Logout />
             </IconButton>
           </Box>
@@ -357,15 +399,24 @@ const VolunteerFindPickups: React.FC = () => {
       <Box sx={{ 
         display: 'flex', 
         flex: 1,
-        minHeight: 0
+        minHeight: 0,
+        flexDirection: { xs: 'column', lg: 'row' }
       }}>
         {/* Left Sidebar - Filters and Map */}
-        <Box sx={{ width: '350px', backgroundColor: 'white', p: 3, borderRight: '1px solid #e0e0e0' }}>
+        <Box sx={{ 
+          width: { xs: '100%', lg: '350px' }, 
+          backgroundColor: 'white', 
+          p: { xs: 2, sm: 3 }, 
+          borderRight: { lg: '1px solid #e0e0e0' },
+          borderBottom: { xs: '1px solid #e0e0e0', lg: 'none' },
+          maxHeight: { xs: '50vh', lg: 'auto' },
+          overflowY: { xs: 'auto', lg: 'visible' }
+        }}>
           {/* Filters Section */}
           <Box sx={{ mb: 3 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
               <FilterList sx={{ mr: 1, color: '#4CAF50' }} />
-              <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+              <Typography variant="h6" sx={{ fontWeight: 'bold', fontSize: { xs: '1.1rem', sm: '1.25rem' } }}>
                 Filters
               </Typography>
             </Box>
@@ -379,37 +430,44 @@ const VolunteerFindPickups: React.FC = () => {
               size="small"
             />
 
-            <FormControl fullWidth sx={{ mb: 2 }}>
-              <InputLabel>Food Type</InputLabel>
-              <Select
-                value={foodType}
-                label="Food Type"
-                onChange={(e) => setFoodType(e.target.value)}
-                size="small"
-              >
-                <MenuItem value="All Types">All Types</MenuItem>
-                <MenuItem value="Pastries & Bread">Pastries & Bread</MenuItem>
-                <MenuItem value="Prepared Meals">Prepared Meals</MenuItem>
-                <MenuItem value="Produce">Produce</MenuItem>
-                <MenuItem value="Dairy">Dairy</MenuItem>
-              </Select>
-            </FormControl>
+            <Box sx={{ 
+              display: 'grid', 
+              gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', lg: '1fr' },
+              gap: 2,
+              mb: 2
+            }}>
+              <FormControl fullWidth>
+                <InputLabel>Food Type</InputLabel>
+                <Select
+                  value={foodType}
+                  label="Food Type"
+                  onChange={(e) => setFoodType(e.target.value)}
+                  size="small"
+                >
+                  <MenuItem value="All Types">All Types</MenuItem>
+                  <MenuItem value="Pastries & Bread">Pastries & Bread</MenuItem>
+                  <MenuItem value="Prepared Meals">Prepared Meals</MenuItem>
+                  <MenuItem value="Produce">Produce</MenuItem>
+                  <MenuItem value="Dairy">Dairy</MenuItem>
+                </Select>
+              </FormControl>
 
-            <FormControl fullWidth sx={{ mb: 2 }}>
-              <InputLabel>Max Distance</InputLabel>
-              <Select
-                value={maxDistance}
-                label="Max Distance"
-                onChange={(e) => setMaxDistance(e.target.value)}
-                size="small"
-              >
-                <MenuItem value="Any Distance">Any Distance</MenuItem>
-                <MenuItem value="1 mile">1 mile</MenuItem>
-                <MenuItem value="3 miles">3 miles</MenuItem>
-                <MenuItem value="5 miles">5 miles</MenuItem>
-                <MenuItem value="10 miles">10 miles</MenuItem>
-              </Select>
-            </FormControl>
+              <FormControl fullWidth>
+                <InputLabel>Max Distance</InputLabel>
+                <Select
+                  value={maxDistance}
+                  label="Max Distance"
+                  onChange={(e) => setMaxDistance(e.target.value)}
+                  size="small"
+                >
+                  <MenuItem value="Any Distance">Any Distance</MenuItem>
+                  <MenuItem value="1 mile">1 mile</MenuItem>
+                  <MenuItem value="3 miles">3 miles</MenuItem>
+                  <MenuItem value="5 miles">5 miles</MenuItem>
+                  <MenuItem value="10 miles">10 miles</MenuItem>
+                </Select>
+              </FormControl>
+            </Box>
 
             <FormControl fullWidth>
               <InputLabel>Sort By</InputLabel>
@@ -445,8 +503,8 @@ const VolunteerFindPickups: React.FC = () => {
             </Box>
           )}
 
-          {/* Map View Section */}
-          <Box>
+          {/* Map View Section - Hidden on mobile to save space */}
+          <Box sx={{ display: { xs: 'none', md: 'block' } }}>
             <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
               <LocationOn sx={{ mr: 1, color: '#4CAF50' }} />
               <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
@@ -475,7 +533,6 @@ const VolunteerFindPickups: React.FC = () => {
                 userLocation={userLocation || undefined}
               />
             )}
-            {/* Debug: API Key loaded: {process.env.REACT_APP_GOOGLE_MAPS_API_KEY ? 'Yes' : 'No'} */}
           </Box>
         </Box>
 
@@ -487,8 +544,11 @@ const VolunteerFindPickups: React.FC = () => {
           overflow: 'hidden'
         }}>
           {/* Fixed Header */}
-          <Box sx={{ p: 3, pb: 0, flexShrink: 0 }}>
-            <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
+          <Box sx={{ p: { xs: 2, sm: 3 }, pb: 0, flexShrink: 0 }}>
+            <Typography variant="h5" sx={{ 
+              fontWeight: 'bold',
+              fontSize: { xs: '1.3rem', sm: '1.5rem' }
+            }}>
               {availablePickups.length} Packages Available
             </Typography>
           </Box>
@@ -496,7 +556,7 @@ const VolunteerFindPickups: React.FC = () => {
           {/* Scrollable Content */}
           <Box sx={{ 
             flex: 1,
-            p: 3,
+            p: { xs: 2, sm: 3 },
             pt: 1,
             overflowY: 'auto',
             '&::-webkit-scrollbar': {
@@ -514,32 +574,50 @@ const VolunteerFindPickups: React.FC = () => {
               },
             },
           }}>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: { xs: 2, sm: 3 } }}>
             {availablePickups.map((pickup) => (
               <Card key={pickup.id} sx={{ boxShadow: 2 }}>
-                <CardContent>
-                  <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
-                    {/* Store Avatar */}
-                    <Avatar sx={{ backgroundColor: '#2196F3', width: 48, height: 48 }}>
-                      {pickup.storeInitial}
-                    </Avatar>
-
-                    {/* Main Content */}
-                    <Box sx={{ flex: 1 }}>
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
-                        <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+                <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
+                  <Box sx={{ 
+                    display: 'flex', 
+                    alignItems: 'flex-start', 
+                    gap: 2,
+                    flexDirection: { xs: 'column', sm: 'row' }
+                  }}>
+                    {/* Store Avatar and Header Info */}
+                    <Box sx={{ 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      gap: 2,
+                      width: { xs: '100%', sm: 'auto' }
+                    }}>
+                      <Avatar sx={{ backgroundColor: '#2196F3', width: 48, height: 48 }}>
+                        {pickup.storeInitial}
+                      </Avatar>
+                      <Box sx={{ flex: { xs: 1, sm: 'none' } }}>
+                        <Typography variant="h6" sx={{ 
+                          fontWeight: 'bold',
+                          fontSize: { xs: '1.1rem', sm: '1.25rem' }
+                        }}>
                           {pickup.storeName}
                         </Typography>
-                        <Chip 
-                          label={`+${pickup.points} points`}
-                          sx={{ backgroundColor: '#4CAF50', color: 'white', fontWeight: 'bold' }}
-                        />
+                        <Typography variant="body2" color="text.secondary">
+                          {pickup.distance} • {pickup.timeWindow}
+                        </Typography>
                       </Box>
+                      <Chip 
+                        label={`+${pickup.points} points`}
+                        sx={{ 
+                          backgroundColor: '#4CAF50', 
+                          color: 'white', 
+                          fontWeight: 'bold',
+                          fontSize: { xs: '0.7rem', sm: '0.8125rem' }
+                        }}
+                      />
+                    </Box>
 
-                      <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-                        {pickup.distance} • {pickup.timeWindow}
-                      </Typography>
-
+                    {/* Main Content */}
+                    <Box sx={{ flex: 1, width: { xs: '100%', sm: 'auto' } }}>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
                         <Chip label={pickup.foodType} size="small" variant="outlined" />
                       </Box>
@@ -549,7 +627,12 @@ const VolunteerFindPickups: React.FC = () => {
                       </Typography>
 
                       {/* Metrics */}
-                      <Box sx={{ display: 'flex', gap: 3, mb: 2 }}>
+                      <Box sx={{ 
+                        display: 'flex', 
+                        gap: { xs: 2, sm: 3 }, 
+                        mb: 2,
+                        flexDirection: { xs: 'column', sm: 'row' }
+                      }}>
                         <Typography variant="body2" color="text.secondary">
                           <Package size={16} style={{ marginRight: '4px' }} /> {pickup.weight}
                         </Typography>
@@ -575,9 +658,14 @@ const VolunteerFindPickups: React.FC = () => {
                       </Box>
 
                       {/* Action Buttons */}
-                      <Box sx={{ display: 'flex', gap: 2 }}>
+                      <Box sx={{ 
+                        display: 'flex', 
+                        gap: 2,
+                        flexDirection: { xs: 'column', sm: 'row' }
+                      }}>
                         <Button
                           variant="contained"
+                          fullWidth={window.innerWidth < 600}
                           sx={{
                             backgroundColor: '#4CAF50',
                             '&:hover': { backgroundColor: '#388E3C' }
@@ -588,6 +676,7 @@ const VolunteerFindPickups: React.FC = () => {
                         </Button>
                         <Button
                           variant="outlined"
+                          fullWidth={window.innerWidth < 600}
                           onClick={() => handleViewDetails(pickup.id)}
                         >
                           View Details
