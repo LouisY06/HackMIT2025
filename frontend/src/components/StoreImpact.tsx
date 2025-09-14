@@ -49,9 +49,15 @@ const StoreImpact: React.FC = () => {
         }}
       >
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-          <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#4CAF50' }}>
-            <Leaf size={20} style={{ marginRight: '8px' }} /> Waste→Worth
-          </Typography>
+          <img 
+            src="/LogoOutlined.png" 
+            alt="Reflourish Logo" 
+            style={{ 
+              height: '56px', 
+              width: 'auto',
+              objectFit: 'contain'
+            }} 
+          />
           <Box sx={{ display: 'flex', gap: 3 }}>
             <Button onClick={() => navigate('/store/dashboard')} sx={{ color: '#666' }}>
               <Home size={16} style={{ marginRight: '4px' }} /> Dashboard
