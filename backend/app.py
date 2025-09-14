@@ -690,7 +690,7 @@ def assign_package_to_volunteer(package_id):
 
 @app.route('/api/packages/volunteer/<volunteer_id>', methods=['GET'])
 def get_volunteer_packages(volunteer_id):
-    """Get all packages assigned to a specific volunteer"""
+    """Get active packages assigned to a specific volunteer (excludes completed packages)"""
     try:
         conn = sqlite3.connect(DATABASE)
         cursor = conn.cursor()
@@ -699,7 +699,7 @@ def get_volunteer_packages(volunteer_id):
             SELECT p.*, s.profile_data
             FROM packages p
             LEFT JOIN store_profiles s ON p.store_email = s.email
-            WHERE p.volunteer_id = ?
+            WHERE p.volunteer_id = ? AND p.status != 'completed'
             ORDER BY p.created_at DESC
         ''', (volunteer_id,))
         
