@@ -26,6 +26,7 @@ import {
   ArrowForward,
   People,
 } from '@mui/icons-material';
+import AddressMapPreview from './AddressMapPreview';
 
 const FoodBankProfileSetup: React.FC = () => {
   const navigate = useNavigate();
@@ -430,6 +431,31 @@ const FoodBankProfileSetup: React.FC = () => {
                       fullWidth
                     />
                   </Box>
+                  
+                  {/* Address Map Preview */}
+                  {formData.address && (
+                    <Box sx={{ mb: 3 }}>
+                      <Typography
+                        variant="subtitle1"
+                        sx={{
+                          fontWeight: 600,
+                          color: '#333',
+                          mb: 2,
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 1
+                        }}
+                      >
+                        <LocationOn sx={{ color: '#4CAF50' }} />
+                        Location Preview
+                      </Typography>
+                      <AddressMapPreview
+                        address={`${formData.address}, ${formData.city}, ${formData.state} ${formData.zipCode}`}
+                        apiKey={process.env.REACT_APP_GOOGLE_MAPS_API_KEY || ''}
+                        height="200px"
+                      />
+                    </Box>
+                  )}
                 </Box>
 
                 {/* Service Information */}

@@ -215,7 +215,7 @@ const VolunteerFindPickups: React.FC = () => {
       if (result.success) {
         alert(`🎯 Mission accepted! Package ${pickupId} has been added to your tasks.`);
         // Refresh the packages list to remove this package from available list
-        window.location.reload();
+        await fetchPackages();
       } else {
         alert(`Failed to accept mission: ${result.error}`);
       }
