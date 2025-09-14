@@ -1027,19 +1027,37 @@ def analyze_food_image():
                         },
                         {
                             "type": "text",
-                            "text": """Analyze this food image and provide a JSON response with the following information:
+                            "text": """You are an expert food analyst helping stores estimate food waste for donation. Analyze this food image and provide accurate weight estimates.
 
-1. food_type: A specific, descriptive name for the food (e.g., "Mixed Fresh Produce", "Prepared Sandwiches", "Baked Goods - Bread", "Dairy Products", "Canned Goods")
-2. estimated_weight_lbs: Your best estimate of the total weight in pounds (be realistic - consider portion sizes, container weight, etc.)
+WEIGHT ESTIMATION GUIDELINES:
+- Use common food references: 1 slice bread = ~1oz, 1 apple = ~6oz, 1 sandwich = ~8oz
+- Consider container weight: plastic containers +0.1-0.3 lbs, paper bags +0.05-0.1 lbs
+- Look for size references: hands, utensils, plates, or packaging for scale
+- Account for food density: bread is light, soup/sauces are heavy, fresh produce varies
+- Be conservative but realistic: round to nearest 0.1 lbs
+
+COMMON ESTIMATES:
+- Single bagel/donut: 0.2-0.4 lbs
+- Loaf of bread: 1.5-2.5 lbs  
+- Large pizza: 2-4 lbs
+- Prepared sandwich: 0.4-0.8 lbs
+- Bunch of bananas (5-6): 2-3 lbs
+- Large prepared meal: 1-2 lbs
+
+Provide a JSON response with:
+1. food_type: Specific, descriptive name (e.g., "Fresh Baked Bread Loaves", "Prepared Deli Sandwiches", "Mixed Produce - Apples & Bananas")
+2. estimated_weight_lbs: Your best weight estimate in pounds (be realistic, consider all visible items + containers)
 3. confidence: Your confidence level (high/medium/low)
-4. description: A brief description of what you see
+4. description: Brief description including what you see and why you estimated this weight
+5. reasoning: Explain your weight calculation approach
 
 Respond ONLY with valid JSON in this exact format:
 {
   "food_type": "string",
   "estimated_weight_lbs": number,
-  "confidence": "high|medium|low",
-  "description": "string"
+  "confidence": "high|medium|low", 
+  "description": "string",
+  "reasoning": "string"
 }"""
                         }
                     ]
@@ -1065,6 +1083,10 @@ Respond ONLY with valid JSON in this exact format:
                 required_keys = ['food_type', 'estimated_weight_lbs', 'confidence', 'description']
                 if not all(key in analysis_result for key in required_keys):
                     raise ValueError("Missing required keys in response")
+                
+                # Reasoning is optional but helpful
+                if 'reasoning' not in analysis_result:
+                    analysis_result['reasoning'] = "Weight estimated based on visual analysis"
                 
                 # Ensure weight is a number and reasonable
                 weight = float(analysis_result['estimated_weight_lbs'])

@@ -17,6 +17,7 @@ import {
   InputLabel,
   Alert,
   CircularProgress,
+  Chip,
 } from '@mui/material';
 
 interface PackageFormData {
@@ -46,6 +47,7 @@ const StoreCreatePackage: React.FC = () => {
   const [showCamera, setShowCamera] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
+  const [aiAnalysis, setAiAnalysis] = useState<any>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -181,6 +183,9 @@ const StoreCreatePackage: React.FC = () => {
       if (response.success) {
         const { analysis } = response;
         
+        // Store the AI analysis for display
+        setAiAnalysis(analysis);
+        
         // Auto-fill the form with AI analysis
         setFormData(prev => ({
           ...prev,
@@ -188,7 +193,7 @@ const StoreCreatePackage: React.FC = () => {
           weight_lbs: analysis.estimated_weight_lbs.toString()
         }));
         
-        setSuccess(`AI Analysis Complete! Food type: ${analysis.food_type}, Estimated weight: ${analysis.estimated_weight_lbs} lbs (${analysis.confidence} confidence)`);
+        setSuccess(`🤖 AI Analysis Complete! Food: ${analysis.food_type} | Weight: ${analysis.estimated_weight_lbs} lbs | Confidence: ${analysis.confidence}`);
       } else {
         setError(response.error || 'Failed to analyze image');
       }
@@ -202,6 +207,8 @@ const StoreCreatePackage: React.FC = () => {
 
   const retakePhoto = () => {
     setCapturedImage(null);
+    setAiAnalysis(null);
+    setSuccess('');
     startCamera();
   };
 
@@ -414,16 +421,55 @@ const StoreCreatePackage: React.FC = () => {
 
             {capturedImage && (
               <Box>
-                <img
-                  src={capturedImage}
-                  alt="Captured food"
-                  style={{
-                    width: '100%',
-                    maxWidth: '300px',
-                    borderRadius: '12px',
-                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
-                  }}
-                />
+                <Box sx={{ display: 'flex', gap: 3, alignItems: 'flex-start' }}>
+                  <img
+                    src={capturedImage}
+                    alt="Captured food"
+                    style={{
+                      width: '50%',
+                      maxWidth: '250px',
+                      borderRadius: '12px',
+                      boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+                    }}
+                  />
+                  
+                  {aiAnalysis && (
+                    <Box sx={{ 
+                      flex: 1, 
+                      backgroundColor: '#f8f9fa', 
+                      borderRadius: 2, 
+                      p: 2,
+                      border: '1px solid #e0e0e0'
+                    }}>
+                      <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 1, color: '#2196F3' }}>
+                        🤖 AI Analysis Results
+                      </Typography>
+                      
+                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                        <Typography variant="body2">
+                          <strong>Food Type:</strong> {aiAnalysis.food_type}
+                        </Typography>
+                        <Typography variant="body2">
+                          <strong>Weight:</strong> {aiAnalysis.estimated_weight_lbs} lbs
+                        </Typography>
+                        <Typography variant="body2">
+                          <strong>Confidence:</strong> 
+                          <Chip 
+                            label={aiAnalysis.confidence} 
+                            size="small" 
+                            color={aiAnalysis.confidence === 'high' ? 'success' : aiAnalysis.confidence === 'medium' ? 'warning' : 'default'}
+                            sx={{ ml: 1 }}
+                          />
+                        </Typography>
+                        {aiAnalysis.reasoning && (
+                          <Typography variant="body2" sx={{ mt: 1, fontStyle: 'italic', color: '#666' }}>
+                            <strong>How we estimated:</strong> {aiAnalysis.reasoning}
+                          </Typography>
+                        )}
+                      </Box>
+                    </Box>
+                  )}
+                </Box>
                 
                 <Box sx={{ display: 'flex', gap: 2, mt: 2 }}>
                   {analyzing ? (
