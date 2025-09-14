@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Rocket } from 'lucide-react';
 import {
   Box,
   Typography,
@@ -360,7 +361,7 @@ const VolunteerLeaderboard: React.FC = () => {
         >
           <CardContent>
             <Typography variant="h4" sx={{ fontWeight: 'bold', mb: 2 }}>
-              Keep Climbing! 🚀
+              Keep Climbing! <Rocket size={16} style={{ marginLeft: '4px' }} />
             </Typography>
             <Typography variant="h6" sx={{ mb: 3, opacity: 0.9 }}>
               Complete more deliveries to earn points and climb the leaderboard.

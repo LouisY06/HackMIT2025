@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { BrowserMultiFormatReader } from '@zxing/browser';
 import { Result } from '@zxing/library';
+import { Leaf } from 'lucide-react';
 import {
   Box,
   Typography,
@@ -138,7 +139,7 @@ const FoodBankDashboard: React.FC = () => {
       <AppBar position="static" sx={{ bgcolor: 'white', boxShadow: 'none', borderBottom: '1px solid #e0e0e0' }}>
         <Toolbar>
           <Box sx={{ display: 'flex', alignItems: 'center', mr: 4 }}>
-            <Typography sx={{ fontSize: 24, mr: 1 }}>🌱</Typography>
+            <Leaf size={24} style={{ marginRight: '8px' }} />
             <Typography variant="h6" sx={{ color: 'black', fontWeight: 'bold' }}>
               Waste→Worth
             </Typography>
@@ -494,7 +495,7 @@ const FoodBankDashboard: React.FC = () => {
               <Card sx={{ borderRadius: 3, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
                 <CardContent sx={{ p: 3 }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
-                    <Typography sx={{ fontSize: 20, color: '#4CAF50', mr: 1 }}>🌱</Typography>
+                    <Leaf size={20} style={{ color: '#4CAF50', marginRight: '8px' }} />
                     <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
                       Today's Impact
                     </Typography>

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Leaf, Package, Printer } from 'lucide-react';
 import {
   Box,
   Typography,
@@ -221,7 +222,7 @@ const StorePackages: React.FC = () => {
       >
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 4 }}>
           <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#4CAF50' }}>
-            🌱 Waste→Worth
+            <Leaf size={20} style={{ marginRight: '8px' }} /> Waste→Worth
           </Typography>
           <Box sx={{ display: 'flex', gap: 3 }}>
             <Button onClick={() => navigate('/store/dashboard')} sx={{ color: '#666' }}>
@@ -231,7 +232,7 @@ const StorePackages: React.FC = () => {
               + Create Package
             </Button>
             <Button sx={{ color: '#4CAF50', fontWeight: 'bold' }}>
-              📦 Packages
+              <Package size={16} style={{ marginRight: '4px' }} /> Packages
             </Button>
             <Button onClick={() => navigate('/store/impact')} sx={{ color: '#666' }}>
               📊 Impact
@@ -579,7 +580,7 @@ const StorePackages: React.FC = () => {
                 <Button
                   variant="contained"
                   onClick={handlePrintQrCode}
-                  startIcon={<span>🖨️</span>}
+                  startIcon={<Printer size={16} />}
                   sx={{
                     borderRadius: 3,
                     bgcolor: '#333',

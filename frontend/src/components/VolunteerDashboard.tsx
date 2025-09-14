@@ -17,7 +17,7 @@ import {
   Badge,
 } from '@mui/material';
 import { LocalShipping } from '@mui/icons-material';
-import { Gift, Trophy } from 'lucide-react';
+import { Gift, Trophy, Utensils, ShoppingBag } from 'lucide-react';
 
 const VolunteerDashboard: React.FC = () => {
   const navigate = useNavigate();
@@ -70,8 +70,8 @@ const VolunteerDashboard: React.FC = () => {
   const rewards = [
     { id: 1, name: "Free Coffee", cost: 100, icon: "☕" },
     { id: 2, name: "Gift Card $10", cost: 500, icon: "💳" },
-    { id: 3, name: "Restaurant Voucher", cost: 750, icon: "🍽️" },
-    { id: 4, name: "Eco-friendly Tote", cost: 300, icon: "🛍️" }
+    { id: 3, name: "Restaurant Voucher", cost: 750, icon: "utensils" },
+    { id: 4, name: "Eco-friendly Tote", cost: 300, icon: "shopping-bag" }
   ];
 
   const handleQRScan = (locationId: number) => {

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Leaf, Package, Trophy } from 'lucide-react';
 import {
   Box,
   Typography,
@@ -51,7 +52,7 @@ const StoreGlobalImpact: React.FC = () => {
       >
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 4 }}>
           <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#4CAF50' }}>
-            🌱 Waste→Worth
+            <Leaf size={20} style={{ marginRight: '8px' }} /> Waste→Worth
           </Typography>
           <Box sx={{ display: 'flex', gap: 3 }}>
             <Button onClick={() => navigate('/store/dashboard')} sx={{ color: '#666' }}>
@@ -61,7 +62,7 @@ const StoreGlobalImpact: React.FC = () => {
               + Create Package
             </Button>
             <Button onClick={() => navigate('/store/packages')} sx={{ color: '#666' }}>
-              📦 Packages
+              <Package size={16} style={{ marginRight: '4px' }} /> Packages
             </Button>
             <Button onClick={() => navigate('/store/impact')} sx={{ color: '#666' }}>
               📊 Impact
@@ -135,7 +136,7 @@ const StoreGlobalImpact: React.FC = () => {
                   mb: 2,
                 }}
               >
-                <Typography sx={{ fontSize: 24 }}>🌱</Typography>
+                <Leaf size={24} />
               </Box>
               <Typography variant="h3" sx={{ fontWeight: 'bold', mb: 1 }}>
                 {globalData.foodSaved}M
@@ -415,7 +416,7 @@ const StoreGlobalImpact: React.FC = () => {
                           justifyContent: 'center',
                         }}
                       >
-                        <Typography sx={{ fontSize: 12, color: 'white' }}>🏆</Typography>
+                        <Trophy size={12} style={{ color: 'white' }} />
                       </Box>
                       <Typography variant="body1" sx={{ color: '#333' }}>
                         Reached 50M lbs food saved!
@@ -433,7 +434,7 @@ const StoreGlobalImpact: React.FC = () => {
                           justifyContent: 'center',
                         }}
                       >
-                        <Typography sx={{ fontSize: 12, color: 'white' }}>🏆</Typography>
+                        <Trophy size={12} style={{ color: 'white' }} />
                       </Box>
                       <Typography variant="body1" sx={{ color: '#333' }}>
                         2M meals milestone achieved
@@ -451,7 +452,7 @@ const StoreGlobalImpact: React.FC = () => {
                           justifyContent: 'center',
                         }}
                       >
-                        <Typography sx={{ fontSize: 12, color: 'white' }}>🏆</Typography>
+                        <Trophy size={12} style={{ color: 'white' }} />
                       </Box>
                       <Typography variant="body1" sx={{ color: '#333' }}>
                         10K volunteers joined the movement

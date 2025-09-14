@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Leaf, Package } from 'lucide-react';
 import {
   Box,
   Typography,
@@ -119,7 +120,7 @@ const StoreCreatePackage: React.FC = () => {
       >
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 4 }}>
           <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#4CAF50' }}>
-            🌱 Waste→Worth
+            <Leaf size={20} style={{ marginRight: '8px' }} /> Waste→Worth
           </Typography>
           <Box sx={{ display: 'flex', gap: 3 }}>
             <Button onClick={() => navigate('/store/dashboard')} sx={{ color: '#666' }}>
@@ -129,7 +130,7 @@ const StoreCreatePackage: React.FC = () => {
               + Create Package
             </Button>
             <Button onClick={() => navigate('/store/packages')} sx={{ color: '#666' }}>
-              📦 Packages
+              <Package size={16} style={{ marginRight: '4px' }} /> Packages
             </Button>
             <Button onClick={() => navigate('/store/impact')} sx={{ color: '#666' }}>
               📊 Impact
@@ -211,7 +212,7 @@ const StoreCreatePackage: React.FC = () => {
         <Card sx={{ borderRadius: 3, p: 4 }}>
           <CardContent>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 4 }}>
-              <Typography sx={{ fontSize: 24 }}>📦</Typography>
+              <Package size={24} />
               <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
                 Package Information
               </Typography>

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Gift, PartyPopper } from 'lucide-react';
+import { Gift, PartyPopper, Utensils } from 'lucide-react';
 import {
   Box,
   Typography,
@@ -36,7 +36,7 @@ const VolunteerRewards: React.FC = () => {
   const availableRewards = [
     {
       id: 1,
-      icon: "🍽️",
+      icon: "utensils",
       title: "20% Off Next Meal",
       provider: "Campus Café",
       description: "Get 20% off your next meal at Campus Café",

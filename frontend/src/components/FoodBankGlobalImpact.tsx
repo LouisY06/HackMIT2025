@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Leaf, Trophy } from 'lucide-react';
 import {
   Box,
   Typography,
@@ -96,7 +97,7 @@ const FoodBankGlobalImpact: React.FC = () => {
       <AppBar position="static" sx={{ bgcolor: 'white', boxShadow: 'none', borderBottom: '1px solid #e0e0e0' }}>
         <Toolbar>
           <Box sx={{ display: 'flex', alignItems: 'center', mr: 4 }}>
-            <Typography sx={{ fontSize: 24, mr: 1 }}>🌱</Typography>
+            <Leaf size={24} style={{ marginRight: '8px' }} />
             <Typography variant="h6" sx={{ color: 'black', fontWeight: 'bold' }}>
               Waste→Worth
             </Typography>
@@ -183,7 +184,7 @@ const FoodBankGlobalImpact: React.FC = () => {
                   mb: 2,
                 }}
               >
-                <Typography sx={{ fontSize: 24 }}>🌱</Typography>
+                <Leaf size={24} />
               </Box>
               <Typography variant="h3" sx={{ fontWeight: 'bold', mb: 1 }}>
                 {globalData.foodSaved}
@@ -502,7 +503,7 @@ const FoodBankGlobalImpact: React.FC = () => {
             }}>
               <CardContent sx={{ p: 4 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                  <Typography sx={{ fontSize: 24, mr: 1 }}>🏆</Typography>
+                  <Trophy size={24} style={{ marginRight: '8px' }} />
                   <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
                     Top Volunteers
                   </Typography>

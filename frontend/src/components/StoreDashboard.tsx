@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Package, Leaf, DollarSign, Clock } from 'lucide-react';
+import { Package, Leaf, DollarSign, Clock, Utensils } from 'lucide-react';
 import {
   Box,
   Typography,
@@ -450,7 +450,7 @@ const StoreDashboard: React.FC = () => {
                   </Box>
                   
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                    <Typography sx={{ color: '#2196F3' }}>[🍽️]</Typography>
+                    <Utensils size={16} style={{ color: '#2196F3' }} />
                     <Typography variant="body1">
                       Food banks served {storeData.foodBanksServed}
                     </Typography>

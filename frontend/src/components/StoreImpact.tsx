@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Leaf, Package, DollarSign, Recycle } from 'lucide-react';
 import {
   Box,
   Typography,
@@ -49,7 +50,7 @@ const StoreImpact: React.FC = () => {
       >
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 4 }}>
           <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#4CAF50' }}>
-            🌱 Waste→Worth
+            <Leaf size={20} style={{ marginRight: '8px' }} /> Waste→Worth
           </Typography>
           <Box sx={{ display: 'flex', gap: 3 }}>
             <Button onClick={() => navigate('/store/dashboard')} sx={{ color: '#666' }}>
@@ -59,7 +60,7 @@ const StoreImpact: React.FC = () => {
               + Create Package
             </Button>
             <Button onClick={() => navigate('/store/packages')} sx={{ color: '#666' }}>
-              📦 Packages
+              <Package size={16} style={{ marginRight: '4px' }} /> Packages
             </Button>
             <Button sx={{ color: '#4CAF50', fontWeight: 'bold' }}>
               📊 Impact
@@ -85,7 +86,7 @@ const StoreImpact: React.FC = () => {
       <Container maxWidth="xl" sx={{ py: 4 }}>
         {/* Header */}
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 4 }}>
-          <Typography sx={{ fontSize: 48, color: '#4CAF50' }}>🌱</Typography>
+          <Leaf size={48} style={{ color: '#4CAF50' }} />
           <Box>
             <Typography variant="h3" sx={{ fontWeight: 'bold', color: '#333', mb: 1 }}>
               Impact Dashboard
@@ -100,7 +101,7 @@ const StoreImpact: React.FC = () => {
         <Box sx={{ display: 'flex', gap: 3, mb: 4, flexWrap: 'wrap' }}>
           <Card sx={{ flex: '1 1 200px', minWidth: '200px', borderRadius: 4, bgcolor: '#4CAF50' }}>
             <CardContent sx={{ textAlign: 'center', py: 4, color: 'white' }}>
-              <Typography sx={{ fontSize: 32, mb: 2 }}>📦</Typography>
+              <Package size={32} style={{ marginBottom: '16px' }} />
               <Typography variant="h3" sx={{ fontWeight: 'bold', mb: 1 }}>
                 {impactData.foodSaved}
               </Typography>
@@ -112,7 +113,7 @@ const StoreImpact: React.FC = () => {
           
           <Card sx={{ flex: '1 1 200px', minWidth: '200px', borderRadius: 4, bgcolor: '#4CAF50' }}>
             <CardContent sx={{ textAlign: 'center', py: 4, color: 'white' }}>
-              <Typography sx={{ fontSize: 32, mb: 2 }}>🌱</Typography>
+              <Leaf size={32} style={{ marginBottom: '16px' }} />
               <Typography variant="h3" sx={{ fontWeight: 'bold', mb: 1 }}>
                 {impactData.co2Prevented}
               </Typography>
@@ -136,7 +137,7 @@ const StoreImpact: React.FC = () => {
           
           <Card sx={{ flex: '1 1 200px', minWidth: '200px', borderRadius: 4, bgcolor: '#4CAF50' }}>
             <CardContent sx={{ textAlign: 'center', py: 4, color: 'white' }}>
-              <Typography sx={{ fontSize: 32, mb: 2 }}>💰</Typography>
+              <DollarSign size={32} style={{ marginBottom: '16px' }} />
               <Typography variant="h3" sx={{ fontWeight: 'bold', mb: 1 }}>
                 ${impactData.costSaved}
               </Typography>
@@ -211,7 +212,7 @@ const StoreImpact: React.FC = () => {
                   {/* Carbon Footprint */}
                   <Card sx={{ borderRadius: 3, bgcolor: 'white', p: 3 }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                      <Typography sx={{ fontSize: 24, color: '#4CAF50' }}>🌱</Typography>
+                      <Leaf size={24} style={{ color: '#4CAF50' }} />
                       <Box sx={{ flex: 1 }}>
                         <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#333' }}>
                           Carbon Footprint Reduced
@@ -247,7 +248,7 @@ const StoreImpact: React.FC = () => {
                   {/* Waste Diverted */}
                   <Card sx={{ borderRadius: 3, bgcolor: 'white', p: 3 }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                      <Typography sx={{ fontSize: 24, color: '#9C27B0' }}>♻️</Typography>
+                      <Recycle size={24} style={{ color: '#9C27B0' }} />
                       <Box sx={{ flex: 1 }}>
                         <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#333' }}>
                           Waste Diverted
