@@ -202,10 +202,15 @@ const FoodBankDashboard: React.FC = () => {
       <AppBar position="static" sx={{ bgcolor: 'white', boxShadow: 'none', borderBottom: '1px solid #e0e0e0' }}>
         <Toolbar>
           <Box sx={{ display: 'flex', alignItems: 'center', mr: 4 }}>
-            <Leaf size={24} style={{ marginRight: '8px' }} />
-            <Typography variant="h6" sx={{ color: 'black', fontWeight: 'bold' }}>
-              Waste→Worth
-            </Typography>
+            <img 
+              src="/LogoOutlined.png" 
+              alt="Reflourish Logo" 
+              style={{ 
+                height: '48px', 
+                width: 'auto',
+                objectFit: 'contain'
+              }} 
+            />
           </Box>
 
           <Box sx={{ display: 'flex', gap: 2, mr: 'auto' }}>
