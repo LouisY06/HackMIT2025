@@ -1,17 +1,23 @@
 // API Configuration for Production Deployment
 const getApiBaseUrl = (): string => {
+  console.log('API Config Debug:');
+  console.log('NODE_ENV:', process.env.NODE_ENV);
+  console.log('REACT_APP_API_URL:', process.env.REACT_APP_API_URL);
+  
   // Check if we're in development
   if (process.env.NODE_ENV === 'development') {
+    console.log('Using development URL: http://localhost:5001');
     return 'http://localhost:5001';
   }
   
   // Check for custom API URL in environment (set by Vercel)
   if (process.env.REACT_APP_API_URL) {
+    console.log('Using production URL:', process.env.REACT_APP_API_URL);
     return process.env.REACT_APP_API_URL;
   }
   
   // Fallback - this will be updated when you deploy to Railway
-  console.warn('REACT_APP_API_URL not set, using localhost');
+  console.warn('REACT_APP_API_URL not set, using localhost fallback');
   return 'http://localhost:5001';
 };
 
