@@ -48,6 +48,7 @@ import {
   Badge,
 } from '@mui/material';
 import { API_BASE_URL } from '../config/api';
+import { auth } from '../config/firebase';
 
 const FoodBankDashboard: React.FC = () => {
   const navigate = useNavigate();
