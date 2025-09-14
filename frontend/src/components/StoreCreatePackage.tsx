@@ -133,8 +133,8 @@ const StoreCreatePackage: React.FC = () => {
       const constraints = {
         video: { 
           facingMode: { ideal: 'environment' }, // Prefer back camera but fallback to any
-          width: { ideal: 1280, min: 640 },
-          height: { ideal: 720, min: 480 }
+          width: { ideal: 640, max: 1280 },
+          height: { ideal: 480, max: 720 }
         }
       };
       
@@ -247,14 +247,11 @@ const StoreCreatePackage: React.FC = () => {
 
   // Auto-start camera when component mounts
   React.useEffect(() => {
-    // Delay camera start slightly to ensure DOM is ready
-    const timer = setTimeout(() => {
-      startCamera();
-    }, 500);
+    // Start camera immediately
+    startCamera();
     
     // Cleanup function to stop camera when component unmounts
     return () => {
-      clearTimeout(timer);
       stopCamera();
     };
   }, [startCamera, stopCamera]);
