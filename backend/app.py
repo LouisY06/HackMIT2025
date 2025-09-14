@@ -469,6 +469,205 @@ def check_email_exists(user_type, email):
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
 
+@app.route('/api/packages/available', methods=['GET'])
+def get_available_packages():
+    """Get all available packages for volunteers (status = 'pending')"""
+    try:
+        conn = sqlite3.connect(DATABASE)
+        cursor = conn.cursor()
+        
+        cursor.execute('''
+            SELECT p.*, s.profile_data
+            FROM packages p
+            LEFT JOIN store_profiles s ON p.store_email = s.email
+            WHERE p.status = 'pending'
+            ORDER BY p.created_at DESC
+        ''')
+        
+        packages = cursor.fetchall()
+        conn.close()
+        
+        # Convert to list of dictionaries with store location info
+        package_list = []
+        for package in packages:
+            # Parse store profile data if available
+            store_data = None
+            if package[14]:  # profile_data column
+                try:
+                    store_data = json.loads(package[14])
+                except json.JSONDecodeError:
+                    store_data = None
+            
+            package_dict = {
+                'id': package[0],
+                'store_name': package[1],
+                'store_email': package[2],
+                'weight_lbs': package[3],
+                'food_type': package[4],
+                'pickup_window_start': package[5],
+                'pickup_window_end': package[6],
+                'special_instructions': package[7],
+                'qr_code_data': package[8],
+                'qr_code_image_path': package[9],
+                'status': package[10],
+                'created_at': package[11],
+                'volunteer_id': package[12],
+                'pickup_completed_at': package[13],
+                'store_address': store_data.get('address', 'Address not available') if store_data else 'Address not available',
+                'store_lat': float(store_data.get('latitude', 0)) if store_data and store_data.get('latitude') else None,
+                'store_lng': float(store_data.get('longitude', 0)) if store_data and store_data.get('longitude') else None
+            }
+            package_list.append(package_dict)
+        
+        return jsonify({'success': True, 'packages': package_list})
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/stores/locations', methods=['GET'])
+def get_store_locations():
+    """Get all store locations for map display"""
+    try:
+        conn = sqlite3.connect(DATABASE)
+        cursor = conn.cursor()
+        
+        # Get all stores with their profile data
+        cursor.execute('''
+            SELECT firebase_uid, email, profile_data
+            FROM store_profiles
+        ''')
+        
+        stores = cursor.fetchall()
+        conn.close()
+        
+        # Convert to list of dictionaries
+        store_locations = []
+        for store in stores:
+            try:
+                profile_data = json.loads(store[2])  # Parse JSON from profile_data
+                
+                # Only include stores that have location data
+                if profile_data.get('latitude') and profile_data.get('longitude'):
+                    store_locations.append({
+                        'id': store[0],  # firebase_uid as id
+                        'name': profile_data.get('storeName', 'Unnamed Store'),
+                        'address': profile_data.get('address', 'No address'),
+                        'lat': float(profile_data.get('latitude')),
+                        'lng': float(profile_data.get('longitude')),
+                        'email': store[1]
+                    })
+            except json.JSONDecodeError:
+                # Skip stores with invalid JSON data
+                continue
+        
+        return jsonify({
+            'success': True,
+            'stores': store_locations
+        })
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/packages/<int:package_id>/assign', methods=['POST'])
+def assign_package_to_volunteer(package_id):
+    """Assign a package to a volunteer"""
+    try:
+        data = request.get_json()
+        volunteer_id = data.get('volunteer_id')
+        
+        if not volunteer_id:
+            return jsonify({'success': False, 'error': 'Volunteer ID is required'}), 400
+        
+        conn = sqlite3.connect(DATABASE)
+        cursor = conn.cursor()
+        
+        # Check if package exists and is available
+        cursor.execute('SELECT id, status FROM packages WHERE id = ?', (package_id,))
+        package = cursor.fetchone()
+        
+        if not package:
+            conn.close()
+            return jsonify({'success': False, 'error': 'Package not found'}), 404
+        
+        if package[1] != 'pending':
+            conn.close()
+            return jsonify({'success': False, 'error': 'Package is no longer available'}), 400
+        
+        # Update package status and assign to volunteer
+        cursor.execute('''
+            UPDATE packages 
+            SET status = 'assigned', volunteer_id = ?
+            WHERE id = ?
+        ''', (volunteer_id, package_id))
+        
+        conn.commit()
+        conn.close()
+        
+        return jsonify({
+            'success': True, 
+            'message': 'Package assigned successfully',
+            'package_id': package_id,
+            'volunteer_id': volunteer_id
+        })
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/packages/volunteer/<volunteer_id>', methods=['GET'])
+def get_volunteer_packages(volunteer_id):
+    """Get all packages assigned to a specific volunteer"""
+    try:
+        conn = sqlite3.connect(DATABASE)
+        cursor = conn.cursor()
+        
+        cursor.execute('''
+            SELECT p.*, s.profile_data
+            FROM packages p
+            LEFT JOIN store_profiles s ON p.store_email = s.email
+            WHERE p.volunteer_id = ?
+            ORDER BY p.created_at DESC
+        ''', (volunteer_id,))
+        
+        packages = cursor.fetchall()
+        conn.close()
+        
+        # Convert to list of dictionaries with store location info
+        package_list = []
+        for package in packages:
+            # Parse store profile data if available
+            store_data = None
+            if package[14]:  # profile_data column
+                try:
+                    store_data = json.loads(package[14])
+                except json.JSONDecodeError:
+                    store_data = None
+            
+            package_dict = {
+                'id': package[0],
+                'store_name': package[1],
+                'store_email': package[2],
+                'weight_lbs': package[3],
+                'food_type': package[4],
+                'pickup_window_start': package[5],
+                'pickup_window_end': package[6],
+                'special_instructions': package[7],
+                'qr_code_data': package[8],
+                'qr_code_image_path': package[9],
+                'status': package[10],
+                'created_at': package[11],
+                'volunteer_id': package[12],
+                'pickup_completed_at': package[13],
+                'store_address': store_data.get('address', 'Address not available') if store_data else 'Address not available',
+                'store_lat': float(store_data.get('latitude', 0)) if store_data and store_data.get('latitude') else None,
+                'store_lng': float(store_data.get('longitude', 0)) if store_data and store_data.get('longitude') else None
+            }
+            package_list.append(package_dict)
+        
+        return jsonify({'success': True, 'packages': package_list})
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
 @app.route('/api/health', methods=['GET'])
 def health_check():
     """Health check endpoint"""

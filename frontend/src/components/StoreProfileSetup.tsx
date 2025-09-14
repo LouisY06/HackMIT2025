@@ -42,6 +42,8 @@ const StoreProfileSetup: React.FC = () => {
     description: '',
     operatingHours: '',
     specialInstructions: '',
+    latitude: '',
+    longitude: '',
   });
 
   const storeTypes = [
@@ -70,6 +72,39 @@ const StoreProfileSetup: React.FC = () => {
     }));
   };
 
+  const geocodeAddress = async (address: string): Promise<{ lat: number; lng: number } | null> => {
+    try {
+      const fullAddress = `${address}, ${formData.city}, ${formData.state} ${formData.zipCode}`;
+      const encodedAddress = encodeURIComponent(fullAddress);
+      const apiKey = process.env.REACT_APP_GOOGLE_MAPS_API_KEY;
+      
+      if (!apiKey) {
+        console.warn('Google Maps API key not found, skipping geocoding');
+        return null;
+      }
+
+      const response = await fetch(
+        `https://maps.googleapis.com/maps/api/geocode/json?address=${encodedAddress}&key=${apiKey}`
+      );
+      
+      const data = await response.json();
+      
+      if (data.status === 'OK' && data.results.length > 0) {
+        const location = data.results[0].geometry.location;
+        return {
+          lat: location.lat,
+          lng: location.lng
+        };
+      } else {
+        console.warn('Geocoding failed:', data.status);
+        return null;
+      }
+    } catch (error) {
+      console.error('Error geocoding address:', error);
+      return null;
+    }
+  };
+
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     setLoading(true);
@@ -79,6 +114,16 @@ const StoreProfileSetup: React.FC = () => {
       const user = auth.currentUser;
       if (!user) {
         throw new Error('No authenticated user found');
+      }
+
+      // Geocode the address to get latitude and longitude
+      let coordinates = null;
+      if (formData.address && formData.city && formData.state && formData.zipCode) {
+        coordinates = await geocodeAddress(formData.address);
+        if (coordinates) {
+          formData.latitude = coordinates.lat.toString();
+          formData.longitude = coordinates.lng.toString();
+        }
       }
 
       // Save profile to backend

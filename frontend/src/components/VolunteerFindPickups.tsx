@@ -26,6 +26,7 @@ import {
 } from '@mui/icons-material';
 import { Package, Leaf, Timer } from 'lucide-react';
 import GoogleMapsComponent from './GoogleMapsComponent';
+import { auth } from '../config/firebase';
 
 const VolunteerFindPickups: React.FC = () => {
   const navigate = useNavigate();
@@ -33,63 +34,203 @@ const VolunteerFindPickups: React.FC = () => {
   const [foodType, setFoodType] = useState('All Types');
   const [maxDistance, setMaxDistance] = useState('Any Distance');
   const [sortBy, setSortBy] = useState('Distance');
+  const [stores, setStores] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [userLocation, setUserLocation] = useState<{lat: number, lng: number} | null>(null);
 
-  // Mock data for available pickups with coordinates
-  const availablePickups = [
-    {
-      id: 1,
-      storeName: "Flour Bakery",
-      storeInitial: "F",
-      points: 104,
-      distance: "0.9 mi",
-      timeWindow: "2:00 PM - 6:00 PM",
-      foodType: "Pastries & Bread",
-      instruction: "Handle with care - contains delicate pastries",
-      weight: "5.2 lbs",
-      duration: "~30 min",
-      co2Saved: "2.3 lbs CO₂e saved",
-      destination: "Cambridge Food Bank",
-      destinationAddress: "1234 Main St, Cambridge, MA",
-      expiresSoon: true,
-      timeLeft: "Expires soon",
-      lat: 42.3601,
-      lng: -71.0589
-    },
-    {
-      id: 2,
-      storeName: "Green Garden Restaurant",
-      storeInitial: "G",
-      points: 142,
-      distance: "1.9 mi",
-      timeWindow: "4:00 PM - 8:00 PM",
-      foodType: "Prepared Meals",
-      instruction: "Keep refrigerated during transport",
-      weight: "7.1 lbs",
-      duration: "~30 min",
-      co2Saved: "3.1 lbs CO₂e saved",
-      destination: "Cambridge Food Bank",
-      destinationAddress: "1234 Main St, Cambridge, MA",
-      expiresSoon: false,
-      timeLeft: "1h left",
-      lat: 42.3736,
-      lng: -71.1097
-    }
-  ];
+  // Function to calculate distance between two coordinates using Haversine formula
+  const calculateDistance = (lat1: number, lng1: number, lat2: number, lng2: number): number => {
+    const R = 3959; // Radius of the Earth in miles
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLng = (lng2 - lng1) * Math.PI / 180;
+    const a = 
+      Math.sin(dLat/2) * Math.sin(dLat/2) +
+      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+      Math.sin(dLng/2) * Math.sin(dLng/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    const distance = R * c;
+    return distance;
+  };
+
+  // Function to get user's current location
+  const getUserLocation = (): Promise<{lat: number, lng: number}> => {
+    return new Promise((resolve, reject) => {
+      if (!navigator.geolocation) {
+        reject(new Error('Geolocation is not supported by this browser.'));
+        return;
+      }
+
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          resolve({
+            lat: position.coords.latitude,
+            lng: position.coords.longitude
+          });
+        },
+        (error) => {
+          console.warn('Could not get location:', error);
+          // Default to Cambridge, MA if location access is denied
+          resolve({
+            lat: 42.3601,
+            lng: -71.0589
+          });
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 300000 // 5 minutes
+        }
+      );
+    });
+  };
+
+  // Fetch packages from API
+  React.useEffect(() => {
+    const fetchPackages = async () => {
+      try {
+        // Get user's location first
+        const location = await getUserLocation();
+        setUserLocation(location);
+
+        const response = await fetch('http://localhost:5001/api/packages/available');
+        const data = await response.json();
+        
+        
+        if (data.success) {
+          // Convert package data to pickup format for display with real distance calculation
+          const packagePickups = data.packages.map((pkg: any, index: number) => {
+            let distance = 0;
+            let distanceText = "Distance unknown";
+            
+            // Only calculate distance if we have store location data
+            if (pkg.store_lat && pkg.store_lng) {
+              distance = calculateDistance(location.lat, location.lng, pkg.store_lat, pkg.store_lng);
+              distanceText = `${distance.toFixed(1)} mi`;
+            }
+            
+            // Format time window
+            const timeWindow = `${pkg.pickup_window_start} - ${pkg.pickup_window_end}`;
+            
+            // Calculate points based on weight (heavier packages = more points)
+            const points = Math.floor(pkg.weight_lbs * 5) + 50;
+            
+            // Calculate CO2 saved (rough estimate: 1 lb food = 0.5 lbs CO2)
+            const co2Saved = (pkg.weight_lbs * 0.5).toFixed(1);
+            
+            return {
+              id: pkg.id,
+              storeName: pkg.store_name,
+              storeInitial: pkg.store_name.charAt(0).toUpperCase(),
+              points: points,
+              distance: distanceText,
+              timeWindow: timeWindow,
+              foodType: pkg.food_type,
+              instruction: pkg.special_instructions || "Handle with care",
+              weight: `${pkg.weight_lbs} lbs`,
+              duration: "~30 min",
+              co2Saved: `${co2Saved} lbs CO₂e saved`,
+              destination: "Cambridge Food Bank",
+              destinationAddress: "1234 Main St, Cambridge, MA",
+              expiresSoon: Math.random() > 0.7, // 30% chance of expiring soon
+              timeLeft: Math.random() > 0.7 ? "Expires soon" : "2h left",
+              lat: pkg.store_lat,
+              lng: pkg.store_lng,
+              address: pkg.store_address,
+              distanceValue: distance, // Store raw distance value for sorting
+              packageId: pkg.id,
+              qrCodeData: pkg.qr_code_data
+            };
+          });
+          
+          // Sort packages by distance (only those with location data first)
+          packagePickups.sort((a: any, b: any) => {
+            if (a.distanceValue === 0 && b.distanceValue > 0) return 1;
+            if (a.distanceValue > 0 && b.distanceValue === 0) return -1;
+            return a.distanceValue - b.distanceValue;
+          });
+          
+          setStores(packagePickups);
+        }
+      } catch (error) {
+        console.error('Error fetching packages:', error);
+        // Fallback to mock data if API fails
+        setStores([
+          {
+            id: 1,
+            storeName: "Flour Bakery",
+            storeInitial: "F",
+            points: 104,
+            distance: "0.9 mi",
+            timeWindow: "2:00 PM - 6:00 PM",
+            foodType: "Pastries & Bread",
+            instruction: "Handle with care - contains delicate pastries",
+            weight: "5.2 lbs",
+            duration: "~30 min",
+            co2Saved: "2.3 lbs CO₂e saved",
+            destination: "Cambridge Food Bank",
+            destinationAddress: "1234 Main St, Cambridge, MA",
+            expiresSoon: true,
+            timeLeft: "Expires soon",
+            lat: 42.3601,
+            lng: -71.0589
+          }
+        ]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPackages();
+  }, []);
+
+  // Use stores state instead of hardcoded data
+  const availablePickups = stores;
 
   // Convert pickup data for Google Maps component
-  const mapPickups = availablePickups.map(pickup => ({
-    id: pickup.id.toString(),
-    storeName: pickup.storeName,
-    lat: pickup.lat,
-    lng: pickup.lng,
-    foodType: pickup.foodType,
-    weight: pickup.weight,
-    timeWindow: pickup.timeWindow
-  }));
+  const mapPickups = availablePickups
+    .filter(pickup => pickup.lat && pickup.lng) // Only include packages with location data
+    .map(pickup => ({
+      id: pickup.id.toString(),
+      storeName: pickup.storeName,
+      lat: pickup.lat,
+      lng: pickup.lng,
+      foodType: pickup.foodType,
+      weight: pickup.weight,
+      timeWindow: pickup.timeWindow
+    }));
 
-  const handleAcceptMission = (pickupId: number) => {
-    console.log(`Accepting mission ${pickupId}`);
-    // Navigate to mission details or start mission
+  const handleAcceptMission = async (pickupId: number) => {
+    try {
+      // Get current user from Firebase Auth
+      const user = auth.currentUser;
+      if (!user) {
+        alert('Please log in to accept missions');
+        return;
+      }
+
+      const response = await fetch(`http://localhost:5001/api/packages/${pickupId}/assign`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          volunteer_id: user.uid
+        })
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        alert(`Mission accepted! Package ${pickupId} has been assigned to you.`);
+        // Refresh the packages list to update the UI
+        window.location.reload();
+      } else {
+        alert(`Error: ${data.error}`);
+      }
+    } catch (error) {
+      console.error('Error accepting mission:', error);
+      alert('Failed to accept mission. Please try again.');
+    }
   };
 
   const handleViewDetails = (pickupId: number) => {
@@ -102,7 +243,13 @@ const VolunteerFindPickups: React.FC = () => {
   };
 
   return (
-    <Box sx={{ minHeight: '100vh', backgroundColor: '#f5f5f5' }}>
+    <Box sx={{ 
+      height: '100vh', 
+      backgroundColor: '#f5f5f5',
+      display: 'flex',
+      flexDirection: 'column',
+      overflow: 'hidden'
+    }}>
       {/* Header/Navigation */}
       <AppBar position="static" sx={{ backgroundColor: '#4CAF50' }}>
         <Toolbar>
@@ -173,7 +320,11 @@ const VolunteerFindPickups: React.FC = () => {
       </AppBar>
 
       {/* Main Content */}
-      <Box sx={{ display: 'flex', minHeight: 'calc(100vh - 64px)' }}>
+      <Box sx={{ 
+        display: 'flex', 
+        flex: 1,
+        minHeight: 0
+      }}>
         {/* Left Sidebar - Filters and Map */}
         <Box sx={{ width: '350px', backgroundColor: 'white', p: 3, borderRight: '1px solid #e0e0e0' }}>
           {/* Filters Section */}
@@ -242,6 +393,24 @@ const VolunteerFindPickups: React.FC = () => {
             </FormControl>
           </Box>
 
+          {/* Location Info */}
+          {userLocation && (
+            <Box sx={{ mb: 3, p: 2, backgroundColor: '#f5f5f5', borderRadius: 1 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                <LocationOn sx={{ mr: 1, color: '#4CAF50', fontSize: '1.2rem' }} />
+                <Typography variant="subtitle2" sx={{ fontWeight: 'bold', color: '#4CAF50' }}>
+                  Your Location
+                </Typography>
+              </Box>
+              <Typography variant="body2" sx={{ color: '#666', fontSize: '0.85rem' }}>
+                Distances calculated from your current location
+              </Typography>
+              <Typography variant="caption" sx={{ color: '#999', fontSize: '0.75rem' }}>
+                {userLocation.lat.toFixed(4)}, {userLocation.lng.toFixed(4)}
+              </Typography>
+            </Box>
+          )}
+
           {/* Map View Section */}
           <Box>
             <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
@@ -251,24 +420,67 @@ const VolunteerFindPickups: React.FC = () => {
               </Typography>
             </Box>
             
-            <GoogleMapsComponent
-              apiKey={process.env.REACT_APP_GOOGLE_MAPS_API_KEY || ''}
-              center={{ lat: 42.3601, lng: -71.0589 }}
-              zoom={13}
-              pickups={mapPickups}
-              height="300px"
-            />
+            {loading ? (
+              <Box sx={{ 
+                height: '300px', 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'center',
+                backgroundColor: '#f5f5f5',
+                borderRadius: 1
+              }}>
+                <Typography>Loading packages...</Typography>
+              </Box>
+            ) : (
+              <GoogleMapsComponent
+                apiKey={process.env.REACT_APP_GOOGLE_MAPS_API_KEY || ''}
+                center={userLocation || { lat: 42.3601, lng: -71.0589 }}
+                zoom={13}
+                pickups={mapPickups}
+                height="300px"
+                userLocation={userLocation || undefined}
+              />
+            )}
             {/* Debug: API Key loaded: {process.env.REACT_APP_GOOGLE_MAPS_API_KEY ? 'Yes' : 'No'} */}
           </Box>
         </Box>
 
         {/* Right Main Content - Available Pickups */}
-        <Box sx={{ flex: 1, p: 3 }}>
-          <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 3 }}>
-            {availablePickups.length} Packages Available
-          </Typography>
+        <Box sx={{ 
+          flex: 1, 
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'hidden'
+        }}>
+          {/* Fixed Header */}
+          <Box sx={{ p: 3, pb: 0, flexShrink: 0 }}>
+            <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
+              {availablePickups.length} Packages Available
+            </Typography>
+          </Box>
 
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+          {/* Scrollable Content */}
+          <Box sx={{ 
+            flex: 1,
+            p: 3,
+            pt: 1,
+            overflowY: 'auto',
+            '&::-webkit-scrollbar': {
+              width: '6px',
+            },
+            '&::-webkit-scrollbar-track': {
+              backgroundColor: '#f1f1f1',
+              borderRadius: '3px',
+            },
+            '&::-webkit-scrollbar-thumb': {
+              backgroundColor: '#c1c1c1',
+              borderRadius: '3px',
+              '&:hover': {
+                backgroundColor: '#a8a8a8',
+              },
+            },
+          }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
             {availablePickups.map((pickup) => (
               <Card key={pickup.id} sx={{ boxShadow: 2 }}>
                 <CardContent>
@@ -352,6 +564,7 @@ const VolunteerFindPickups: React.FC = () => {
                 </CardContent>
               </Card>
             ))}
+            </Box>
           </Box>
         </Box>
       </Box>

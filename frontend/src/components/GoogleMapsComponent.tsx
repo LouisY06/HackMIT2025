@@ -17,6 +17,7 @@ interface GoogleMapsComponentProps {
   zoom?: number;
   pickups?: Pickup[];
   height?: string;
+  userLocation?: { lat: number; lng: number };
 }
 
 const GoogleMapsComponent: React.FC<GoogleMapsComponentProps> = ({
@@ -24,7 +25,8 @@ const GoogleMapsComponent: React.FC<GoogleMapsComponentProps> = ({
   center = { lat: 42.3601, lng: -71.0589 },
   zoom = 13,
   pickups = [],
-  height = '300px'
+  height = '300px',
+  userLocation
 }) => {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
@@ -121,6 +123,37 @@ const GoogleMapsComponent: React.FC<GoogleMapsComponentProps> = ({
           infoWindow.open(map, marker);
         });
       });
+
+      // Add user location marker if provided
+      if (userLocation) {
+        const userMarker = new (window as any).google.maps.Marker({
+          position: { lat: userLocation.lat, lng: userLocation.lng },
+          map: map,
+          title: 'Your Location',
+          icon: {
+            path: (window as any).google.maps.SymbolPath.CIRCLE,
+            fillColor: '#2196F3',
+            fillOpacity: 1,
+            strokeColor: '#ffffff',
+            strokeWeight: 3,
+            scale: 10
+          },
+          zIndex: 1000 // Ensure user marker appears on top
+        });
+
+        const userInfoWindow = new (window as any).google.maps.InfoWindow({
+          content: `
+            <div style="padding: 8px; max-width: 150px;">
+              <h3 style="margin: 0 0 4px 0; color: #2196F3;">📍 Your Location</h3>
+              <p style="margin: 2px 0; color: #666; font-size: 14px;">Distances calculated from here</p>
+            </div>
+          `
+        });
+
+        userMarker.addListener('click', () => {
+          userInfoWindow.open(map, userMarker);
+        });
+      }
 
       setIsLoading(false);
       setHasError(false);
