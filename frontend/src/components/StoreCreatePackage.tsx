@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Leaf, Package, Home, BarChart3, TrendingUp, LogOut } from 'lucide-react';
 import { API_BASE_URL } from '../config/api';
+import { auth } from '../config/firebase';
 import {
   Box,
   Typography,
@@ -78,8 +79,8 @@ const StoreCreatePackage: React.FC = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          store_name: 'Flour Bakery', // This would come from user context
-          store_email: 'sarah@flourbakery.com', // This would come from Firebase auth
+          store_name: 'Flour Bakery', // This would come from user profile
+          store_email: auth.currentUser?.email || 'sarah@flourbakery.com', // Get from Firebase auth
           ...formData,
           weight_lbs: parseFloat(formData.weight_lbs),
         }),

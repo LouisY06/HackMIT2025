@@ -45,31 +45,72 @@ const FoodBankDashboard: React.FC = () => {
   const codeReader = useRef<BrowserMultiFormatReader | null>(null);
   const scanningControls = useRef<any>(null);
 
-  // Mock data - in real app this would come from API
-  const kpiData = {
-    todayDeliveries: 12,
-    foodReceived: '45.3 lbs today',
-    activeVolunteers: 8,
-    co2Prevented: '19.9 lbs CO₂e prevented',
-    mealsProvided: '104 meals provided',
-    familiesHelped: '34 families helped',
-  };
+  // Real data from API
+  const [kpiData, setKpiData] = useState({
+    todayDeliveries: 0,
+    foodReceived: '0 lbs today',
+    activeVolunteers: 0,
+    co2Prevented: '0 lbs CO₂e prevented',
+    mealsProvided: '0 meals provided',
+    familiesHelped: '0 families helped',
+  });
 
-  const recentDeliveries = [
-    { volunteer: 'Marcus C.', store: 'Flour Bakery', weight: '5.2 lbs', status: 'completed' },
-    { volunteer: 'Alex J.', store: 'Campus Café', weight: '3.8 lbs', status: 'completed' },
-    { volunteer: 'Emily D.', store: 'Corner Deli', weight: '4.1 lbs', status: 'completed' },
-  ];
+  const [recentDeliveries, setRecentDeliveries] = useState<any[]>([]);
 
-  // Initialize camera
+  // Initialize camera and fetch data
   useEffect(() => {
     codeReader.current = new BrowserMultiFormatReader();
+    fetchFoodBankData();
     return () => {
       if (scanningControls.current) {
         scanningControls.current.stop();
       }
     };
   }, []);
+
+  // Fetch real data from API
+  const fetchFoodBankData = async () => {
+    try {
+      // Fetch completed packages (delivered to food bank)
+      const response = await fetch('https://hackmit2025-production.up.railway.app/api/packages/available');
+      const data = await response.json();
+      
+      if (data.success) {
+        const allPackages = data.packages;
+        const completedPackages = allPackages.filter((pkg: any) => pkg.status === 'completed');
+        
+        // Calculate metrics
+        const todayCompleted = completedPackages.filter((pkg: any) => {
+          const completedDate = new Date(pkg.pickup_completed_at || pkg.created_at);
+          const today = new Date();
+          return completedDate.toDateString() === today.toDateString();
+        });
+        
+        const totalWeight = todayCompleted.reduce((sum: number, pkg: any) => sum + pkg.weight_lbs, 0);
+        const mealsProvided = Math.round(totalWeight * 0.8); // ~0.8 meals per lb
+        const co2Prevented = Math.round(totalWeight * 0.44); // ~0.44 lbs CO2 per lb food
+        
+        setKpiData({
+          todayDeliveries: todayCompleted.length,
+          foodReceived: `${totalWeight.toFixed(1)} lbs today`,
+          activeVolunteers: new Set(completedPackages.map((pkg: any) => pkg.volunteer_id)).size,
+          co2Prevented: `${co2Prevented} lbs CO₂e prevented`,
+          mealsProvided: `${mealsProvided} meals provided`,
+          familiesHelped: `${Math.round(mealsProvided / 3)} families helped`,
+        });
+        
+        // Set recent deliveries
+        setRecentDeliveries(completedPackages.slice(0, 5).map((pkg: any) => ({
+          volunteer: pkg.volunteer_id ? `Volunteer ${pkg.volunteer_id.slice(0, 8)}` : 'Anonymous',
+          store: pkg.store_name,
+          weight: `${pkg.weight_lbs} lbs`,
+          status: 'completed'
+        })));
+      }
+    } catch (error) {
+      console.error('Failed to fetch food bank data:', error);
+    }
+  };
 
   const startCamera = async () => {
     try {
