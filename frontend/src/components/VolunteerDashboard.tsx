@@ -429,6 +429,36 @@ const VolunteerDashboard: React.FC = () => {
     setSelectedPackageId(null);
   };
 
+  // Accept mission function
+  const handleAcceptMission = async (packageId: number) => {
+    const user = auth.currentUser;
+    if (!user) {
+      alert('Please log in to accept missions');
+      return;
+    }
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/packages/${packageId}/assign`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ volunteer_id: user.uid })
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        alert(`🎯 Mission accepted! Package ${packageId} has been added to your tasks.`);
+        // Refresh the available packages list
+        await fetchData();
+      } else {
+        alert(`Failed to accept mission: ${result.error}`);
+      }
+    } catch (error) {
+      console.error('Error accepting mission:', error);
+      alert('Network error. Please try again.');
+    }
+  };
+
   const handleShowDeliveryInfo = (task: any) => {
     setSelectedTask(task);
     setDeliveryInfoOpen(true);
@@ -906,7 +936,7 @@ const VolunteerDashboard: React.FC = () => {
                                 <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                                   <Button
                                     variant="contained"
-                                    onClick={() => navigate('/volunteer/find-pickups')}
+                                    onClick={() => handleAcceptMission(pkg.id)}
                                     sx={{ 
                                       background: 'linear-gradient(135deg, #848D58 0%, #6F7549 100%)',
                                       borderRadius: 2,
