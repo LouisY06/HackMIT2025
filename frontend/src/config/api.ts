@@ -42,6 +42,7 @@ export const API_ENDPOINTS = {
   VERIFY_PICKUP_PIN: (id: number) => `/api/packages/${id}/verify-pin`,
   ASSIGN_PACKAGE: (id: number) => `/api/packages/${id}/assign`,
   COMPLETE_PACKAGE: (id: number) => `/api/packages/${id}/complete`,
+  DELETE_PACKAGE: (id: number) => `/api/packages/${id}`,
   VOLUNTEER_PACKAGES: (volunteerId: string) => `/api/packages/volunteer/${volunteerId}`,
   
   // Health check

@@ -214,10 +214,11 @@ def get_packages_by_store(store_email):
                 'special_instructions': package[7],
                 'qr_code_data': package[8],
                 'qr_code_image_path': package[9],
-                'status': package[10],
-                'created_at': package[11],
-                'volunteer_id': package[12],
-                'pickup_completed_at': package[13]
+                'pickup_pin': package[10],
+                'status': package[11],
+                'created_at': package[12],
+                'volunteer_id': package[13],
+                'pickup_completed_at': package[14]
             }
             package_list.append(package_dict)
         
@@ -251,10 +252,11 @@ def get_package(package_id):
             'special_instructions': package[7],
             'qr_code_data': package[8],
             'qr_code_image_path': package[9],
-            'status': package[10],
-            'created_at': package[11],
-            'volunteer_id': package[12],
-            'pickup_completed_at': package[13]
+            'pickup_pin': package[10],
+            'status': package[11],
+            'created_at': package[12],
+            'volunteer_id': package[13],
+            'pickup_completed_at': package[14]
         }
         
         return jsonify({'success': True, 'package': package_dict})
@@ -501,9 +503,9 @@ def get_available_packages():
         for package in packages:
             # Parse store profile data if available
             store_data = None
-            if package[14]:  # profile_data column
+            if package[15]:  # profile_data column (shifted due to pickup_pin)
                 try:
-                    store_data = json.loads(package[14])
+                    store_data = json.loads(package[15])
                 except json.JSONDecodeError:
                     store_data = None
             
@@ -518,10 +520,11 @@ def get_available_packages():
                 'special_instructions': package[7],
                 'qr_code_data': package[8],
                 'qr_code_image_path': package[9],
-                'status': package[10],
-                'created_at': package[11],
-                'volunteer_id': package[12],
-                'pickup_completed_at': package[13],
+                'pickup_pin': package[10],
+                'status': package[11],
+                'created_at': package[12],
+                'volunteer_id': package[13],
+                'pickup_completed_at': package[14],
                 'store_address': store_data.get('address', 'Address not available') if store_data else 'Address not available',
                 'store_lat': float(store_data.get('latitude', 0)) if store_data and store_data.get('latitude') else None,
                 'store_lng': float(store_data.get('longitude', 0)) if store_data and store_data.get('longitude') else None
@@ -696,9 +699,9 @@ def get_volunteer_packages(volunteer_id):
         for package in packages:
             # Parse store profile data if available
             store_data = None
-            if package[14]:  # profile_data column
+            if package[15]:  # profile_data column (shifted due to pickup_pin)
                 try:
-                    store_data = json.loads(package[14])
+                    store_data = json.loads(package[15])
                 except json.JSONDecodeError:
                     store_data = None
             
@@ -713,10 +716,11 @@ def get_volunteer_packages(volunteer_id):
                 'special_instructions': package[7],
                 'qr_code_data': package[8],
                 'qr_code_image_path': package[9],
-                'status': package[10],
-                'created_at': package[11],
-                'volunteer_id': package[12],
-                'pickup_completed_at': package[13],
+                'pickup_pin': package[10],
+                'status': package[11],
+                'created_at': package[12],
+                'volunteer_id': package[13],
+                'pickup_completed_at': package[14],
                 'store_address': store_data.get('address', 'Address not available') if store_data else 'Address not available',
                 'store_lat': float(store_data.get('latitude', 0)) if store_data and store_data.get('latitude') else None,
                 'store_lng': float(store_data.get('longitude', 0)) if store_data and store_data.get('longitude') else None
@@ -728,6 +732,44 @@ def get_volunteer_packages(volunteer_id):
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
 
+@app.route('/api/packages/<int:package_id>', methods=['DELETE'])
+def delete_package(package_id):
+    """Delete a package from the database"""
+    try:
+        conn = sqlite3.connect(DATABASE)
+        cursor = conn.cursor()
+        
+        # Check if package exists
+        cursor.execute('SELECT id, status FROM packages WHERE id = ?', (package_id,))
+        package = cursor.fetchone()
+        
+        if not package:
+            conn.close()
+            return jsonify({'success': False, 'error': 'Package not found'}), 404
+        
+        # Don't allow deletion of packages that are assigned or completed
+        if package[1] in ['assigned', 'completed']:
+            conn.close()
+            return jsonify({'success': False, 'error': 'Cannot delete package that is assigned or completed'}), 400
+        
+        # Delete the package
+        cursor.execute('DELETE FROM packages WHERE id = ?', (package_id,))
+        
+        if cursor.rowcount == 0:
+            conn.close()
+            return jsonify({'success': False, 'error': 'Package not found or already deleted'}), 404
+        
+        conn.commit()
+        conn.close()
+        
+        return jsonify({
+            'success': True,
+            'message': 'Package deleted successfully',
+            'package_id': package_id
+        })
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 @app.route('/uploads/<filename>')
 def serve_qr_code(filename):

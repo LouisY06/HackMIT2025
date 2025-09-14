@@ -39,7 +39,7 @@ const StoreCreatePackage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
-  const [qrCodePath, setQrCodePath] = useState('');
+  // Removed qrCodePath state - using PIN system instead
   const [pickupPin, setPickupPin] = useState('');
 
   const foodTypes = [
@@ -86,7 +86,7 @@ const StoreCreatePackage: React.FC = () => {
 
       if (result.success) {
         setSuccess('Package created successfully! PIN generated for pickup.');
-        setQrCodePath(result.qr_code_image_path);
+        // QR code path no longer needed - using PIN system
         setPickupPin(result.pickup_pin);
         // Don't auto-redirect, let user see the PIN
       } else {
@@ -368,7 +368,7 @@ const StoreCreatePackage: React.FC = () => {
                     Creating...
                   </Box>
                 ) : (
-                  'Create Package & Generate QR'
+                  'Create Package & Generate PIN'
                 )}
               </Button>
             </Box>
