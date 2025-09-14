@@ -238,26 +238,16 @@ const StoreCreatePackage: React.FC = () => {
         {pickupPin && (
           <Card sx={{ borderRadius: 3, p: 4, mb: 3, border: '2px solid #4CAF50' }}>
             <CardContent>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3 }}>
-                <Typography sx={{ fontSize: 24 }}>🔢</Typography>
-                <Typography variant="h5" sx={{ fontWeight: 'bold', color: '#4CAF50' }}>
-                  Pickup PIN Generated
-                </Typography>
-              </Box>
-              
               <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
                 <Box sx={{ 
                   display: 'flex', 
                   alignItems: 'center', 
-                  gap: 2,
+                  justifyContent: 'center',
                   p: 3,
                   backgroundColor: '#f8f9fa',
                   borderRadius: 3,
                   border: '2px dashed #4CAF50'
                 }}>
-                  <Typography variant="body1" sx={{ fontWeight: 'bold', color: '#666' }}>
-                    Give this PIN to the volunteer:
-                  </Typography>
                   <Typography 
                     variant="h3" 
                     sx={{ 
@@ -272,21 +262,6 @@ const StoreCreatePackage: React.FC = () => {
                     }}
                   >
                     {pickupPin}
-                  </Typography>
-                </Box>
-                
-                <Box sx={{ textAlign: 'center', maxWidth: 400 }}>
-                  <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 1, color: '#4CAF50' }}>
-                    📋 Instructions:
-                  </Typography>
-                  <Typography variant="body1" sx={{ mb: 2 }}>
-                    1. **Tell the volunteer this PIN** when they arrive
-                  </Typography>
-                  <Typography variant="body1" sx={{ mb: 2 }}>
-                    2. **Volunteer enters PIN** in their app
-                  </Typography>
-                  <Typography variant="body1" sx={{ color: '#4CAF50', fontWeight: 'bold' }}>
-                    3. **Package confirmed** - pickup complete! ✅
                   </Typography>
                 </Box>
               </Box>
