@@ -125,7 +125,7 @@ const QRCodeScanner: React.FC<QRCodeScannerProps> = ({
               const scannedText = result.getText();
               console.log('QR Code scanned:', scannedText);
             
-            try {
+              try {
               // Try to parse as JSON (full package data)
               const qrData = JSON.parse(scannedText);
               const scannedPackageId = qrData.package_id;
@@ -169,6 +169,7 @@ const QRCodeScanner: React.FC<QRCodeScannerProps> = ({
                 onScanSuccess(scannedId);
                 stopScanner();
               }, 1000);
+            }
             }
             
             if (error && error.name !== 'NotFoundException') {
@@ -222,7 +223,7 @@ Error: ${error.name} - ${error.message}
               const scannedText = result.getText();
               console.log('QR Code scanned:', scannedText);
             
-            try {
+              try {
               // Try to parse as JSON (full package data)
               const qrData = JSON.parse(scannedText);
               const scannedPackageId = qrData.package_id;
