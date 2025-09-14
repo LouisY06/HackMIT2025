@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Leaf, Package, Home, BarChart3, TrendingUp, LogOut } from 'lucide-react';
-import { API_BASE_URL } from '../config/api';
+import { API_BASE_URL, API_ENDPOINTS, apiCall } from '../config/api';
 import { auth } from '../config/firebase';
 import {
   Box,
@@ -72,12 +72,9 @@ const StoreCreatePackage: React.FC = () => {
         return;
       }
 
-      // Submit to backend
-      const response = await fetch(`${API_BASE_URL}/api/packages`, {
+      // Submit to backend using the correct API endpoint
+      const result = await apiCall(API_ENDPOINTS.CREATE_PACKAGE, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
         body: JSON.stringify({
           store_name: 'Flour Bakery', // This would come from user profile
           store_email: auth.currentUser?.email || 'sarah@flourbakery.com', // Get from Firebase auth
@@ -85,8 +82,6 @@ const StoreCreatePackage: React.FC = () => {
           weight_lbs: parseFloat(formData.weight_lbs),
         }),
       });
-
-      const result = await response.json();
 
       if (result.success) {
         setSuccess('Package created successfully! QR code generated.');
