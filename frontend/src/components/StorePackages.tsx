@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Leaf, Package, Printer, Home, BarChart3, TrendingUp, LogOut, Search, Calendar, Smartphone, Users, Download } from 'lucide-react';
 import { API_BASE_URL } from '../config/api';
+import { auth } from '../config/firebase';
 import {
   Box,
   Typography,
@@ -134,7 +135,11 @@ const StorePackages: React.FC = () => {
   const fetchPackages = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${API_BASE_URL}/api/packages/store/sarah@flourbakery.com`);
+      // Get current user's email from Firebase auth
+      const currentUser = auth.currentUser;
+      const userEmail = currentUser?.email || 'sarah@flourbakery.com'; // fallback for testing
+      
+      const response = await fetch(`${API_BASE_URL}/api/packages/store/${userEmail}`);
       const result = await response.json();
       
       if (result.success) {
@@ -223,9 +228,15 @@ const StorePackages: React.FC = () => {
         }}
       >
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-          <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#4CAF50' }}>
-            <Leaf size={20} style={{ marginRight: '8px' }} /> Waste→Worth
-          </Typography>
+          <img 
+            src="/LogoOutlined.png" 
+            alt="Reflourish Logo" 
+            style={{ 
+              height: '56px', 
+              width: 'auto',
+              objectFit: 'contain'
+            }} 
+          />
           <Box sx={{ display: 'flex', gap: 3 }}>
             <Button onClick={() => navigate('/store/dashboard')} sx={{ color: '#666' }}>
               <Home size={16} style={{ marginRight: '4px' }} /> Dashboard

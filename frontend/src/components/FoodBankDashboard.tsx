@@ -45,31 +45,72 @@ const FoodBankDashboard: React.FC = () => {
   const codeReader = useRef<BrowserMultiFormatReader | null>(null);
   const scanningControls = useRef<any>(null);
 
-  // Mock data - in real app this would come from API
-  const kpiData = {
-    todayDeliveries: 12,
-    foodReceived: '45.3 lbs today',
-    activeVolunteers: 8,
-    co2Prevented: '19.9 lbs CO₂e prevented',
-    mealsProvided: '104 meals provided',
-    familiesHelped: '34 families helped',
-  };
+  // Real data from API
+  const [kpiData, setKpiData] = useState({
+    todayDeliveries: 0,
+    foodReceived: '0 lbs today',
+    activeVolunteers: 0,
+    co2Prevented: '0 lbs CO₂e prevented',
+    mealsProvided: '0 meals provided',
+    familiesHelped: '0 families helped',
+  });
 
-  const recentDeliveries = [
-    { volunteer: 'Marcus C.', store: 'Flour Bakery', weight: '5.2 lbs', status: 'completed' },
-    { volunteer: 'Alex J.', store: 'Campus Café', weight: '3.8 lbs', status: 'completed' },
-    { volunteer: 'Emily D.', store: 'Corner Deli', weight: '4.1 lbs', status: 'completed' },
-  ];
+  const [recentDeliveries, setRecentDeliveries] = useState<any[]>([]);
 
-  // Initialize camera
+  // Initialize camera and fetch data
   useEffect(() => {
     codeReader.current = new BrowserMultiFormatReader();
+    fetchFoodBankData();
     return () => {
       if (scanningControls.current) {
         scanningControls.current.stop();
       }
     };
   }, []);
+
+  // Fetch real data from API
+  const fetchFoodBankData = async () => {
+    try {
+      // Fetch completed packages (delivered to food bank)
+      const response = await fetch('https://hackmit2025-production.up.railway.app/api/packages/available');
+      const data = await response.json();
+      
+      if (data.success) {
+        const allPackages = data.packages;
+        const completedPackages = allPackages.filter((pkg: any) => pkg.status === 'completed');
+        
+        // Calculate metrics
+        const todayCompleted = completedPackages.filter((pkg: any) => {
+          const completedDate = new Date(pkg.pickup_completed_at || pkg.created_at);
+          const today = new Date();
+          return completedDate.toDateString() === today.toDateString();
+        });
+        
+        const totalWeight = todayCompleted.reduce((sum: number, pkg: any) => sum + pkg.weight_lbs, 0);
+        const mealsProvided = Math.round(totalWeight * 0.8); // ~0.8 meals per lb
+        const co2Prevented = Math.round(totalWeight * 0.44); // ~0.44 lbs CO2 per lb food
+        
+        setKpiData({
+          todayDeliveries: todayCompleted.length,
+          foodReceived: `${totalWeight.toFixed(1)} lbs today`,
+          activeVolunteers: new Set(completedPackages.map((pkg: any) => pkg.volunteer_id)).size,
+          co2Prevented: `${co2Prevented} lbs CO₂e prevented`,
+          mealsProvided: `${mealsProvided} meals provided`,
+          familiesHelped: `${Math.round(mealsProvided / 3)} families helped`,
+        });
+        
+        // Set recent deliveries
+        setRecentDeliveries(completedPackages.slice(0, 5).map((pkg: any) => ({
+          volunteer: pkg.volunteer_id ? `Volunteer ${pkg.volunteer_id.slice(0, 8)}` : 'Anonymous',
+          store: pkg.store_name,
+          weight: `${pkg.weight_lbs} lbs`,
+          status: 'completed'
+        })));
+      }
+    } catch (error) {
+      console.error('Failed to fetch food bank data:', error);
+    }
+  };
 
   const startCamera = async () => {
     try {
@@ -161,10 +202,15 @@ const FoodBankDashboard: React.FC = () => {
       <AppBar position="static" sx={{ bgcolor: 'white', boxShadow: 'none', borderBottom: '1px solid #e0e0e0' }}>
         <Toolbar>
           <Box sx={{ display: 'flex', alignItems: 'center', mr: 4 }}>
-            <Leaf size={24} style={{ marginRight: '8px' }} />
-            <Typography variant="h6" sx={{ color: 'black', fontWeight: 'bold' }}>
-              Waste→Worth
-            </Typography>
+            <img 
+              src="/LogoOutlined.png" 
+              alt="Reflourish Logo" 
+              style={{ 
+                height: '48px', 
+                width: 'auto',
+                objectFit: 'contain'
+              }} 
+            />
           </Box>
 
           <Box sx={{ display: 'flex', gap: 2, mr: 'auto' }}>
@@ -225,21 +271,21 @@ const FoodBankDashboard: React.FC = () => {
         </Box>
 
         {/* KPI Cards */}
-        <Box sx={{ display: 'flex', gap: 3, mb: 4, flexWrap: 'wrap' }}>
-          <Card sx={{ flex: '1 1 300px', minWidth: '250px', borderRadius: 3, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
-            <CardContent sx={{ textAlign: 'center', py: 3 }}>
+        <Box sx={{ display: 'flex', gap: 3, mb: 4, flexWrap: 'wrap', justifyContent: 'center' }}>
+          <Card sx={{ flex: '1 1 200px', minWidth: '200px', maxWidth: '250px', borderRadius: 3, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
+            <CardContent sx={{ textAlign: 'center', py: 3, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
               <CheckCircle sx={{ fontSize: 40, color: '#4CAF50', mb: 2 }} />
-              <Typography variant="h4" sx={{ fontWeight: 'bold', mb: 1 }}>
-                {kpiData.todayDeliveries}
+              <Typography variant="h4" sx={{ fontWeight: 'bold', mb: 1, textAlign: 'center' }}>
+                {kpiData.todayDeliveries || 0}
               </Typography>
-              <Typography variant="body1" sx={{ color: '#666' }}>
+              <Typography variant="body1" sx={{ color: '#666', textAlign: 'center' }}>
                 Today's Deliveries
               </Typography>
             </CardContent>
           </Card>
 
-          <Card sx={{ flex: '1 1 300px', minWidth: '250px', borderRadius: 3, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
-            <CardContent sx={{ textAlign: 'center', py: 3 }}>
+          <Card sx={{ flex: '1 1 200px', minWidth: '200px', maxWidth: '250px', borderRadius: 3, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
+            <CardContent sx={{ textAlign: 'center', py: 3, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
               <Box sx={{ 
                 width: 40, 
                 height: 40, 
@@ -253,17 +299,17 @@ const FoodBankDashboard: React.FC = () => {
               }}>
                 <Typography sx={{ color: 'white', fontWeight: 'bold' }}>F</Typography>
               </Box>
-              <Typography variant="h4" sx={{ fontWeight: 'bold', mb: 1 }}>
-                {kpiData.foodReceived}
+              <Typography variant="h4" sx={{ fontWeight: 'bold', mb: 1, textAlign: 'center' }}>
+                {kpiData.foodReceived || '0 lbs today'}
               </Typography>
-              <Typography variant="body1" sx={{ color: '#666' }}>
+              <Typography variant="body1" sx={{ color: '#666', textAlign: 'center' }}>
                 Food Received
               </Typography>
             </CardContent>
           </Card>
 
-          <Card sx={{ flex: '1 1 300px', minWidth: '250px', borderRadius: 3, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
-            <CardContent sx={{ textAlign: 'center', py: 3 }}>
+          <Card sx={{ flex: '1 1 200px', minWidth: '200px', maxWidth: '250px', borderRadius: 3, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
+            <CardContent sx={{ textAlign: 'center', py: 3, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
               <Box sx={{ 
                 width: 40, 
                 height: 40, 
@@ -277,11 +323,23 @@ const FoodBankDashboard: React.FC = () => {
               }}>
                 <Person sx={{ color: 'white' }} />
               </Box>
-              <Typography variant="h4" sx={{ fontWeight: 'bold', mb: 1 }}>
-                {kpiData.activeVolunteers}
+              <Typography variant="h4" sx={{ fontWeight: 'bold', mb: 1, textAlign: 'center' }}>
+                {kpiData.activeVolunteers || 0}
               </Typography>
-              <Typography variant="body1" sx={{ color: '#666' }}>
+              <Typography variant="body1" sx={{ color: '#666', textAlign: 'center' }}>
                 Active Volunteers
+              </Typography>
+            </CardContent>
+          </Card>
+
+          <Card sx={{ flex: '1 1 200px', minWidth: '200px', maxWidth: '250px', borderRadius: 3, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
+            <CardContent sx={{ textAlign: 'center', py: 3, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+              <Leaf size={40} style={{ color: '#4CAF50', marginBottom: '16px' }} />
+              <Typography variant="h4" sx={{ fontWeight: 'bold', mb: 1, textAlign: 'center' }}>
+                {kpiData.co2Prevented ? kpiData.co2Prevented.split(' ')[0] : '0'} lbs
+              </Typography>
+              <Typography variant="body1" sx={{ color: '#666', textAlign: 'center' }}>
+                CO₂ Prevented
               </Typography>
             </CardContent>
           </Card>
@@ -513,51 +571,6 @@ const FoodBankDashboard: React.FC = () => {
                 </CardContent>
               </Card>
 
-              {/* Today's Impact */}
-              <Card sx={{ borderRadius: 3, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
-                <CardContent sx={{ p: 3 }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
-                    <Leaf size={20} style={{ color: '#4CAF50', marginRight: '8px' }} />
-                    <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
-                      Today's Impact
-                    </Typography>
-                  </Box>
-                  
-                  <Box sx={{ 
-                    bgcolor: '#4CAF50', 
-                    color: 'white', 
-                    borderRadius: 3, 
-                    p: 3, 
-                    mb: 2,
-                    textAlign: 'center'
-                  }}>
-                    <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
-                      {kpiData.co2Prevented}
-                    </Typography>
-                  </Box>
-
-                  <Box sx={{ display: 'flex', gap: 2 }}>
-                    <Chip 
-                      label={kpiData.mealsProvided} 
-                      sx={{ 
-                        bgcolor: '#e3f2fd', 
-                        color: '#1976d2',
-                        fontWeight: 'bold',
-                        flex: 1
-                      }} 
-                    />
-                    <Chip 
-                      label={kpiData.familiesHelped} 
-                      sx={{ 
-                        bgcolor: '#f3e5f5', 
-                        color: '#9c27b0',
-                        fontWeight: 'bold',
-                        flex: 1
-                      }} 
-                    />
-                  </Box>
-                </CardContent>
-              </Card>
 
               {/* How to Verify */}
               <Card sx={{ borderRadius: 3, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>

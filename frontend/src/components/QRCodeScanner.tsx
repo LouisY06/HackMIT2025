@@ -58,10 +58,18 @@ const QRCodeScanner: React.FC<QRCodeScannerProps> = ({
       
       readerRef.current = new BrowserMultiFormatReader();
       
-      // First, check if we have camera permissions
+      // First, check if we have camera permissions and prefer back camera
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        // Try to request back camera specifically for mobile devices
+        const constraints = {
+          video: {
+            facingMode: { ideal: 'environment' } // 'environment' = back camera, 'user' = front camera
+          }
+        };
+        
+        const stream = await navigator.mediaDevices.getUserMedia(constraints);
         stream.getTracks().forEach(track => track.stop()); // Stop the test stream
+        console.log('Camera permissions granted, back camera preferred');
       } catch (permissionError) {
         console.error('Camera permission denied:', permissionError);
         setError('Camera access denied. Please allow camera permissions and try again.');
@@ -69,15 +77,28 @@ const QRCodeScanner: React.FC<QRCodeScannerProps> = ({
         return;
       }
       
-      // Try to get video devices
+      // Try to get video devices and prefer back camera for mobile
       let selectedDeviceId = undefined;
       try {
         const videoInputDevices = await BrowserMultiFormatReader.listVideoInputDevices();
         console.log('Available video devices:', videoInputDevices);
         
         if (videoInputDevices.length > 0) {
-          selectedDeviceId = videoInputDevices[0].deviceId;
-          console.log('Using device:', selectedDeviceId);
+          // Look for back/rear camera first (for mobile devices)
+          const backCamera = videoInputDevices.find(device => 
+            device.label.toLowerCase().includes('back') ||
+            device.label.toLowerCase().includes('rear') ||
+            device.label.toLowerCase().includes('environment')
+          );
+          
+          if (backCamera) {
+            selectedDeviceId = backCamera.deviceId;
+            console.log('Using back camera:', backCamera.label, selectedDeviceId);
+          } else {
+            // Fall back to first available device
+            selectedDeviceId = videoInputDevices[0].deviceId;
+            console.log('No back camera found, using first device:', videoInputDevices[0].label, selectedDeviceId);
+          }
         } else {
           console.log('No specific devices found, using default');
         }
@@ -85,13 +106,24 @@ const QRCodeScanner: React.FC<QRCodeScannerProps> = ({
         console.warn('Could not list video devices, using default:', deviceError);
       }
 
-      await readerRef.current.decodeFromVideoDevice(
-        selectedDeviceId,
-        videoRef.current!,
-        (result, error) => {
-          if (result) {
-            const scannedText = result.getText();
-            console.log('QR Code scanned:', scannedText);
+      // Use constraints-based approach if no specific device found, otherwise use device ID
+      if (!selectedDeviceId) {
+        // Use constraints to prefer back camera
+        const constraints = {
+          video: {
+            facingMode: { ideal: 'environment' }, // Prefer back camera
+            width: { ideal: 640 },
+            height: { ideal: 480 }
+          }
+        };
+        
+        await readerRef.current.decodeFromConstraints(
+          constraints,
+          videoRef.current!,
+          (result, error) => {
+            if (result) {
+              const scannedText = result.getText();
+              console.log('QR Code scanned:', scannedText);
             
             try {
               // Try to parse as JSON (full package data)
@@ -138,10 +170,9 @@ const QRCodeScanner: React.FC<QRCodeScannerProps> = ({
                 stopScanner();
               }, 1000);
             }
-          }
-          
-          if (error && error.name !== 'NotFoundException') {
-            console.error('QR Scan error details:', {
+            
+            if (error && error.name !== 'NotFoundException') {
+              console.error('QR Scan error details:', {
               name: error.name,
               message: error.message,
               stack: error.stack
@@ -178,9 +209,108 @@ Error: ${error.name} - ${error.message}
             }
             
             setError(friendlyMessage);
+            }
           }
-        }
-      );
+        );
+      } else {
+        // Use specific device ID (back camera if found)
+        await readerRef.current.decodeFromVideoDevice(
+          selectedDeviceId,
+          videoRef.current!,
+          (result, error) => {
+            if (result) {
+              const scannedText = result.getText();
+              console.log('QR Code scanned:', scannedText);
+            
+            try {
+              // Try to parse as JSON (full package data)
+              const qrData = JSON.parse(scannedText);
+              const scannedPackageId = qrData.package_id;
+              
+              console.log('Parsed package ID:', scannedPackageId);
+              
+              // Verify the scanned ID matches expected package ID
+              if (expectedPackageId && parseInt(scannedPackageId) !== expectedPackageId) {
+                setError(`QR Code mismatch! Expected package ${expectedPackageId}, but scanned ${scannedPackageId}`);
+                return;
+              }
+              
+              setScannedResult(scannedPackageId);
+              setIsVerifying(true);
+              
+              // Simulate verification delay
+              setTimeout(() => {
+                setIsVerifying(false);
+                onScanSuccess(scannedPackageId);
+                stopScanner();
+              }, 1000);
+              
+            } catch (parseError) {
+              // If JSON parsing fails, try as plain text package ID
+              console.log('Not JSON, trying as plain package ID:', scannedText);
+              
+              const scannedId = scannedText.trim();
+              
+              // Verify the scanned ID matches expected package ID
+              if (expectedPackageId && parseInt(scannedId) !== expectedPackageId) {
+                setError(`QR Code mismatch! Expected package ${expectedPackageId}, but scanned ${scannedId}`);
+                return;
+              }
+              
+              setScannedResult(scannedId);
+              setIsVerifying(true);
+              
+              // Simulate verification delay
+              setTimeout(() => {
+                setIsVerifying(false);
+                onScanSuccess(scannedId);
+                stopScanner();
+              }, 1000);
+            }
+            }
+            
+            if (error && error.name !== 'NotFoundException') {
+              console.error('QR Scan error details:', {
+              name: error.name,
+              message: error.message,
+              stack: error.stack
+            });
+            
+            // Provide user-friendly error messages with debug info
+            let friendlyMessage = '';
+            if (error.message.includes('No MultiFormat Readers were able to detect the code')) {
+              friendlyMessage = `
+🔍 Unable to detect QR code. This usually means:
+
+📱 **Camera Issues:**
+• Try different camera angles
+• Clean your camera lens
+• Ensure good lighting (not too bright/dark)
+
+📦 **QR Code Issues:**
+• Make sure QR code is clear and undamaged
+• Hold camera steady (2-6 inches away)
+• Only scan QR codes from this app
+• Try refreshing the QR code image
+
+🛠️ **Debug Info:**
+Error: ${error.name} - ${error.message}
+
+💡 **Quick Test:** Try scanning a simple QR code from another app first to test your camera.
+              `.trim();
+            } else if (error.message.includes('timeout')) {
+              friendlyMessage = 'Scan timeout. Please try again with better lighting or closer positioning.';
+            } else if (error.message.includes('format')) {
+              friendlyMessage = 'QR code format not recognized. Make sure you\'re scanning a valid package QR code.';
+            } else {
+              friendlyMessage = `Debug: ${error.name} - ${error.message}`;
+            }
+            
+            setError(friendlyMessage);
+            }
+          }
+        );
+      }
       
     } catch (err: unknown) {
       console.error('Failed to start scanner:', err);
@@ -261,7 +391,9 @@ Error: ${error.name} - ${error.message}
         {isScanning && !error && (
           <Alert severity="info" sx={{ mb: 2 }}>
             <Typography variant="body2">
-              <strong>Camera Access Required:</strong> Please allow camera permissions when prompted by your browser.
+              <strong>📱 Mobile Tip:</strong> The scanner will automatically use your back camera for better QR code scanning.
+              <br />
+              <strong>🔒 Permissions:</strong> Please allow camera access when prompted by your browser.
             </Typography>
           </Alert>
         )}
