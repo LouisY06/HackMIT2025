@@ -7,7 +7,8 @@ const getApiBaseUrl = (): string => {
   // Check if we're in development
   if (process.env.NODE_ENV === 'development') {
     console.log('Using development URL: http://localhost:5001');
-    return 'http://localhost:5001';
+    return '
+    http://localhost:5001';
   }
   
   // Check for custom API URL in environment (set by Vercel)

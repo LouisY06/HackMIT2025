@@ -106,7 +106,7 @@ def generate_qr_code(package_data, package_id):
     
     return qr_path
 
-@app.route('/api/packages', methods=['POST'])
+@app.route('/api/packages/create', methods=['POST'])
 def create_package():
     """Create a new package and generate QR code"""
     try:
