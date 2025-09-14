@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup, UserCredential } from 'firebase/auth';
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup, // UserCredential } from 'firebase/auth';
 import { auth, googleProvider } from '../config/firebase';
 import {
   Box,
@@ -11,7 +11,7 @@ import {
   TextField,
   Divider,
   Container,
-  Chip,
+  // Chip,
 } from '@mui/material';
 import { ArrowBack, Store, AttachMoney, Nature, Groups, Star, Google } from '@mui/icons-material';
 
@@ -28,7 +28,7 @@ const StoreLogin: React.FC = () => {
     setError('');
 
     try {
-      const result = await signInWithPopup(auth, googleProvider);
+      await signInWithPopup(auth, googleProvider);
       // Check if user has completed profile for store user type
       const user = auth.currentUser;
       if (user) {

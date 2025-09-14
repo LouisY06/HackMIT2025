@@ -27,7 +27,7 @@ import {
   CircularProgress,
 } from '@mui/material';
 
-interface Package {
+interface PackageData {
   id: number;
   store_name: string;
   store_email: string;
