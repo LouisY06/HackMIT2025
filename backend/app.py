@@ -788,6 +788,140 @@ def get_volunteer_stats(volunteer_id):
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
 
+@app.route('/api/foodbank/dashboard', methods=['GET'])
+def get_foodbank_dashboard():
+    """Get food bank dashboard data including recent deliveries and KPIs"""
+    try:
+        conn = sqlite3.connect(DATABASE)
+        cursor = conn.cursor()
+        
+        # Get today's deliveries (completed packages)
+        today = datetime.now().strftime('%Y-%m-%d')
+        cursor.execute('''
+            SELECT COUNT(*), COALESCE(SUM(weight_lbs), 0)
+            FROM packages 
+            WHERE status = 'completed' 
+            AND DATE(pickup_completed_at) = ?
+        ''', (today,))
+        
+        today_result = cursor.fetchone()
+        today_deliveries = today_result[0] if today_result else 0
+        today_weight = today_result[1] if today_result else 0
+        
+        # Get total completed packages for recent deliveries
+        cursor.execute('''
+            SELECT p.*, s.profile_data
+            FROM packages p
+            LEFT JOIN store_profiles s ON p.store_email = s.email
+            WHERE p.status = 'completed'
+            ORDER BY p.pickup_completed_at DESC
+            LIMIT 10
+        ''')
+        
+        recent_deliveries = cursor.fetchall()
+        
+        # Format recent deliveries
+        delivery_list = []
+        for delivery in recent_deliveries:
+            store_data = None
+            if delivery[14]:  # profile_data column (index 14, not 15)
+                try:
+                    store_data = json.loads(delivery[14])
+                except json.JSONDecodeError:
+                    store_data = None
+            
+            delivery_list.append({
+                'id': delivery[0],
+                'store_name': delivery[1],
+                'store_email': delivery[2],
+                'weight_lbs': delivery[3],
+                'food_type': delivery[4],
+                'volunteer_id': delivery[13],
+                'pickup_completed_at': delivery[14],
+                'store_address': store_data.get('address', 'Address not available') if store_data else 'Address not available'
+            })
+        
+        # Calculate KPIs
+        total_weight = sum(d['weight_lbs'] for d in delivery_list)
+        co2_prevented = total_weight * 1.13  # kg CO2 per lb of food
+        meals_provided = total_weight * 2.3
+        
+        kpi_data = {
+            'todayDeliveries': today_deliveries,
+            'foodReceived': f'{today_weight:.1f} lbs today',
+            'activeVolunteers': len(set(d['volunteer_id'] for d in delivery_list if d['volunteer_id'])),
+            'co2Prevented': f'{co2_prevented:.1f} lbs',
+            'mealsProvided': f'{meals_provided:.0f} meals provided',
+            'familiesHelped': f'{meals_provided/4:.0f} families helped',
+        }
+        
+        conn.close()
+        
+        return jsonify({
+            'success': True,
+            'kpi': kpi_data,
+            'recent_deliveries': delivery_list
+        })
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/foodbank/pending-deliveries', methods=['GET'])
+def get_pending_deliveries():
+    """Get packages that are ready for food bank delivery confirmation (status = 'picked_up')"""
+    try:
+        conn = sqlite3.connect(DATABASE)
+        cursor = conn.cursor()
+        
+        cursor.execute('''
+            SELECT p.*, s.profile_data
+            FROM packages p
+            LEFT JOIN store_profiles s ON p.store_email = s.email
+            WHERE p.status = 'picked_up'
+            ORDER BY p.pickup_completed_at ASC
+        ''')
+        
+        packages = cursor.fetchall()
+        conn.close()
+        
+        # Convert to list of dictionaries with store location info
+        package_list = []
+        for package in packages:
+            # Parse store profile data if available
+            store_data = None
+            if package[14]:  # profile_data column (index 14, not 15)
+                try:
+                    store_data = json.loads(package[14])
+                except json.JSONDecodeError:
+                    store_data = None
+            
+            package_dict = {
+                'id': package[0],
+                'store_name': package[1],
+                'store_email': package[2],
+                'weight_lbs': package[3],
+                'food_type': package[4],
+                'pickup_window_start': package[5],
+                'pickup_window_end': package[6],
+                'special_instructions': package[7],
+                'qr_code_data': package[8],
+                'qr_code_image_path': package[9],
+                'pickup_pin': package[10],
+                'status': package[11],
+                'created_at': package[12],
+                'volunteer_id': package[13],
+                'pickup_completed_at': package[14],
+                'store_address': store_data.get('address', 'Address not available') if store_data else 'Address not available',
+                'store_lat': float(store_data.get('latitude', 0)) if store_data and store_data.get('latitude') else None,
+                'store_lng': float(store_data.get('longitude', 0)) if store_data and store_data.get('longitude') else None
+            }
+            package_list.append(package_dict)
+        
+        return jsonify({'success': True, 'packages': package_list})
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
 @app.route('/api/packages/<int:package_id>', methods=['DELETE'])
 def delete_package(package_id):
     """Delete a package from the database"""

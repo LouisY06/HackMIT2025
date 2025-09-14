@@ -47,6 +47,7 @@ import {
   Divider,
   Badge,
 } from '@mui/material';
+import { API_BASE_URL } from '../config/api';
 
 const FoodBankDashboard: React.FC = () => {
   const navigate = useNavigate();
@@ -62,24 +63,93 @@ const FoodBankDashboard: React.FC = () => {
   });
 
   const [recentDeliveries, setRecentDeliveries] = useState<any[]>([]);
+  const [pendingDeliveries, setPendingDeliveries] = useState<any[]>([]);
+  const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
+  const [selectedPackage, setSelectedPackage] = useState<any>(null);
+  const [pinValue, setPinValue] = useState('');
 
   // Fetch data on component mount
   useEffect(() => {
     fetchFoodBankData();
+    fetchPendingDeliveries();
   }, []);
 
   // Fetch real data from API
   const fetchFoodBankData = async () => {
     try {
-      const response = await fetch('http://localhost:5001/api/foodbank/dashboard');
+      const response = await fetch(`${API_BASE_URL}/api/foodbank/dashboard`);
       if (response.ok) {
         const data = await response.json();
-        setKpiData(data.kpi || kpiData);
-        setRecentDeliveries(data.recent_deliveries || []);
+        if (data.success) {
+          setKpiData(data.kpi || kpiData);
+          setRecentDeliveries(data.recent_deliveries || []);
+        }
       }
     } catch (error) {
       console.error('Failed to fetch food bank data:', error);
     }
+  };
+
+  // Fetch pending deliveries
+  const fetchPendingDeliveries = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/foodbank/pending-deliveries`);
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
+          setPendingDeliveries(data.packages || []);
+        }
+      }
+    } catch (error) {
+      console.error('Failed to fetch pending deliveries:', error);
+    }
+  };
+
+  // Handle delivery confirmation
+  const handleConfirmDelivery = (package: any) => {
+    setSelectedPackage(package);
+    setConfirmDialogOpen(true);
+  };
+
+  const handlePinSubmit = async () => {
+    if (!pinValue || !selectedPackage) {
+      alert('Please enter a PIN');
+      return;
+    }
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/packages/${selectedPackage.id}/deliver`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          pin: pinValue,
+          foodbank_id: 'foodbank_1' // TODO: Get actual food bank ID
+        })
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        alert('✅ Package delivery confirmed! Mission completed.');
+        setConfirmDialogOpen(false);
+        setPinValue('');
+        setSelectedPackage(null);
+        // Refresh data
+        fetchFoodBankData();
+        fetchPendingDeliveries();
+      } else {
+        alert(`❌ ${result.error}`);
+      }
+    } catch (error) {
+      console.error('Error confirming delivery:', error);
+      alert('Network error. Please try again.');
+    }
+  };
+
+  const handlePinCancel = () => {
+    setConfirmDialogOpen(false);
+    setPinValue('');
+    setSelectedPackage(null);
   };
 
   // Animation variants
@@ -514,6 +584,97 @@ const FoodBankDashboard: React.FC = () => {
                 </Card>
               </motion.div>
 
+              {/* Pending Deliveries */}
+              <motion.div variants={itemVariants}>
+                <Card sx={{ 
+                  borderRadius: 4, 
+                  background: 'rgba(255, 255, 255, 0.95)',
+                  backdropFilter: 'blur(10px)',
+                  border: '1px solid rgba(255, 255, 255, 0.2)',
+                  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
+                  mb: 3
+                }}>
+                  <CardContent sx={{ p: 3 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+                      <AlertCircle size={20} color="#FF9800" />
+                      <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#333' }}>
+                        Pending Deliveries ({pendingDeliveries.length})
+                      </Typography>
+                    </Box>
+                    
+                    {pendingDeliveries.length === 0 ? (
+                      <Box sx={{ 
+                        textAlign: 'center', 
+                        py: 4,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                      }}>
+                        <CheckCircle size={48} style={{ color: '#4CAF50', marginBottom: '12px' }} />
+                        <Typography variant="h6" sx={{ color: '#666', mb: 1, opacity: 0.7 }}>
+                          No pending deliveries
+                        </Typography>
+                        <Typography variant="body2" sx={{ color: '#666' }}>
+                          All packages have been confirmed
+                        </Typography>
+                      </Box>
+                    ) : (
+                      <Box sx={{ maxHeight: '300px', overflowY: 'auto' }}>
+                        {pendingDeliveries.map((delivery) => (
+                          <motion.div
+                            key={delivery.id}
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.3 }}
+                          >
+                            <Card sx={{ 
+                              mb: 2, 
+                              border: '1px solid #e0e0e0',
+                              '&:hover': { boxShadow: 2 }
+                            }}>
+                              <CardContent sx={{ p: 2 }}>
+                                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                                  <Box sx={{ flex: 1 }}>
+                                    <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mb: 0.5 }}>
+                                      {delivery.store_name}
+                                    </Typography>
+                                    <Typography variant="body2" sx={{ color: '#666', mb: 1 }}>
+                                      {delivery.food_type} • {delivery.weight_lbs} lbs
+                                    </Typography>
+                                    <Typography variant="body2" sx={{ color: '#666', fontSize: '0.75rem' }}>
+                                      From: {delivery.store_address}
+                                    </Typography>
+                                    <Typography variant="body2" sx={{ color: '#666', fontSize: '0.75rem' }}>
+                                      Volunteer: {delivery.volunteer_id ? delivery.volunteer_id.substring(0, 8) + '...' : 'Unknown'}
+                                    </Typography>
+                                  </Box>
+                                  <Box sx={{ ml: 2 }}>
+                                    <Button
+                                      variant="contained"
+                                      size="small"
+                                      onClick={() => handleConfirmDelivery(delivery)}
+                                      sx={{
+                                        background: '#4CAF50',
+                                        '&:hover': { background: '#45a049' },
+                                        textTransform: 'none',
+                                        borderRadius: 2
+                                      }}
+                                    >
+                                      Confirm Delivery
+                                    </Button>
+                                  </Box>
+                                </Box>
+                              </CardContent>
+                            </Card>
+                          </motion.div>
+                        ))}
+                      </Box>
+                    )}
+                  </CardContent>
+                </Card>
+              </motion.div>
+
               <motion.div variants={itemVariants}>
                 <Card sx={{ 
                   borderRadius: 4, 
@@ -572,6 +733,55 @@ const FoodBankDashboard: React.FC = () => {
           </Box>
         </motion.div>
       </Container>
+
+      {/* PIN Confirmation Dialog */}
+      <Dialog open={confirmDialogOpen} onClose={handlePinCancel} maxWidth="sm" fullWidth>
+        <DialogTitle sx={{ textAlign: 'center', pb: 1 }}>
+          📦 Confirm Package Delivery
+        </DialogTitle>
+        <DialogContent sx={{ textAlign: 'center', py: 2 }}>
+          {selectedPackage && (
+            <Box sx={{ mb: 3 }}>
+              <Typography variant="h6" sx={{ mb: 1 }}>
+                {selectedPackage.store_name}
+              </Typography>
+              <Typography variant="body2" sx={{ color: '#666', mb: 2 }}>
+                {selectedPackage.food_type} • {selectedPackage.weight_lbs} lbs
+              </Typography>
+              <Typography variant="body2" sx={{ color: '#666' }}>
+                Enter the 4-digit PIN provided by the volunteer to confirm delivery.
+              </Typography>
+            </Box>
+          )}
+          <TextField
+            fullWidth
+            label="Delivery PIN"
+            value={pinValue}
+            onChange={(e) => setPinValue(e.target.value)}
+            placeholder="Enter 4-digit PIN"
+            type="password"
+            inputProps={{ maxLength: 4 }}
+            sx={{ mb: 2 }}
+          />
+        </DialogContent>
+        <DialogActions sx={{ justifyContent: 'center', pb: 3 }}>
+          <Button onClick={handlePinCancel} sx={{ mr: 2 }}>
+            Cancel
+          </Button>
+          <Button
+            onClick={handlePinSubmit}
+            variant="contained"
+            sx={{
+              background: '#4CAF50',
+              '&:hover': { background: '#45a049' },
+              textTransform: 'none',
+              borderRadius: 2
+            }}
+          >
+            Confirm Delivery
+          </Button>
+        </DialogActions>
+      </Dialog>
 
     </Box>
   );
