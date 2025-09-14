@@ -17,8 +17,8 @@ load_dotenv()
 app = Flask(__name__)
 CORS(app)
 
-# OpenAI API key should be set via environment variable OPENAI_API_KEY
-# For development, you can create a .env file with: OPENAI_API_KEY=your_key_here
+# Anthropic API key should be set via environment variable ANTHROPIC_API_KEY
+# For development, you can create a .env file with: ANTHROPIC_API_KEY=your_key_here
 
 # Initialize Anthropic client
 anthropic_client = anthropic.Anthropic(
@@ -26,7 +26,7 @@ anthropic_client = anthropic.Anthropic(
 )
 
 # Database setup
-DATABASE = 'packages.db'
+DATABASE = os.getenv('DATABASE_URL', 'packages.db')
 
 def init_db():
     """Initialize the database with all tables"""
