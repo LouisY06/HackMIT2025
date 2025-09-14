@@ -31,40 +31,18 @@ const GoogleMapsComponent: React.FC<GoogleMapsComponentProps> = ({
   const [hasError, setHasError] = React.useState(false);
 
   useEffect(() => {
-    console.log('=== GoogleMapsComponent useEffect triggered ===');
-    console.log('API Key:', apiKey ? `Present (${apiKey.substring(0, 10)}...)` : 'MISSING');
-    console.log('Center:', center);
-    console.log('Zoom:', zoom);
-    console.log('Pickups:', pickups.length);
-    
     const initMap = () => {
-      console.log('=== initMap called ===');
-      
       if (!mapRef.current) {
-        console.error('❌ Map ref not found');
         setHasError(true);
         setIsLoading(false);
         return;
       }
-      console.log('✅ Map ref found');
       
-      if (!window.google) {
-        console.error('❌ Google Maps API not loaded - window.google is undefined');
+      if (!window.google || !window.google.maps) {
         setHasError(true);
         setIsLoading(false);
         return;
       }
-      console.log('✅ window.google exists');
-      
-      if (!window.google.maps) {
-        console.error('❌ Google Maps API not loaded - window.google.maps is undefined');
-        setHasError(true);
-        setIsLoading(false);
-        return;
-      }
-      console.log('✅ window.google.maps exists');
-
-      console.log('🗺️ Initializing Google Maps...');
       
       const map = new window.google.maps.Map(mapRef.current, {
         center: center,
@@ -91,7 +69,17 @@ const GoogleMapsComponent: React.FC<GoogleMapsComponentProps> = ({
             "featureType": "poi.park",
             "stylers": [{ "color": "#91b65d" }]
           }
-        ]
+        ],
+        // Disable all UI controls
+        mapTypeControl: false,           // Removes Map/Satellite buttons
+        streetViewControl: false,        // Removes Pegman (Street View)
+        fullscreenControl: false,        // Removes fullscreen button
+        zoomControl: false,              // Removes zoom +/- buttons
+        rotateControl: false,            // Removes rotate control
+        scaleControl: false,             // Removes scale control
+        panControl: false,               // Removes pan control
+        gestureHandling: 'cooperative',  // Requires Ctrl+scroll for zoom
+        disableDefaultUI: true           // Disables all default UI (including branding where possible)
       });
 
       mapInstanceRef.current = map;
@@ -128,17 +116,13 @@ const GoogleMapsComponent: React.FC<GoogleMapsComponentProps> = ({
         });
       });
 
-      console.log('Google Maps initialized successfully');
       setIsLoading(false);
       setHasError(false);
     };
 
     const loadGoogleMaps = () => {
-      console.log('=== loadGoogleMaps called ===');
-      
       // Check if already loaded
       if (window.google && window.google.maps) {
-        console.log('✅ Google Maps already loaded, calling initMap');
         initMap();
         return;
       }
@@ -146,17 +130,13 @@ const GoogleMapsComponent: React.FC<GoogleMapsComponentProps> = ({
       // Check if script already exists
       const existingScript = document.querySelector('script[src*="maps.googleapis.com"]');
       if (existingScript) {
-        console.log('⚠️ Google Maps script already exists, waiting for load...');
         existingScript.addEventListener('load', () => {
-          console.log('✅ Existing script loaded');
           initMap();
         });
         return;
       }
 
-      console.log('📡 Loading Google Maps API...');
       const scriptUrl = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places`;
-      console.log('Script URL:', scriptUrl);
       
       const script = document.createElement('script');
       script.src = scriptUrl;
@@ -164,39 +144,26 @@ const GoogleMapsComponent: React.FC<GoogleMapsComponentProps> = ({
       script.defer = true;
       
       script.onload = () => {
-        console.log('✅ Google Maps API script loaded successfully');
-        console.log('window.google:', !!window.google);
-        console.log('window.google.maps:', !!(window.google && window.google.maps));
-        
         // Small delay to ensure everything is ready
         setTimeout(() => {
           initMap();
         }, 100);
       };
       
-      script.onerror = (error) => {
-        console.error('❌ Error loading Google Maps API script:', error);
-        console.error('Script src:', script.src);
+      script.onerror = () => {
         setIsLoading(false);
         setHasError(true);
       };
       
-      console.log('📝 Appending script to document head');
       document.head.appendChild(script);
     };
 
     if (apiKey) {
-      console.log('✅ API key provided, calling loadGoogleMaps');
       loadGoogleMaps();
     } else {
-      console.error('❌ Google Maps API key is required');
       setHasError(true);
       setIsLoading(false);
     }
-
-    return () => {
-      console.log('🧹 GoogleMapsComponent cleanup');
-    };
   }, [apiKey, center, zoom, pickups]);
 
   return (
