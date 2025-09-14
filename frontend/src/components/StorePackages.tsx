@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Leaf, Package, Printer, Home, BarChart3, TrendingUp, LogOut, Search, Calendar, Smartphone, Users, Download } from 'lucide-react';
+import { API_BASE_URL } from '../config/api';
 import {
   Box,
   Typography,
@@ -133,7 +134,7 @@ const StorePackages: React.FC = () => {
   const fetchPackages = async () => {
     try {
       setLoading(true);
-      const response = await fetch('http://localhost:5001/api/packages/store/sarah@flourbakery.com');
+      const response = await fetch(`${API_BASE_URL}/api/packages/store/sarah@flourbakery.com`);
       const result = await response.json();
       
       if (result.success) {
@@ -163,7 +164,7 @@ const StorePackages: React.FC = () => {
   const handleDownloadQrCode = () => {
     if (selectedPackage?.qr_code_image_path) {
       const link = document.createElement('a');
-      link.href = `http://localhost:5001/uploads/${selectedPackage.qr_code_image_path.split('/').pop()}`;
+      link.href = `${API_BASE_URL}/uploads/${selectedPackage.qr_code_image_path.split('/').pop()}`;
       link.download = `qr-code-pkg-${selectedPackage.id}.png`;
       document.body.appendChild(link);
       link.click();
@@ -195,7 +196,7 @@ const StorePackages: React.FC = () => {
                 <p><strong>Pickup Window:</strong> ${selectedPackage.pickup_window_start} - ${selectedPackage.pickup_window_end}</p>
               </div>
               <div class="qr-code">
-                <img src="http://localhost:5001/uploads/${selectedPackage.qr_code_image_path.split('/').pop()}" alt="QR Code" />
+                <img src="${API_BASE_URL}/uploads/${selectedPackage.qr_code_image_path.split('/').pop()}" alt="QR Code" />
               </div>
               <p><em>Show this QR code to volunteers for pickup verification</em></p>
             </body>
@@ -565,7 +566,7 @@ const StorePackages: React.FC = () => {
                 >
                   <Box
                     component="img"
-                    src={`http://localhost:5001/uploads/${selectedPackage.qr_code_image_path.split('/').pop()}`}
+                    src={`${API_BASE_URL}/uploads/${selectedPackage.qr_code_image_path.split('/').pop()}`}
                     alt={`QR Code for Package ${selectedPackage.id}`}
                     sx={{
                       width: 250,
