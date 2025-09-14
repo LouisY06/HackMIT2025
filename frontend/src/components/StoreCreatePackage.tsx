@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Leaf, Package } from 'lucide-react';
+import { Leaf, Package, Home, BarChart3, TrendingUp, LogOut } from 'lucide-react';
 import {
   Box,
   Typography,
@@ -124,7 +124,7 @@ const StoreCreatePackage: React.FC = () => {
           </Typography>
           <Box sx={{ display: 'flex', gap: 3 }}>
             <Button onClick={() => navigate('/store/dashboard')} sx={{ color: '#666' }}>
-              🏠 Dashboard
+              <Home size={16} style={{ marginRight: '4px' }} /> Dashboard
             </Button>
             <Button sx={{ color: '#4CAF50', fontWeight: 'bold' }}>
               + Create Package
@@ -133,10 +133,10 @@ const StoreCreatePackage: React.FC = () => {
               <Package size={16} style={{ marginRight: '4px' }} /> Packages
             </Button>
             <Button onClick={() => navigate('/store/impact')} sx={{ color: '#666' }}>
-              📊 Impact
+              <BarChart3 size={16} style={{ marginRight: '4px' }} /> Impact
             </Button>
             <Button onClick={() => navigate('/store/global-impact')} sx={{ color: '#666' }}>
-              📈 Global Impact
+              <TrendingUp size={16} style={{ marginRight: '4px' }} /> Global Impact
             </Button>
           </Box>
         </Box>
@@ -148,7 +148,7 @@ const StoreCreatePackage: React.FC = () => {
             Partner
           </Typography>
           <Button onClick={() => navigate('/store')} sx={{ color: '#666' }}>
-            🚪 Logout
+            <LogOut size={16} style={{ marginRight: '4px' }} /> Logout
           </Button>
         </Box>
       </Box>

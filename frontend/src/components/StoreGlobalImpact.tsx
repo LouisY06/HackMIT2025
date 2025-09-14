@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Leaf, Package, Trophy } from 'lucide-react';
+import { Leaf, Package, Trophy, Home, BarChart3, TrendingUp, LogOut, Globe, Trees, Users, Store, Car, Droplets, TreePine, Building } from 'lucide-react';
 import {
   Box,
   Typography,
@@ -56,7 +56,7 @@ const StoreGlobalImpact: React.FC = () => {
           </Typography>
           <Box sx={{ display: 'flex', gap: 3 }}>
             <Button onClick={() => navigate('/store/dashboard')} sx={{ color: '#666' }}>
-              🏠 Dashboard
+              <Home size={16} style={{ marginRight: '4px' }} /> Dashboard
             </Button>
             <Button onClick={() => navigate('/store/create-package')} sx={{ color: '#666' }}>
               + Create Package
@@ -65,10 +65,10 @@ const StoreGlobalImpact: React.FC = () => {
               <Package size={16} style={{ marginRight: '4px' }} /> Packages
             </Button>
             <Button onClick={() => navigate('/store/impact')} sx={{ color: '#666' }}>
-              📊 Impact
+              <BarChart3 size={16} style={{ marginRight: '4px' }} /> Impact
             </Button>
             <Button sx={{ color: '#4CAF50', fontWeight: 'bold' }}>
-              📈 Global Impact
+              <TrendingUp size={16} style={{ marginRight: '4px' }} /> Global Impact
             </Button>
           </Box>
         </Box>
@@ -80,7 +80,7 @@ const StoreGlobalImpact: React.FC = () => {
             Partner
           </Button>
           <Button onClick={() => navigate('/store')} sx={{ color: '#666' }}>
-            🚪 Logout
+            <LogOut size={16} style={{ marginRight: '4px' }} /> Logout
           </Button>
         </Box>
       </Box>
@@ -102,7 +102,7 @@ const StoreGlobalImpact: React.FC = () => {
                 mb: 2,
               }}
             >
-              <Typography sx={{ fontSize: 40, color: 'white' }}>🌍</Typography>
+              <Globe size={40} style={{ color: 'white' }} />
             </Box>
           </Box>
           <Typography variant="h3" sx={{ fontWeight: 'bold', color: '#333', mb: 2 }}>
@@ -232,7 +232,7 @@ const StoreGlobalImpact: React.FC = () => {
                   mb: 2,
                 }}
               >
-                <Typography sx={{ fontSize: 24 }}>🏪</Typography>
+                <Store size={24} />
               </Box>
               <Typography variant="h3" sx={{ fontWeight: 'bold', mb: 1 }}>
                 ${globalData.costSaved}M

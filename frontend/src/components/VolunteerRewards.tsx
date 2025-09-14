@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Gift, PartyPopper, Utensils } from 'lucide-react';
+import { Gift, PartyPopper, Utensils, Coffee, Sandwich, Book, Coffee as DrinkIcon, ShoppingCart, Bus, Leaf as LeafIcon, ClipboardList } from 'lucide-react';
 import {
   Box,
   Typography,
@@ -44,7 +44,7 @@ const VolunteerRewards: React.FC = () => {
     },
     {
       id: 2,
-      icon: "☕",
+      icon: "coffee",
       title: "Free Coffee",
       provider: "Dunkin",
       description: "Redeem for one free medium coffee",
@@ -52,7 +52,7 @@ const VolunteerRewards: React.FC = () => {
     },
     {
       id: 3,
-      icon: "🌯",
+      icon: "sandwich",
       title: "$5 Off Order",
       provider: "Chipotle",
       description: "$5 off your next Chipotle order",

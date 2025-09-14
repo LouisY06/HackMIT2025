@@ -17,7 +17,7 @@ import {
   Badge,
 } from '@mui/material';
 import { LocalShipping } from '@mui/icons-material';
-import { Gift, Trophy, Utensils, ShoppingBag } from 'lucide-react';
+import { Gift, Trophy, Utensils, ShoppingBag, Coffee, CreditCard, MapPin, Smartphone, RotateCcw } from 'lucide-react';
 
 const VolunteerDashboard: React.FC = () => {
   const navigate = useNavigate();
@@ -68,8 +68,8 @@ const VolunteerDashboard: React.FC = () => {
 
   // Mock data for rewards
   const rewards = [
-    { id: 1, name: "Free Coffee", cost: 100, icon: "☕" },
-    { id: 2, name: "Gift Card $10", cost: 500, icon: "💳" },
+    { id: 1, name: "Free Coffee", cost: 100, icon: "coffee" },
+    { id: 2, name: "Gift Card $10", cost: 500, icon: "credit-card" },
     { id: 3, name: "Restaurant Voucher", cost: 750, icon: "utensils" },
     { id: 4, name: "Eco-friendly Tote", cost: 300, icon: "shopping-bag" }
   ];
@@ -176,7 +176,7 @@ const VolunteerDashboard: React.FC = () => {
                           <Box>
                             <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
                               <Typography variant="body2" color="text.secondary">
-                                📍 {location.address} • {location.distance}
+                                <MapPin size={16} style={{ marginRight: '4px' }} /> {location.address} • {location.distance}
                               </Typography>
                             </Box>
                             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mb: 1 }}>
@@ -194,13 +194,13 @@ const VolunteerDashboard: React.FC = () => {
                                 }}
                                 size="small"
                               >
-                                📱 Scan QR
+                                <Smartphone size={16} style={{ marginRight: '4px' }} /> Scan QR
                               </Button>
                               <Button
                                 variant="outlined"
                                 size="small"
                               >
-                                🔄 Refresh
+                                <RotateCcw size={16} style={{ marginRight: '4px' }} /> Refresh
                               </Button>
                             </Box>
                           </Box>
@@ -231,7 +231,7 @@ const VolunteerDashboard: React.FC = () => {
                   '&:hover': { backgroundColor: '#388E3C' }
                 }}
               >
-                📱 Scan QR Code
+                <Smartphone size={16} style={{ marginRight: '4px' }} /> Scan QR Code
               </Button>
               <Button
                 variant="outlined"
@@ -239,7 +239,7 @@ const VolunteerDashboard: React.FC = () => {
                 sx={{ mb: 2 }}
                 onClick={() => navigate('/volunteer/find-pickups')}
               >
-                📍 Find Nearby Pickups
+                <MapPin size={16} style={{ marginRight: '4px' }} /> Find Nearby Pickups
               </Button>
             </CardContent>
           </Card>
