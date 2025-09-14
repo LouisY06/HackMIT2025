@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup } from 'firebase/auth';
 import { auth, googleProvider } from '../config/firebase';
+import { API_BASE_URL } from '../config/api';
 import {
   Box,
   Typography,
@@ -31,7 +32,7 @@ const FoodBankLogin: React.FC = () => {
       // Check if user has completed profile for foodbank user type
       const user = auth.currentUser;
       if (user) {
-        const profileResponse = await fetch(`http://localhost:5001/api/users/check-profile/foodbank/${user.uid}`);
+        const profileResponse = await fetch(`${API_BASE_URL}/api/users/check-profile/foodbank/${user.uid}`);
         const profileData = await profileResponse.json();
         
         if (profileData.success && profileData.profile_completed) {
@@ -64,7 +65,7 @@ const FoodBankLogin: React.FC = () => {
         // Check if user has completed profile for foodbank user type
         const user = auth.currentUser;
         if (user) {
-          const profileResponse = await fetch(`http://localhost:5001/api/users/check-profile/foodbank/${user.uid}`);
+          const profileResponse = await fetch(`${API_BASE_URL}/api/users/check-profile/foodbank/${user.uid}`);
           const profileData = await profileResponse.json();
           
           if (profileData.success && profileData.profile_completed) {
@@ -78,7 +79,7 @@ const FoodBankLogin: React.FC = () => {
       } else {
         // Check if email already exists in foodbank table
         try {
-          const emailCheckResponse = await fetch(`http://localhost:5001/api/users/check-email/foodbank/${email}`);
+          const emailCheckResponse = await fetch(`${API_BASE_URL}/api/users/check-email/foodbank/${email}`);
           
           if (!emailCheckResponse.ok) {
             throw new Error(`HTTP error! status: ${emailCheckResponse.status}`);

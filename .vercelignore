@@ -1,12 +1,12 @@
 backend/
 *.md
 .git/
-node_modules/
 .env*
 railway.toml
 .railwayignore
-requirements.txt
 force-vercel-deploy.sh
 Procfile
 *.py
 packages.db
+*.sqlite
+*.db
