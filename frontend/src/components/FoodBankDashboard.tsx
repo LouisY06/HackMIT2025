@@ -1,6 +1,33 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Leaf } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+  Package,
+  Leaf,
+  Users,
+  TrendingUp,
+  Award,
+  Gift,
+  Trophy,
+  ArrowRight,
+  Star,
+  Target,
+  Zap,
+  Heart,
+  Globe,
+  Coffee,
+  ShoppingBag,
+  CreditCard,
+  LogOut,
+  RefreshCw,
+  CheckCircle,
+  AlertCircle,
+  Building2,
+  Truck,
+  BarChart3,
+  DollarSign,
+  Clock,
+} from 'lucide-react';
 import {
   Box,
   Typography,
@@ -8,8 +35,6 @@ import {
   CardContent,
   Button,
   Container,
-  AppBar,
-  Toolbar,
   IconButton,
   Chip,
   Avatar,
@@ -18,16 +43,10 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
+  Grid,
+  Divider,
+  Badge,
 } from '@mui/material';
-import {
-  LocalShipping,
-  TrendingUp,
-  CheckCircle,
-  History,
-  Assessment,
-  Person,
-  ExitToApp,
-} from '@mui/icons-material';
 
 const FoodBankDashboard: React.FC = () => {
   const navigate = useNavigate();
@@ -35,9 +54,9 @@ const FoodBankDashboard: React.FC = () => {
   // Real data from API
   const [kpiData, setKpiData] = useState({
     todayDeliveries: 0,
-    foodReceived: '0 lbs today',
+    foodReceived: '0.0 lbs today',
     activeVolunteers: 0,
-    co2Prevented: '0 lbs CO₂e prevented',
+    co2Prevented: '0 lbs',
     mealsProvided: '0 meals provided',
     familiesHelped: '0 families helped',
   });
@@ -52,407 +71,510 @@ const FoodBankDashboard: React.FC = () => {
   // Fetch real data from API
   const fetchFoodBankData = async () => {
     try {
-      // Fetch completed packages (delivered to food bank)
-      const response = await fetch('https://hackmit2025-production.up.railway.app/api/packages/available');
-      const data = await response.json();
-      
-      if (data.success) {
-        const allPackages = data.packages;
-        const completedPackages = allPackages.filter((pkg: any) => pkg.status === 'completed');
-        
-        // Calculate metrics
-        const todayCompleted = completedPackages.filter((pkg: any) => {
-          const completedDate = new Date(pkg.pickup_completed_at || pkg.created_at);
-          const today = new Date();
-          return completedDate.toDateString() === today.toDateString();
-        });
-        
-        const totalWeight = todayCompleted.reduce((sum: number, pkg: any) => sum + pkg.weight_lbs, 0);
-        const mealsProvided = Math.round(totalWeight * 0.8); // ~0.8 meals per lb
-        const co2Prevented = Math.round(totalWeight * 0.44); // ~0.44 lbs CO2 per lb food
-        
-        setKpiData({
-          todayDeliveries: todayCompleted.length,
-          foodReceived: `${totalWeight.toFixed(1)} lbs today`,
-          activeVolunteers: new Set(completedPackages.map((pkg: any) => pkg.volunteer_id)).size,
-          co2Prevented: `${co2Prevented} lbs CO₂e prevented`,
-          mealsProvided: `${mealsProvided} meals provided`,
-          familiesHelped: `${Math.round(mealsProvided / 3)} families helped`,
-        });
-        
-        // Set recent deliveries
-        setRecentDeliveries(completedPackages.slice(0, 5).map((pkg: any) => ({
-          volunteer: pkg.volunteer_id ? `Volunteer ${pkg.volunteer_id.slice(0, 8)}` : 'Anonymous',
-          store: pkg.store_name,
-          weight: `${pkg.weight_lbs} lbs`,
-          status: 'completed'
-        })));
+      const response = await fetch('http://localhost:5001/api/foodbank/dashboard');
+      if (response.ok) {
+        const data = await response.json();
+        setKpiData(data.kpi || kpiData);
+        setRecentDeliveries(data.recent_deliveries || []);
       }
     } catch (error) {
       console.error('Failed to fetch food bank data:', error);
     }
   };
 
+  // Animation variants
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+      },
+    },
+  };
 
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+    },
+  };
+
+  const handleLogout = () => {
+    navigate('/foodbank');
+  };
+
+  const handleDeliveryLog = () => {
+    navigate('/foodbank/delivery-log');
+  };
+
+  const handleGlobalImpact = () => {
+    navigate('/foodbank/global-impact');
+  };
 
   return (
-    <Box sx={{ minHeight: '100vh', bgcolor: '#f5f5f5' }}>
-      {/* Top Navigation Bar */}
-      <AppBar position="static" sx={{ bgcolor: 'white', boxShadow: 'none', borderBottom: '1px solid #e0e0e0' }}>
-        <Toolbar>
-          <Box sx={{ display: 'flex', alignItems: 'center', mr: 4 }}>
-            <img 
-              src="/LogoOutlined.png" 
-              alt="Reflourish Logo" 
-              style={{ 
-                height: '48px', 
-                width: 'auto',
-                objectFit: 'contain'
-              }} 
-            />
-          </Box>
-
-          <Box sx={{ display: 'flex', gap: 2, mr: 'auto' }}>
-            <Button
-              startIcon={<CheckCircle />}
-              sx={{
-                bgcolor: '#4CAF50',
-                color: 'white',
-                px: 3,
-                borderRadius: 2,
-                '&:hover': { bgcolor: '#45a049' },
-              }}
-              onClick={() => window.location.href = '/foodbank/delivery-confirm'}
-            >
-              PIN Delivery
-            </Button>
-            <Button
-              startIcon={<LocalShipping />}
-              sx={{ color: '#666', '&:hover': { bgcolor: '#f0f0f0' } }}
-              onClick={() => navigate('/foodbank/delivery-log')}
-            >
-              Delivery Log
-            </Button>
-            <Button
-              startIcon={<Assessment />}
-              sx={{ color: '#666', '&:hover': { bgcolor: '#f0f0f0' } }}
-              onClick={() => navigate('/foodbank/global-impact')}
-            >
-              Global Impact
-            </Button>
-          </Box>
-
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <Box sx={{ textAlign: 'right' }}>
-              <Typography variant="body2" sx={{ fontWeight: 'bold', color: 'black' }}>
-                Lisa Rodriguez
-              </Typography>
-              <Typography variant="caption" sx={{ color: '#666' }}>
-                Coordinator
-              </Typography>
-            </Box>
-            <Avatar sx={{ bgcolor: '#9C27B0' }}>LR</Avatar>
-            <IconButton onClick={() => navigate('/foodbank')}>
-              <ExitToApp sx={{ color: '#666' }} />
-            </IconButton>
-          </Box>
-        </Toolbar>
-      </AppBar>
-
-      <Container maxWidth="xl" sx={{ py: 4 }}>
-        {/* Welcome Section */}
-        <Box sx={{ mb: 4 }}>
-          <Typography variant="h4" sx={{ fontWeight: 'bold', mb: 1 }}>
-            Welcome, Lisa Rodriguez!
-          </Typography>
-          <Typography variant="h6" sx={{ color: '#666' }}>
-            Cambridge Food Bank • Verify incoming food deliveries
-          </Typography>
-        </Box>
-
-        {/* KPI Cards */}
-        <Box sx={{ display: 'flex', gap: 3, mb: 4, flexWrap: 'wrap', justifyContent: 'center' }}>
-          <Card sx={{ flex: '1 1 200px', minWidth: '200px', maxWidth: '250px', borderRadius: 3, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
-            <CardContent sx={{ textAlign: 'center', py: 3, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-              <CheckCircle sx={{ fontSize: 40, color: '#4CAF50', mb: 2 }} />
-              <Typography variant="h4" sx={{ fontWeight: 'bold', mb: 1, textAlign: 'center' }}>
-                {kpiData.todayDeliveries || 0}
-              </Typography>
-              <Typography variant="body1" sx={{ color: '#666', textAlign: 'center' }}>
-                Today's Deliveries
-              </Typography>
-            </CardContent>
-          </Card>
-
-          <Card sx={{ flex: '1 1 200px', minWidth: '200px', maxWidth: '250px', borderRadius: 3, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
-            <CardContent sx={{ textAlign: 'center', py: 3, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-              <Box sx={{ 
-                width: 40, 
-                height: 40, 
-                borderRadius: '50%', 
-                bgcolor: '#9C27B0', 
-                display: 'flex', 
-                alignItems: 'center', 
-                justifyContent: 'center',
-                margin: '0 auto',
-                mb: 2
-              }}>
-                <Typography sx={{ color: 'white', fontWeight: 'bold' }}>F</Typography>
-              </Box>
-              <Typography variant="h4" sx={{ fontWeight: 'bold', mb: 1, textAlign: 'center' }}>
-                {kpiData.foodReceived || '0 lbs today'}
-              </Typography>
-              <Typography variant="body1" sx={{ color: '#666', textAlign: 'center' }}>
-                Food Received
-              </Typography>
-            </CardContent>
-          </Card>
-
-          <Card sx={{ flex: '1 1 200px', minWidth: '200px', maxWidth: '250px', borderRadius: 3, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
-            <CardContent sx={{ textAlign: 'center', py: 3, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-              <Box sx={{ 
-                width: 40, 
-                height: 40, 
-                borderRadius: '50%', 
-                bgcolor: '#9C27B0', 
-                display: 'flex', 
-                alignItems: 'center', 
-                justifyContent: 'center',
-                margin: '0 auto',
-                mb: 2
-              }}>
-                <Person sx={{ color: 'white' }} />
-              </Box>
-              <Typography variant="h4" sx={{ fontWeight: 'bold', mb: 1, textAlign: 'center' }}>
-                {kpiData.activeVolunteers || 0}
-              </Typography>
-              <Typography variant="body1" sx={{ color: '#666', textAlign: 'center' }}>
-                Active Volunteers
-              </Typography>
-            </CardContent>
-          </Card>
-
-          <Card sx={{ flex: '1 1 200px', minWidth: '200px', maxWidth: '250px', borderRadius: 3, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
-            <CardContent sx={{ textAlign: 'center', py: 3, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-              <Leaf size={40} style={{ color: '#4CAF50', marginBottom: '16px' }} />
-              <Typography variant="h4" sx={{ fontWeight: 'bold', mb: 1, textAlign: 'center' }}>
-                {kpiData.co2Prevented ? kpiData.co2Prevented.split(' ')[0] : '0'} lbs
-              </Typography>
-              <Typography variant="body1" sx={{ color: '#666', textAlign: 'center' }}>
-                CO₂ Prevented
-              </Typography>
-            </CardContent>
-          </Card>
-        </Box>
-
-        <Box sx={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
-          {/* Left Column - Scanner */}
-          <Box sx={{ flex: '2 1 600px', minWidth: '500px' }}>
-            <Card sx={{ borderRadius: 3, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
-              <CardContent sx={{ p: 4 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
-                  <CheckCircle sx={{ color: '#4CAF50', mr: 1 }} />
-                  <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
-                    Package Delivery Management
-                  </Typography>
+    <Box
+      sx={{
+        backgroundImage: 'url(/FoodbankLogin.png)',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+        minHeight: '100vh',
+        position: 'relative',
+        pb: 4,
+        '&::before': {
+          content: '""',
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.3)',
+          zIndex: 1,
+        },
+        '& > *': {
+          position: 'relative',
+          zIndex: 2,
+        },
+      }}
+    >
+      {/* Header */}
+      <Box>
+        <Box
+          sx={{
+            background: 'rgba(0, 0, 0, 0.7)',
+            backdropFilter: 'blur(10px)',
+            borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+            p: { xs: 2, md: 3 },
+          }}
+        >
+          <Container maxWidth="xl">
+            <Box sx={{ 
+              display: 'flex', 
+              justifyContent: 'space-between', 
+              alignItems: 'center',
+              flexDirection: { xs: 'column', sm: 'row' },
+              gap: { xs: 2, sm: 0 }
+            }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1.5, sm: 2 } }}>
+                <Box
+                  sx={{
+                    width: { xs: 40, sm: 60 },
+                    height: { xs: 40, sm: 60 },
+                    borderRadius: '50%',
+                    background: 'linear-gradient(135deg, #4CAF50 0%, #45a049 100%)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <Building2 size={28} color="white" />
                 </Box>
-                
-                <Typography variant="body1" sx={{ color: '#666', mb: 3 }}>
-                  Manage incoming food deliveries with PIN verification system
-                </Typography>
-
-                {/* PIN Delivery Section */}
-                <Box sx={{
-                  width: '100%',
-                  bgcolor: '#f8f9fa',
-                  border: '2px solid #4CAF50',
-                  borderRadius: 3,
-                  p: 4,
-                  mb: 3,
-                  textAlign: 'center'
-                }}>
-                  <Box sx={{ mb: 3 }}>
-                    <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#4CAF50', mb: 2 }}>
-                      📦 PIN-Based Delivery System
-                    </Typography>
-                    <Typography variant="body1" sx={{ color: '#666', mb: 3 }}>
-                      When volunteers arrive with packages, use the PIN verification system to confirm deliveries quickly and securely.
-                    </Typography>
-                  </Box>
-
-                  <Button
-                    variant="contained"
-                    size="large"
-                    onClick={() => navigate('/foodbank/delivery-confirm')}
+                <Box>
+                  <Typography 
+                    variant="h4"
                     sx={{ 
-                      backgroundColor: '#4CAF50',
-                      '&:hover': { backgroundColor: '#45a049' },
-                      borderRadius: 3,
-                      px: 4,
-                      py: 2,
-                      fontSize: '1.1rem',
-                      fontWeight: 'bold'
+                      fontWeight: 700,
+                      color: 'white',
+                      fontFamily: '"Helvetica Neue", "Helvetica", "Arial", sans-serif',
+                      fontSize: { xs: '1.5rem', sm: '2rem' }
                     }}
                   >
-                    📦 Confirm PIN Delivery
-                  </Button>
-                </Box>
-
-                {/* Instructions */}
-                <Box sx={{ backgroundColor: '#E3F2FD', borderRadius: 2, p: 3 }}>
-                  <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2, color: '#1976D2' }}>
-                    📋 How it works:
+                    Cambridge Food Bank
                   </Typography>
-                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                    <Typography variant="body2" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <Typography component="span" sx={{ fontWeight: 'bold', color: '#1976D2', minWidth: '20px' }}>1.</Typography>
-                      Volunteer arrives with package
+                  <Box sx={{ 
+                    display: { xs: 'none', sm: 'flex' }, 
+                    alignItems: 'center', 
+                    gap: 1 
+                  }}>
+                    <Typography 
+                      variant="subtitle1" 
+                      sx={{ 
+                        color: 'rgba(255, 255, 255, 0.8)',
+                        fontWeight: 300,
+                        fontFamily: '"Helvetica Neue", "Helvetica", "Arial", sans-serif',
+                      }}
+                    >
+                      Verify incoming food deliveries
                     </Typography>
-                    <Typography variant="body2" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <Typography component="span" sx={{ fontWeight: 'bold', color: '#1976D2', minWidth: '20px' }}>2.</Typography>
-                      Ask for <strong>Package ID</strong> and <strong>4-digit PIN</strong>
-                    </Typography>
-                    <Typography variant="body2" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <Typography component="span" sx={{ fontWeight: 'bold', color: '#1976D2', minWidth: '20px' }}>3.</Typography>
-                      Click "Confirm PIN Delivery" and enter the details
-                    </Typography>
-                    <Typography variant="body2" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <Typography component="span" sx={{ fontWeight: 'bold', color: '#4CAF50', minWidth: '20px' }}>4.</Typography>
-                      <strong>Package confirmed</strong> - delivery complete! ✅
-                    </Typography>
+                    <Leaf size={20} color="rgba(255, 255, 255, 0.8)" />
                   </Box>
                 </Box>
+              </Box>
 
-              </CardContent>
-            </Card>
-          </Box>
+              <Box sx={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: { xs: 1, sm: 2 },
+                flexWrap: 'wrap',
+                justifyContent: 'center'
+              }}>
+                <Chip
+                  icon={<CheckCircle size={16} />}
+                  label={`${kpiData.todayDeliveries} today`}
+                  sx={{
+                    backgroundColor: 'rgba(76, 175, 80, 0.2)', 
+                    color: '#4CAF50',
+                    border: '1px solid rgba(76, 175, 80, 0.3)',
+                    fontWeight: 'bold'
+                  }} 
+                />
+                <Chip
+                  icon={<Users size={16} />}
+                  label={`${kpiData.activeVolunteers} active`}
+                  sx={{
+                    backgroundColor: 'rgba(33, 150, 243, 0.2)', 
+                    color: '#2196F3',
+                    border: '1px solid rgba(33, 150, 243, 0.3)',
+                    fontWeight: 'bold'
+                  }} 
+                />
+                <IconButton 
+                  onClick={handleLogout}
+                  sx={{ 
+                    color: 'rgba(255, 255, 255, 0.8)',
+                    '&:hover': { 
+                      color: 'white',
+                      backgroundColor: 'rgba(255, 255, 255, 0.1)'
+                    }
+                  }}
+                >
+                  <LogOut size={20} />
+                </IconButton>
+              </Box>
+            </Box>
+          </Container>
+        </Box>
+      </Box>
 
-          {/* Right Column - Sidebar */}
-          <Box sx={{ flex: '1 1 300px', minWidth: '300px' }}>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-              {/* Quick Actions */}
-              <Card sx={{ borderRadius: 3, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
-                <CardContent sx={{ p: 3 }}>
-                  <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 3 }}>
-                    Quick Actions
-                  </Typography>
-                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                    <Button
-                      fullWidth
-                      variant="outlined"
-                      startIcon={<History />}
-                      sx={{ justifyContent: 'flex-start', borderRadius: 2 }}
-                      onClick={() => navigate('/foodbank/delivery-log')}
-                    >
-                      View Delivery Log
-                    </Button>
-                    <Button
-                      fullWidth
-                      variant="outlined"
-                      startIcon={<Assessment />}
-                      sx={{ justifyContent: 'flex-start', borderRadius: 2 }}
-                      onClick={() => navigate('/store/global-impact')}
-                    >
-                      Global Impact
-                    </Button>
-                    <Button
-                      fullWidth
-                      variant="outlined"
-                      startIcon={<CheckCircle />}
-                      sx={{ justifyContent: 'flex-start', borderRadius: 2 }}
-                      onClick={() => window.location.href = '/foodbank/delivery-confirm'}
-                    >
-                      PIN Delivery
-                    </Button>
-                  </Box>
-                </CardContent>
-              </Card>
+      <Container maxWidth="xl" sx={{ mt: { xs: 2, md: 4 }, px: { xs: 2, md: 3 } }}>
+        <motion.div
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+        >
+          {/* Main KPI Cards */}
+          <motion.div
+            variants={itemVariants}
+          >
+            <Box sx={{ 
+              display: 'grid', 
+              gridTemplateColumns: { xs: 'repeat(2, 1fr)', md: 'repeat(4, 1fr)' }, 
+              gap: { xs: 2, md: 3 }, 
+              mb: 4 
+            }}>
+              <motion.div whileHover={{ y: -4, scale: 1.02 }} transition={{ duration: 0.2 }}>
+                <Card sx={{ 
+                  borderRadius: 4, 
+                  background: 'linear-gradient(135deg, #4CAF50 0%, #45a049 100%)',
+                  backdropFilter: 'blur(10px)',
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
+                }}>
+                  <CardContent sx={{ textAlign: 'center', py: { xs: 3, sm: 4 }, color: 'white' }}>
+                    <CheckCircle size={32} style={{ marginBottom: '16px' }} />
+                    <Typography variant="h3" sx={{ fontWeight: 'bold', mb: 1, fontSize: { xs: '1.8rem', sm: '3rem' } }}>
+                      {kpiData.todayDeliveries}
+                    </Typography>
+                    <Typography variant="body1" sx={{ opacity: 0.9 }}>
+                      Today's Deliveries
+                    </Typography>
+                  </CardContent>
+                </Card>
+              </motion.div>
 
+              <motion.div whileHover={{ y: -4, scale: 1.02 }} transition={{ duration: 0.2 }}>
+                <Card sx={{ 
+                  borderRadius: 4, 
+                  background: 'linear-gradient(135deg, #2196F3 0%, #1976D2 100%)',
+                  backdropFilter: 'blur(10px)',
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
+                }}>
+                  <CardContent sx={{ textAlign: 'center', py: { xs: 3, sm: 4 }, color: 'white' }}>
+                    <Package size={32} style={{ marginBottom: '16px' }} />
+                    <Typography variant="h3" sx={{ fontWeight: 'bold', mb: 1, fontSize: { xs: '1.8rem', sm: '3rem' } }}>
+                      {kpiData.foodReceived.split(' ')[0]}
+                    </Typography>
+                    <Typography variant="body1" sx={{ opacity: 0.9 }}>
+                      lbs Food Received
+                    </Typography>
+                  </CardContent>
+                </Card>
+              </motion.div>
 
-              {/* How to Verify */}
-              <Card sx={{ borderRadius: 3, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
-                <CardContent sx={{ p: 3 }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
-                    <TrendingUp sx={{ color: '#4CAF50', mr: 1 }} />
-                    <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
-                      How to Verify
+              <motion.div whileHover={{ y: -4, scale: 1.02 }} transition={{ duration: 0.2 }}>
+                <Card sx={{ 
+                  borderRadius: 4, 
+                  background: 'linear-gradient(135deg, #FF9800 0%, #F57C00 100%)',
+                  backdropFilter: 'blur(10px)',
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
+                }}>
+                  <CardContent sx={{ textAlign: 'center', py: { xs: 3, sm: 4 }, color: 'white' }}>
+                    <Users size={32} style={{ marginBottom: '16px' }} />
+                    <Typography variant="h3" sx={{ fontWeight: 'bold', mb: 1, fontSize: { xs: '1.8rem', sm: '3rem' } }}>
+                      {kpiData.activeVolunteers}
                     </Typography>
-                  </Box>
-                  
-                  <Box component="ol" sx={{ pl: 2, m: 0 }}>
-                    <Typography component="li" variant="body2" sx={{ mb: 1 }}>
-                      Ask volunteer to show their delivery QR code
+                    <Typography variant="body1" sx={{ opacity: 0.9 }}>
+                      Active Volunteers
                     </Typography>
-                    <Typography component="li" variant="body2" sx={{ mb: 1 }}>
-                      Position code within scanner frame
-                    </Typography>
-                    <Typography component="li" variant="body2" sx={{ mb: 1 }}>
-                      Wait for automatic verification
-                    </Typography>
-                    <Typography component="li" variant="body2" sx={{ mb: 1 }}>
-                      Confirm package details match
-                    </Typography>
-                    <Typography component="li" variant="body2">
-                      Welcome food delivery to your facility!
-                    </Typography>
-                  </Box>
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
+              </motion.div>
 
-              {/* Recent Deliveries */}
-              <Card sx={{ borderRadius: 3, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
-                <CardContent sx={{ p: 3 }}>
-                  <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 3 }}>
-                    Recent Deliveries
-                  </Typography>
-                  
-                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                    {recentDeliveries.map((delivery, index) => (
-                      <Box key={index} sx={{ 
-                        display: 'flex', 
-                        justifyContent: 'space-between', 
-                        alignItems: 'center',
-                        p: 2,
-                        bgcolor: '#f9f9f9',
-                        borderRadius: 2
-                      }}>
-                        <Box>
-                          <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
-                            {delivery.volunteer} • {delivery.store}
-                          </Typography>
-                        </Box>
-                        <Chip 
-                          label={delivery.weight} 
-                          size="small"
-                          sx={{ 
-                            bgcolor: '#4CAF50', 
-                            color: 'white',
-                            fontWeight: 'bold'
-                          }} 
-                        />
+              <motion.div whileHover={{ y: -4, scale: 1.02 }} transition={{ duration: 0.2 }}>
+                <Card sx={{ 
+                  borderRadius: 4, 
+                  background: 'linear-gradient(135deg, #9C27B0 0%, #7B1FA2 100%)',
+                  backdropFilter: 'blur(10px)',
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
+                }}>
+                  <CardContent sx={{ textAlign: 'center', py: { xs: 3, sm: 4 }, color: 'white' }}>
+                    <Leaf size={32} style={{ marginBottom: '16px' }} />
+                    <Typography variant="h3" sx={{ fontWeight: 'bold', mb: 1, fontSize: { xs: '1.8rem', sm: '3rem' } }}>
+                      {kpiData.co2Prevented.split(' ')[0]}
+                    </Typography>
+                    <Typography variant="body1" sx={{ opacity: 0.9 }}>
+                      lbs CO₂ Prevented
+                    </Typography>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            </Box>
+          </motion.div>
+
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '2fr 1fr' }, gap: 4 }}>
+            {/* Main Content */}
+            <Box>
+              <motion.div
+                variants={itemVariants}
+                whileHover={{ scale: 1.01 }}
+                transition={{ duration: 0.2 }}
+              >
+                <Card sx={{ 
+                  borderRadius: 4, 
+                  background: 'rgba(255, 255, 255, 0.95)',
+                  backdropFilter: 'blur(10px)',
+                  border: '1px solid rgba(255, 255, 255, 0.2)',
+                  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
+                  mb: 3
+                }}>
+                  <CardContent sx={{ p: 4 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
+                      <CheckCircle size={24} color="#4CAF50" />
+                      <Typography variant="h5" sx={{ fontWeight: 'bold', color: '#333' }}>
+                        Package Delivery Management
+                      </Typography>
+                    </Box>
+                    <Typography variant="body1" sx={{ color: '#666', mb: 4 }}>
+                      Enter package details to confirm delivery
+                    </Typography>
+                    
+                    <Box sx={{ 
+                      p: 3, 
+                      borderRadius: 3, 
+                      background: 'linear-gradient(135deg, #E8F5E8 0%, #F1F8E9 100%)',
+                      border: '2px solid #4CAF50',
+                    }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
+                        <Package size={24} color="#4CAF50" />
+                        <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#4CAF50' }}>
+                          Confirm Package Delivery
+                        </Typography>
                       </Box>
-                    ))}
-                  </Box>
-                </CardContent>
-              </Card>
+                      
+                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                        <TextField
+                          fullWidth
+                          label="Package ID"
+                          placeholder="Enter package ID"
+                          variant="outlined"
+                          sx={{
+                            '& .MuiOutlinedInput-root': {
+                              borderRadius: 2,
+                              backgroundColor: 'white',
+                              '&:hover': {
+                                backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                              },
+                            },
+                          }}
+                        />
+                        
+                        <TextField
+                          fullWidth
+                          label="4-Digit PIN"
+                          placeholder="Enter 4-digit PIN"
+                          variant="outlined"
+                          inputProps={{ maxLength: 4, pattern: '[0-9]*' }}
+                          sx={{
+                            '& .MuiOutlinedInput-root': {
+                              borderRadius: 2,
+                              backgroundColor: 'white',
+                              '&:hover': {
+                                backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                              },
+                            },
+                          }}
+                        />
+                        
+                        <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                          <Button
+                            variant="contained"
+                            size="large"
+                            startIcon={<CheckCircle size={20} />}
+                            fullWidth
+                            sx={{
+                              background: 'linear-gradient(135deg, #4CAF50 0%, #45a049 100%)',
+                              borderRadius: 2,
+                              textTransform: 'none',
+                              fontWeight: 600,
+                              py: 1.5,
+                              '&:hover': {
+                                background: 'linear-gradient(135deg, #45a049 0%, #388e3c 100%)',
+                              },
+                            }}
+                          >
+                            Confirm Delivery
+                          </Button>
+                        </motion.div>
+                      </Box>
+                    </Box>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            </Box>
+
+            {/* Sidebar */}
+            <Box>
+              <motion.div variants={itemVariants}>
+                <Card sx={{ 
+                  borderRadius: 4, 
+                  background: 'rgba(255, 255, 255, 0.95)',
+                  backdropFilter: 'blur(10px)',
+                  border: '1px solid rgba(255, 255, 255, 0.2)',
+                  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
+                  mb: 3
+                }}>
+                  <CardContent sx={{ p: 3 }}>
+                    <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2, color: '#333' }}>
+                      Quick Actions
+                    </Typography>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                      <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                        <Button
+                          variant="outlined"
+                          fullWidth
+                          startIcon={<Truck size={18} />}
+                          endIcon={<ArrowRight size={18} />}
+                          onClick={handleDeliveryLog}
+                          sx={{
+                            borderColor: '#2196F3',
+                            color: '#2196F3',
+                            borderRadius: 2,
+                            textTransform: 'none',
+                            fontWeight: 600,
+                            py: 1.5,
+                            '&:hover': {
+                              borderColor: '#1976D2',
+                              background: 'rgba(33, 150, 243, 0.1)',
+                            },
+                          }}
+                        >
+                          View Delivery Log
+                        </Button>
+                      </motion.div>
+                      <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                        <Button
+                          variant="outlined"
+                          fullWidth
+                          startIcon={<Globe size={18} />}
+                          endIcon={<ArrowRight size={18} />}
+                          onClick={handleGlobalImpact}
+                          sx={{
+                            borderColor: '#FF9800',
+                            color: '#FF9800',
+                            borderRadius: 2,
+                            textTransform: 'none',
+                            fontWeight: 600,
+                            py: 1.5,
+                            '&:hover': {
+                              borderColor: '#F57C00',
+                              background: 'rgba(255, 152, 0, 0.1)',
+                            },
+                          }}
+                        >
+                          Global Impact
+                        </Button>
+                      </motion.div>
+                    </Box>
+                  </CardContent>
+                </Card>
+              </motion.div>
+
+              <motion.div variants={itemVariants}>
+                <Card sx={{ 
+                  borderRadius: 4, 
+                  background: 'rgba(255, 255, 255, 0.95)',
+                  backdropFilter: 'blur(10px)',
+                  border: '1px solid rgba(255, 255, 255, 0.2)',
+                  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
+                }}>
+                  <CardContent sx={{ p: 3 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+                      <Clock size={20} color="#666" />
+                      <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#333' }}>
+                        Recent Deliveries
+                      </Typography>
+                    </Box>
+                    <Box sx={{ 
+                      textAlign: 'center', 
+                      display: 'flex', 
+                      flexDirection: 'column', 
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      py: 4,
+                      minHeight: '200px'
+                    }}>
+                      <Package size={48} style={{ color: '#ccc', marginBottom: '12px' }} />
+                      <Typography variant="h6" sx={{ color: '#666', mb: 1, opacity: 0.7 }}>
+                        No recent deliveries
+                      </Typography>
+                      <Typography variant="body2" sx={{ color: '#666', mb: 2 }}>
+                        Deliveries will appear here once confirmed
+                      </Typography>
+                      <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                        <Button
+                          variant="outlined"
+                          onClick={handleDeliveryLog}
+                          startIcon={<Truck size={16} />}
+                          sx={{ 
+                            borderColor: '#4CAF50', 
+                            color: '#4CAF50',
+                            borderRadius: 2,
+                            textTransform: 'none',
+                            '&:hover': {
+                              borderColor: '#45a049',
+                              background: 'rgba(76, 175, 80, 0.1)',
+                            },
+                          }}
+                        >
+                          View All Deliveries
+                        </Button>
+                      </motion.div>
+                    </Box>
+                  </CardContent>
+                </Card>
+              </motion.div>
             </Box>
           </Box>
-        </Box>
+        </motion.div>
       </Container>
 
-
-      {/* CSS Animation for spinner */}
-      <style>
-        {`
-          @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-          }
-        `}
-      </style>
     </Box>
   );
 };
 
 export default FoodBankDashboard;
-
