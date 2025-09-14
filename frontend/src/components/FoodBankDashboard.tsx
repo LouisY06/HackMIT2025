@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { BrowserMultiFormatReader } from '@zxing/browser';
+import { Result } from '@zxing/library';
 import {
   Box,
   Typography,
@@ -71,7 +72,7 @@ const FoodBankDashboard: React.FC = () => {
         scanningControls.current = await codeReader.current.decodeFromVideoDevice(
           undefined,
           videoRef.current,
-          (result, error) => {
+          (result: Result | undefined, error: any) => {
             if (result) {
               setScanResult(result.getText());
               handleScanSuccess(result.getText());
