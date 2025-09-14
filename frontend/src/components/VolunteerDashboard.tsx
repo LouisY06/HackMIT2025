@@ -15,9 +15,12 @@ import {
   Divider,
   IconButton,
   Badge,
+  Tabs,
+  Tab,
 } from '@mui/material';
 import { LocalShipping } from '@mui/icons-material';
-import { Gift, Trophy, Utensils, ShoppingBag, Coffee, CreditCard, MapPin, Smartphone, RotateCcw } from 'lucide-react';
+import { Gift, Trophy, Utensils, ShoppingBag, Coffee, CreditCard, MapPin, Smartphone, RotateCcw, TrendingUp, ShoppingCart, Ticket, Receipt, DollarSign } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { auth } from '../config/firebase';
 import { API_BASE_URL } from '../config/api';
 import QRCodeScanner from './QRCodeScanner';
@@ -34,6 +37,7 @@ const VolunteerDashboard: React.FC = () => {
   const [userLocation, setUserLocation] = useState<{lat: number, lng: number} | null>(null);
   const [qrScannerOpen, setQrScannerOpen] = useState(false);
   const [selectedPackageId, setSelectedPackageId] = useState<number | null>(null);
+  const [activeTab, setActiveTab] = useState(0);
 
   // Distance calculation function using Haversine formula
   const calculateDistance = (lat1: number, lng1: number, lat2: number, lng2: number): number => {
@@ -204,7 +208,10 @@ const VolunteerDashboard: React.FC = () => {
     { id: 1, name: "Free Coffee", cost: 100, icon: "coffee" },
     { id: 2, name: "Gift Card $10", cost: 500, icon: "credit-card" },
     { id: 3, name: "Restaurant Voucher", cost: 750, icon: "utensils" },
-    { id: 4, name: "Eco-friendly Tote", cost: 300, icon: "shopping-bag" }
+    { id: 4, name: "Eco-friendly Tote", cost: 300, icon: "shopping-bag" },
+    { id: 5, name: "Movie Ticket", cost: 400, icon: "ticket" },
+    { id: 6, name: "Grocery Discount", cost: 350, icon: "receipt" },
+    { id: 7, name: "$5 Off Order", cost: 250, icon: "dollar-sign" }
   ];
 
   const handleQRScan = (packageId: number) => {
@@ -315,6 +322,250 @@ const VolunteerDashboard: React.FC = () => {
   const handleLogout = () => {
     navigate('/');
   };
+
+  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
+    setActiveTab(newValue);
+  };
+
+  // Tab content components
+  const ImpactTab = () => (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      transition={{ duration: 0.3 }}
+    >
+      <Card>
+        <CardContent>
+          <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2, display: 'flex', alignItems: 'center' }}>
+            <TrendingUp size={20} style={{ marginRight: '8px' }} /> Your Impact
+          </Typography>
+          <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 2 }}>
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ delay: 0.1, duration: 0.3 }}
+            >
+              <Box sx={{ textAlign: 'center', p: 2, backgroundColor: '#e8f5e8', borderRadius: 2 }}>
+                <Typography variant="h4" sx={{ fontWeight: 'bold', color: '#4CAF50' }}>
+                  {completedPickups}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Pickups Completed
+                </Typography>
+              </Box>
+            </motion.div>
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ delay: 0.2, duration: 0.3 }}
+            >
+              <Box sx={{ textAlign: 'center', p: 2, backgroundColor: '#e3f2fd', borderRadius: 2 }}>
+                <Typography variant="h4" sx={{ fontWeight: 'bold', color: '#1976d2' }}>
+                  {foodSaved}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  lbs Food Saved
+                </Typography>
+              </Box>
+            </motion.div>
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ delay: 0.3, duration: 0.3 }}
+            >
+              <Box sx={{ textAlign: 'center', p: 2, backgroundColor: '#f3e5f5', borderRadius: 2 }}>
+                <Typography variant="h4" sx={{ fontWeight: 'bold', color: '#7b1fa2' }}>
+                  {co2Reduced}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  kg CO₂ Reduced
+                </Typography>
+              </Box>
+            </motion.div>
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ delay: 0.4, duration: 0.3 }}
+            >
+              <Box sx={{ textAlign: 'center', p: 2, backgroundColor: '#fff3e0', borderRadius: 2 }}>
+                <Typography variant="h4" sx={{ fontWeight: 'bold', color: '#f57c00' }}>
+                  {Math.round(foodSaved * 0.8)}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Meals Provided
+                </Typography>
+              </Box>
+            </motion.div>
+          </Box>
+        </CardContent>
+      </Card>
+    </motion.div>
+  );
+
+  const RewardsTab = () => (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      transition={{ duration: 0.3 }}
+    >
+      <Card>
+        <CardContent>
+          <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+            <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+              <Gift size={20} style={{ marginRight: '8px' }} /> Rewards
+            </Typography>
+          </Box>
+          <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 1 }}>
+            {rewards.map((reward, index) => (
+              <motion.div
+                key={reward.id}
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ delay: index * 0.1, duration: 0.3 }}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <Card 
+                  sx={{ 
+                    p: 2, 
+                    cursor: 'pointer',
+                    border: points >= reward.cost ? '2px solid #4CAF50' : '1px solid #e0e0e0',
+                    backgroundColor: points >= reward.cost ? '#f8fff8' : 'white',
+                    borderRadius: 3,
+                    transition: 'all 0.3s ease',
+                    '&:hover': { 
+                      backgroundColor: points >= reward.cost ? '#f0f8f0' : '#f5f5f5',
+                      transform: 'translateY(-2px)',
+                      boxShadow: points >= reward.cost ? '0 4px 12px rgba(76, 175, 80, 0.2)' : '0 4px 12px rgba(0, 0, 0, 0.1)'
+                    }
+                  }}
+                  onClick={() => handleRedeemReward(reward.id, reward.cost)}
+                >
+                  <Box sx={{ textAlign: 'center' }}>
+                    <Box sx={{ 
+                      display: 'flex', 
+                      justifyContent: 'center', 
+                      alignItems: 'center',
+                      mb: 1,
+                      p: 1,
+                      backgroundColor: points >= reward.cost ? '#e8f5e8' : '#f5f5f5',
+                      borderRadius: 2,
+                      minHeight: 48
+                    }}>
+                      {reward.icon === 'coffee' && <Coffee size={24} color={points >= reward.cost ? '#4CAF50' : '#666'} />}
+                      {reward.icon === 'credit-card' && <CreditCard size={24} color={points >= reward.cost ? '#4CAF50' : '#666'} />}
+                      {reward.icon === 'utensils' && <Utensils size={24} color={points >= reward.cost ? '#4CAF50' : '#666'} />}
+                      {reward.icon === 'shopping-bag' && <ShoppingCart size={24} color={points >= reward.cost ? '#4CAF50' : '#666'} />}
+                      {reward.icon === 'ticket' && <Ticket size={24} color={points >= reward.cost ? '#4CAF50' : '#666'} />}
+                      {reward.icon === 'receipt' && <Receipt size={24} color={points >= reward.cost ? '#4CAF50' : '#666'} />}
+                      {reward.icon === 'dollar-sign' && <DollarSign size={24} color={points >= reward.cost ? '#4CAF50' : '#666'} />}
+                    </Box>
+                    <Typography variant="body2" sx={{ 
+                      fontWeight: 'bold', 
+                      mb: 0.5,
+                      color: points >= reward.cost ? '#4CAF50' : '#333'
+                    }}>
+                      {reward.name}
+                    </Typography>
+                    <Typography variant="caption" sx={{ 
+                      color: points >= reward.cost ? '#4CAF50' : 'text.secondary',
+                      fontWeight: 'bold'
+                    }}>
+                      {reward.cost} pts
+                    </Typography>
+                  </Box>
+                </Card>
+              </motion.div>
+            ))}
+          </Box>
+          
+          {/* See More Rewards Button */}
+          <Box sx={{ mt: 2, textAlign: 'center' }}>
+            <Button
+              variant="text"
+              onClick={() => navigate('/volunteer/rewards')}
+              sx={{
+                color: '#4CAF50',
+                textTransform: 'none',
+                fontSize: '0.9rem',
+                fontWeight: 'bold'
+              }}
+            >
+              See More Rewards →
+            </Button>
+          </Box>
+        </CardContent>
+      </Card>
+    </motion.div>
+  );
+
+  const LeaderboardTab = () => (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      transition={{ duration: 0.3 }}
+    >
+      <Card>
+        <CardContent>
+          <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+            <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+              <Trophy size={20} style={{ marginRight: '8px' }} /> Top Volunteers
+            </Typography>
+          </Box>
+          <List sx={{ p: 0 }}>
+            {leaderboard.map((user, index) => (
+              <motion.div
+                key={user.rank}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: index * 0.1, duration: 0.3 }}
+              >
+                <ListItem sx={{ py: 0.5, px: 0 }}>
+                  <ListItemAvatar>
+                    <Avatar sx={{ 
+                      width: 32, 
+                      height: 32, 
+                      fontSize: '0.75rem',
+                      backgroundColor: user.rank <= 3 ? '#ff9800' : '#e0e0e0'
+                    }}>
+                      {user.rank}
+                    </Avatar>
+                  </ListItemAvatar>
+                  <ListItemText
+                    primary={user.name}
+                    secondary={`${user.points} points`}
+                  />
+                  {user.rank <= 3 && (
+                    <Trophy size={20} style={{ color: '#ff9800' }} />
+                  )}
+                </ListItem>
+              </motion.div>
+            ))}
+          </List>
+          <Box sx={{ mt: 2, textAlign: 'center' }}>
+            <Button
+              variant="outlined"
+              size="small"
+              onClick={() => navigate('/volunteer/leaderboard')}
+              sx={{
+                color: '#9C27B0',
+                borderColor: '#9C27B0',
+                '&:hover': {
+                  borderColor: '#7B1FA2',
+                  backgroundColor: 'rgba(156, 39, 176, 0.04)'
+                }
+              }}
+            >
+              See More
+            </Button>
+          </Box>
+        </CardContent>
+      </Card>
+    </motion.div>
+  );
 
   return (
     <Box sx={{ minHeight: '100vh', backgroundColor: '#f5f5f5', p: 2 }}>
@@ -614,164 +865,55 @@ const VolunteerDashboard: React.FC = () => {
         </Box>
       </Box>
 
-      {/* Bottom Section */}
-      <Box sx={{ display: 'flex', gap: 3, flexDirection: { xs: 'column', md: 'row' } }}>
-        {/* Bottom Left - Impact Metrics */}
-        <Box sx={{ flex: 1 }}>
-          <Card>
-            <CardContent>
-              <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2 }}>
-                Your Impact
-              </Typography>
-              <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 2 }}>
-                <Box sx={{ textAlign: 'center', p: 2, backgroundColor: '#e8f5e8', borderRadius: 2 }}>
-                  <Typography variant="h4" sx={{ fontWeight: 'bold', color: '#4CAF50' }}>
-                    {completedPickups}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Pickups Completed
-                  </Typography>
-                </Box>
-                <Box sx={{ textAlign: 'center', p: 2, backgroundColor: '#e3f2fd', borderRadius: 2 }}>
-                  <Typography variant="h4" sx={{ fontWeight: 'bold', color: '#1976d2' }}>
-                    {foodSaved}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    lbs Food Saved
-                  </Typography>
-                </Box>
-                <Box sx={{ textAlign: 'center', p: 2, backgroundColor: '#f3e5f5', borderRadius: 2 }}>
-                  <Typography variant="h4" sx={{ fontWeight: 'bold', color: '#7b1fa2' }}>
-                    {co2Reduced}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    kg CO₂ Reduced
-                  </Typography>
-                </Box>
-                <Box sx={{ textAlign: 'center', p: 2, backgroundColor: '#fff3e0', borderRadius: 2 }}>
-                  <Typography variant="h4" sx={{ fontWeight: 'bold', color: '#f57c00' }}>
-                    {Math.round(foodSaved * 0.8)}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Meals Provided
-                  </Typography>
-                </Box>
-              </Box>
-            </CardContent>
-          </Card>
-        </Box>
-
-        {/* Bottom Right - Rewards & Leaderboard */}
-        <Box sx={{ flex: 1 }}>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            {/* Rewards */}
-            <Card>
-              <CardContent>
-                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                  <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
-                    <Gift size={20} style={{ marginRight: '8px' }} /> Rewards
-                  </Typography>
-                </Box>
-                <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 1 }}>
-                  {rewards.map((reward) => (
-                    <Card 
-                      key={reward.id}
-                      sx={{ 
-                        p: 1, 
-                        cursor: 'pointer',
-                        border: points >= reward.cost ? '2px solid #4CAF50' : '1px solid #e0e0e0',
-                        '&:hover': { backgroundColor: '#f5f5f5' }
-                      }}
-                      onClick={() => handleRedeemReward(reward.id, reward.cost)}
-                    >
-                      <Box sx={{ textAlign: 'center' }}>
-                        <Typography variant="h4" sx={{ mb: 0.5 }}>
-                          {reward.icon === 'coffee' && '☕'}
-                          {reward.icon === 'credit-card' && '💳'}
-                          {reward.icon === 'utensils' && '🍴'}
-                          {reward.icon === 'shopping-bag' && '🛍️'}
-                        </Typography>
-                        <Typography variant="body2" sx={{ fontWeight: 'bold', mb: 0.5 }}>
-                          {reward.name}
-                        </Typography>
-                        <Typography variant="caption" color="text.secondary">
-                          {reward.cost} pts
-                        </Typography>
-                      </Box>
-                    </Card>
-                  ))}
-                </Box>
-                
-                {/* See More Rewards Button */}
-                <Box sx={{ mt: 2, textAlign: 'center' }}>
-                  <Button
-                    variant="text"
-                    onClick={() => navigate('/volunteer/rewards')}
-                    sx={{
-                      color: '#4CAF50',
-                      textTransform: 'none',
-                      fontSize: '0.9rem',
-                      fontWeight: 'bold'
-                    }}
-                  >
-                    See More Rewards →
-                  </Button>
-                </Box>
-              </CardContent>
-            </Card>
-
-            {/* Leaderboard */}
-            <Card>
-              <CardContent>
-                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                  <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
-                    <Trophy size={20} style={{ marginRight: '8px' }} /> Top Volunteers
-                  </Typography>
-                </Box>
-                <List sx={{ p: 0 }}>
-                  {leaderboard.map((user) => (
-                    <ListItem key={user.rank} sx={{ py: 0.5, px: 0 }}>
-                      <ListItemAvatar>
-                        <Avatar sx={{ 
-                          width: 32, 
-                          height: 32, 
-                          fontSize: '0.75rem',
-                          backgroundColor: user.rank <= 3 ? '#ff9800' : '#e0e0e0'
-                        }}>
-                          {user.rank}
-                        </Avatar>
-                      </ListItemAvatar>
-                      <ListItemText
-                        primary={user.name}
-                        secondary={`${user.points} points`}
-                      />
-                      {user.rank <= 3 && (
-                        <Trophy size={20} style={{ color: '#ff9800' }} />
-                      )}
-                    </ListItem>
-                  ))}
-                </List>
-                <Box sx={{ mt: 2, textAlign: 'center' }}>
-                  <Button
-                    variant="outlined"
-                    size="small"
-                    onClick={() => navigate('/volunteer/leaderboard')}
-                    sx={{
-                      color: '#9C27B0',
-                      borderColor: '#9C27B0',
-                      '&:hover': {
-                        borderColor: '#7B1FA2',
-                        backgroundColor: 'rgba(156, 39, 176, 0.04)'
-                      }
-                    }}
-                  >
-                    See More
-                  </Button>
-                </Box>
-              </CardContent>
-            </Card>
+      {/* Bottom Section - Animated Tabs */}
+      <Box sx={{ mt: 3 }}>
+        <Card sx={{ overflow: 'hidden' }}>
+          <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+            <Tabs 
+              value={activeTab} 
+              onChange={handleTabChange}
+              sx={{
+                '& .MuiTab-root': {
+                  textTransform: 'none',
+                  fontWeight: 'bold',
+                  fontSize: '1rem',
+                  minHeight: 60,
+                },
+                '& .Mui-selected': {
+                  color: '#4CAF50 !important',
+                },
+                '& .MuiTabs-indicator': {
+                  backgroundColor: '#4CAF50',
+                  height: 3,
+                }
+              }}
+            >
+              <Tab 
+                icon={<TrendingUp size={20} />} 
+                label="Your Impact" 
+                iconPosition="start"
+              />
+              <Tab 
+                icon={<Gift size={20} />} 
+                label="Rewards" 
+                iconPosition="start"
+              />
+              <Tab 
+                icon={<Trophy size={20} />} 
+                label="Top Volunteers" 
+                iconPosition="start"
+              />
+            </Tabs>
           </Box>
-        </Box>
+          
+          <Box sx={{ p: 3, minHeight: 400 }}>
+            <AnimatePresence mode="wait">
+              {activeTab === 0 && <ImpactTab key="impact" />}
+              {activeTab === 1 && <RewardsTab key="rewards" />}
+              {activeTab === 2 && <LeaderboardTab key="leaderboard" />}
+            </AnimatePresence>
+          </Box>
+        </Card>
       </Box>
 
       {/* QR Code Scanner Modal */}
