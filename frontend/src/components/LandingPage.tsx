@@ -375,6 +375,118 @@ const LandingPage: React.FC = () => {
           </CardContent>
         </Card>
 
+        {/* Developer Demo Section */}
+        <Card
+          sx={{
+            mt: 4,
+            borderRadius: 3,
+            boxShadow: '0 4px 16px rgba(255, 193, 7, 0.3)',
+            border: '2px solid #FFC107',
+            background: 'linear-gradient(135deg, #FFF9C4 0%, #FFECB3 100%)',
+          }}
+        >
+          <CardContent sx={{ p: 4 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 3 }}>
+              <Chip 
+                label="🚀 DEVELOPER DEMO" 
+                sx={{ 
+                  backgroundColor: '#FF6F00',
+                  color: 'white',
+                  fontWeight: 'bold',
+                  fontSize: '0.9rem',
+                  px: 2,
+                  py: 1
+                }}
+              />
+            </Box>
+            
+            <Typography
+              variant="h6"
+              sx={{
+                textAlign: 'center',
+                color: '#E65100',
+                fontWeight: 'bold',
+                mb: 1,
+              }}
+            >
+              Skip Authentication - Demo Access
+            </Typography>
+            
+            <Typography
+              variant="body2"
+              sx={{
+                textAlign: 'center',
+                color: '#F57C00',
+                mb: 3,
+              }}
+            >
+              Click any button below to instantly access the dashboard for that user type
+            </Typography>
+
+            <Box sx={{ 
+              display: 'flex', 
+              gap: 2, 
+              justifyContent: 'center', 
+              flexWrap: 'wrap',
+              alignItems: 'center'
+            }}>
+              <Button
+                variant="contained"
+                startIcon={<LocalShipping />}
+                onClick={() => navigate('/volunteer/dashboard')}
+                sx={{
+                  background: '#4CAF50',
+                  '&:hover': { background: '#388E3C' },
+                  py: 1.2,
+                  px: 3,
+                  fontSize: '0.9rem',
+                  fontWeight: 'bold',
+                  borderRadius: 2,
+                  minWidth: '160px'
+                }}
+              >
+                Volunteer Demo
+              </Button>
+              
+              <Button
+                variant="contained"
+                startIcon={<Store />}
+                onClick={() => navigate('/store/dashboard')}
+                sx={{
+                  background: '#2196F3',
+                  '&:hover': { background: '#1976D2' },
+                  py: 1.2,
+                  px: 3,
+                  fontSize: '0.9rem',
+                  fontWeight: 'bold',
+                  borderRadius: 2,
+                  minWidth: '160px'
+                }}
+              >
+                Store Demo
+              </Button>
+              
+              <Button
+                variant="contained"
+                startIcon={<Groups />}
+                onClick={() => navigate('/foodbank/dashboard')}
+                sx={{
+                  background: '#9C27B0',
+                  '&:hover': { background: '#7B1FA2' },
+                  py: 1.2,
+                  px: 3,
+                  fontSize: '0.9rem',
+                  fontWeight: 'bold',
+                  borderRadius: 2,
+                  minWidth: '160px'
+                }}
+              >
+                Food Bank Demo
+              </Button>
+            </Box>
+          </CardContent>
+        </Card>
+
         {/* Footer Disclaimer */}
         <Typography
           variant="body2"
