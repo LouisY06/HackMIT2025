@@ -1,4 +1,12 @@
 // Mobile debugging utilities
+
+// Extend Window interface for TypeScript
+declare global {
+  interface Window {
+    mobileErrors?: any[];
+  }
+}
+
 export const isMobile = () => {
   return /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 };
@@ -29,17 +37,17 @@ export const logMobileError = (context: string, error: any) => {
   if ((window as any).mobileErrors) {
     (window as any).mobileErrors.push(errorInfo);
   } else {
-    (window as any).mobileErrors = [errorInfo];
+    window.mobileErrors = [errorInfo];
   }
   
   return errorInfo;
 };
 
 export const getMobileErrors = () => {
-  return (window as any).mobileErrors || [];
+  return window.mobileErrors || [];
 };
 
 // Initialize error collection
 if (typeof window !== 'undefined') {
-  (window as any).mobileErrors = [];
+  window.mobileErrors = [];
 }
