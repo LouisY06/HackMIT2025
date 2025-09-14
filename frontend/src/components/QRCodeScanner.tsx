@@ -170,6 +170,7 @@ const QRCodeScanner: React.FC<QRCodeScannerProps> = ({
                 stopScanner();
               }, 1000);
             }
+            }
             
             if (error && error.name !== 'NotFoundException') {
               console.error('QR Scan error details:', {
