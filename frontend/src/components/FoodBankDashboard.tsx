@@ -72,7 +72,7 @@ const FoodBankDashboard: React.FC = () => {
         scanningControls.current = await codeReader.current.decodeFromVideoDevice(
           undefined,
           videoRef.current,
-          (result: Result | null, error: any) => {
+          (result: Result | undefined, error: any) => {
             if (result) {
               setScanResult(result.getText());
               handleScanSuccess(result.getText());
