@@ -24,6 +24,7 @@ import {
   Person,
   Logout 
 } from '@mui/icons-material';
+import GoogleMapsComponent from './GoogleMapsComponent';
 
 const VolunteerFindPickups: React.FC = () => {
   const navigate = useNavigate();
@@ -32,7 +33,7 @@ const VolunteerFindPickups: React.FC = () => {
   const [maxDistance, setMaxDistance] = useState('Any Distance');
   const [sortBy, setSortBy] = useState('Distance');
 
-  // Mock data for available pickups
+  // Mock data for available pickups with coordinates
   const availablePickups = [
     {
       id: 1,
@@ -49,7 +50,9 @@ const VolunteerFindPickups: React.FC = () => {
       destination: "Cambridge Food Bank",
       destinationAddress: "1234 Main St, Cambridge, MA",
       expiresSoon: true,
-      timeLeft: "Expires soon"
+      timeLeft: "Expires soon",
+      lat: 42.3601,
+      lng: -71.0589
     },
     {
       id: 2,
@@ -66,9 +69,22 @@ const VolunteerFindPickups: React.FC = () => {
       destination: "Cambridge Food Bank",
       destinationAddress: "1234 Main St, Cambridge, MA",
       expiresSoon: false,
-      timeLeft: "1h left"
+      timeLeft: "1h left",
+      lat: 42.3736,
+      lng: -71.1097
     }
   ];
+
+  // Convert pickup data for Google Maps component
+  const mapPickups = availablePickups.map(pickup => ({
+    id: pickup.id.toString(),
+    storeName: pickup.storeName,
+    lat: pickup.lat,
+    lng: pickup.lng,
+    foodType: pickup.foodType,
+    weight: pickup.weight,
+    timeWindow: pickup.timeWindow
+  }));
 
   const handleAcceptMission = (pickupId: number) => {
     console.log(`Accepting mission ${pickupId}`);
@@ -234,27 +250,13 @@ const VolunteerFindPickups: React.FC = () => {
               </Typography>
             </Box>
             
-            <Box
-              sx={{
-                height: '300px',
-                backgroundColor: '#f0f0f0',
-                borderRadius: 2,
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                border: '2px dashed #ccc',
-                position: 'relative'
-              }}
-            >
-              <LocationOn sx={{ fontSize: 60, color: '#ccc', mb: 1 }} />
-              <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center' }}>
-                Interactive map coming soon!
-              </Typography>
-              <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center' }}>
-                Showing {availablePickups.length} nearby pickups
-              </Typography>
-            </Box>
+            <GoogleMapsComponent
+              apiKey={process.env.REACT_APP_GOOGLE_MAPS_API_KEY || ''}
+              center={{ lat: 42.3601, lng: -71.0589 }}
+              zoom={13}
+              pickups={mapPickups}
+              height="300px"
+            />
           </Box>
         </Box>
 
