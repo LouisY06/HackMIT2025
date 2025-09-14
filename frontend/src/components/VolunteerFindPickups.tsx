@@ -27,6 +27,7 @@ import {
 import { Package, Leaf, Timer } from 'lucide-react';
 import GoogleMapsComponent from './GoogleMapsComponent';
 import { auth } from '../config/firebase';
+import QRCodeScanner from './QRCodeScanner';
 
 const VolunteerFindPickups: React.FC = () => {
   const navigate = useNavigate();
@@ -37,6 +38,8 @@ const VolunteerFindPickups: React.FC = () => {
   const [stores, setStores] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [userLocation, setUserLocation] = useState<{lat: number, lng: number} | null>(null);
+  const [qrScannerOpen, setQrScannerOpen] = useState(false);
+  const [selectedPackageId, setSelectedPackageId] = useState<number | null>(null);
 
   // Function to calculate distance between two coordinates using Haversine formula
   const calculateDistance = (lat1: number, lng1: number, lat2: number, lng2: number): number => {
@@ -199,16 +202,34 @@ const VolunteerFindPickups: React.FC = () => {
       timeWindow: pickup.timeWindow
     }));
 
-  const handleAcceptMission = async (pickupId: number) => {
+  const handleAcceptMission = (pickupId: number) => {
+    // Get current user from Firebase Auth
+    const user = auth.currentUser;
+    if (!user) {
+      alert('Please log in to accept missions');
+      return;
+    }
+
+    // Open QR scanner with the expected package ID
+    setSelectedPackageId(pickupId);
+    setQrScannerOpen(true);
+  };
+
+  const handleQRScanSuccess = async (scannedId: string) => {
     try {
-      // Get current user from Firebase Auth
       const user = auth.currentUser;
-      if (!user) {
-        alert('Please log in to accept missions');
+      if (!user || !selectedPackageId) return;
+
+      // Verify the scanned ID matches the expected package ID
+      if (parseInt(scannedId) !== selectedPackageId) {
+        alert(`❌ QR Code mismatch! Expected package ${selectedPackageId}, but scanned ${scannedId}`);
+        setQrScannerOpen(false);
+        setSelectedPackageId(null);
         return;
       }
 
-      const response = await fetch(`http://localhost:5001/api/packages/${pickupId}/assign`, {
+      // Assign the package to the volunteer
+      const response = await fetch(`http://localhost:5001/api/packages/${selectedPackageId}/assign`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -221,7 +242,7 @@ const VolunteerFindPickups: React.FC = () => {
       const data = await response.json();
 
       if (data.success) {
-        alert(`Mission accepted! Package ${pickupId} has been assigned to you.`);
+        alert(`🎯 Mission accepted! Package ${selectedPackageId} has been assigned to you.`);
         // Refresh the packages list to update the UI
         window.location.reload();
       } else {
@@ -230,7 +251,20 @@ const VolunteerFindPickups: React.FC = () => {
     } catch (error) {
       console.error('Error accepting mission:', error);
       alert('Failed to accept mission. Please try again.');
+    } finally {
+      setQrScannerOpen(false);
+      setSelectedPackageId(null);
     }
+  };
+
+  const handleQRScanError = (error: string) => {
+    console.error('QR Scan error:', error);
+    alert(`QR Scan failed: ${error}`);
+  };
+
+  const handleQRScannerClose = () => {
+    setQrScannerOpen(false);
+    setSelectedPackageId(null);
   };
 
   const handleViewDetails = (pickupId: number) => {
@@ -568,6 +602,16 @@ const VolunteerFindPickups: React.FC = () => {
           </Box>
         </Box>
       </Box>
+
+      {/* QR Code Scanner Modal */}
+      <QRCodeScanner
+        open={qrScannerOpen}
+        onClose={handleQRScannerClose}
+        onScanSuccess={handleQRScanSuccess}
+        onScanError={handleQRScanError}
+        expectedPackageId={selectedPackageId || undefined}
+        title={selectedPackageId ? `Scan QR Code for Package #${selectedPackageId}` : "Scan QR Code"}
+      />
     </Box>
   );
 };
