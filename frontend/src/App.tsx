@@ -1,5 +1,5 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import LandingPage from './components/LandingPage';
@@ -23,6 +23,7 @@ import FoodBankGlobalImpact from './components/FoodBankGlobalImpact';
 import VolunteerProfileSetup from './components/VolunteerProfileSetup';
 import StoreProfileSetup from './components/StoreProfileSetup';
 import FoodBankProfileSetup from './components/FoodBankProfileSetup';
+import { createDevHelper } from './utils/devHelper';
 
 const theme = createTheme({
   palette: {
@@ -35,11 +36,23 @@ const theme = createTheme({
   },
 });
 
+// Component to initialize dev helper with navigation
+const DevHelperInitializer: React.FC = () => {
+  const navigate = useNavigate();
+  
+  useEffect(() => {
+    createDevHelper(navigate);
+  }, [navigate]);
+  
+  return null;
+};
+
 function App() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <Router>
+        <DevHelperInitializer />
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<MainLogin />} />

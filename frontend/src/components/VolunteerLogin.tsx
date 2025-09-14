@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup } from 'firebase/auth';
 import { auth, googleProvider } from '../config/firebase';
-import { API_BASE_URL } from '../config/api';
+import { motion } from 'framer-motion';
 import {
   Box,
   Typography,
@@ -13,7 +13,7 @@ import {
   Divider,
   Container,
 } from '@mui/material';
-import { ArrowBack, LocalShipping, CardGiftcard, Schedule, TrendingUp, Nature, Google } from '@mui/icons-material';
+import { ArrowBack, Google, LocalShipping, CardGiftcard, Schedule, TrendingUp, Nature } from '@mui/icons-material';
 
 const VolunteerLogin: React.FC = () => {
   const navigate = useNavigate();
@@ -32,7 +32,7 @@ const VolunteerLogin: React.FC = () => {
       // Check if user has completed profile for volunteer user type
       const user = auth.currentUser;
       if (user) {
-        const profileResponse = await fetch(`${API_BASE_URL}/api/users/check-profile/volunteer/${user.uid}`);
+        const profileResponse = await fetch(`http://localhost:5001/api/users/check-profile/volunteer/${user.uid}`);
         const profileData = await profileResponse.json();
         
         if (profileData.success && profileData.profile_completed) {
@@ -65,7 +65,7 @@ const VolunteerLogin: React.FC = () => {
         // Check if user has completed profile for volunteer user type
         const user = auth.currentUser;
         if (user) {
-          const profileResponse = await fetch(`${API_BASE_URL}/api/users/check-profile/volunteer/${user.uid}`);
+          const profileResponse = await fetch(`http://localhost:5001/api/users/check-profile/volunteer/${user.uid}`);
           const profileData = await profileResponse.json();
           
           if (profileData.success && profileData.profile_completed) {
@@ -79,7 +79,7 @@ const VolunteerLogin: React.FC = () => {
       } else {
         // Check if email already exists in volunteer table
         try {
-          const emailCheckResponse = await fetch(`${API_BASE_URL}/api/users/check-email/volunteer/${email}`);
+          const emailCheckResponse = await fetch(`http://localhost:5001/api/users/check-email/volunteer/${email}`);
           
           if (!emailCheckResponse.ok) {
             throw new Error(`HTTP error! status: ${emailCheckResponse.status}`);
@@ -109,51 +109,110 @@ const VolunteerLogin: React.FC = () => {
   };
 
   return (
-    <Box sx={{ minHeight: '100vh', position: 'relative' }}>
-      {/* Top Green Section */}
+    <Box
+      sx={{
+        backgroundImage: 'url(/VolunteerLogin.png)',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+        minHeight: '100vh',
+        position: 'relative',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        color: 'white',
+        padding: '2rem',
+        '&::before': {
+          content: '""',
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          zIndex: 1,
+        },
+        '& > *': {
+          position: 'relative',
+          zIndex: 2,
+        },
+      }}
+    >
+      {/* Header with Logo and Back Button */}
       <Box
         sx={{
-          background: 'linear-gradient(135deg, #4CAF50 0%, #388E3C 100%)',
-          minHeight: '60vh',
-          position: 'relative',
-          color: 'white',
-          padding: '2rem',
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
           display: 'flex',
-          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          p: 3,
+          zIndex: 3,
         }}
       >
-        {/* Navigation */}
-        <Box sx={{ display: 'flex', alignItems: 'center', mb: 4 }}>
-      <Button
-        startIcon={<ArrowBack />}
-        onClick={() => navigate('/')}
-            sx={{ 
-              color: 'white', 
-              mr: 2,
-              background: 'rgba(255, 255, 255, 0.1)',
-              borderRadius: '20px',
-              px: 2,
-              '&:hover': {
-                background: 'rgba(255, 255, 255, 0.2)',
-              }
+        <Button
+          startIcon={<ArrowBack />}
+          onClick={() => navigate('/login')}
+          sx={{
+            color: 'white',
+            background: 'rgba(255, 255, 255, 0.1)',
+            borderRadius: '12px',
+            px: 3,
+            py: 1,
+            fontFamily: '"Helvetica Neue", "Helvetica", "Arial", sans-serif',
+            fontWeight: 300,
+            '&:hover': {
+              background: 'rgba(255, 255, 255, 0.2)',
+            },
+          }}
+        >
+          Back to Roles
+        </Button>
+        
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <img
+            src="/LogoOutlined.png"
+            alt="Reflourish"
+            style={{
+              height: '40px',
+              filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.3))',
             }}
-          >
-            Back to roles
-      </Button>
-          <Typography variant="h6" sx={{ color: 'white', fontWeight: 'bold' }}>
-            WASTE→WORTH PLATFORM
-          </Typography>
+          />
         </Box>
+      </Box>
 
-        {/* Main Content */}
-        <Box sx={{ display: 'flex', flex: 1, alignItems: 'center', gap: 6 }}>
-          {/* Left Side - Text Content */}
-          <Box sx={{ flex: 1, maxWidth: '500px' }}>
+      {/* Main Content */}
+      <Container maxWidth="md" sx={{ mt: 8 }}>
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
+        >
+          {/* Hero Section */}
+          <Box sx={{ textAlign: 'center', mb: 6 }}>
+            <Box
+              sx={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: 80,
+                height: 80,
+                borderRadius: '50%',
+                background: 'rgba(132, 141, 88, 0.2)',
+                mb: 3,
+              }}
+            >
+              <LocalShipping sx={{ fontSize: 40, color: '#848D58' }} />
+            </Box>
+            
             <Typography
               variant="h3"
-              component="h1"
               sx={{
-                fontWeight: 'bold',
+                fontFamily: '"Helvetica Neue", "Helvetica", "Arial", sans-serif',
+                fontWeight: 300,
                 mb: 2,
                 fontSize: { xs: '2rem', md: '3rem' },
               }}
@@ -164,201 +223,206 @@ const VolunteerLogin: React.FC = () => {
             <Typography
               variant="h6"
               sx={{
-                mb: 4,
+                fontFamily: '"Helvetica Neue", "Helvetica", "Arial", sans-serif',
+                fontWeight: 300,
                 opacity: 0.9,
+                mb: 4,
+                maxWidth: '600px',
+                mx: 'auto',
               }}
             >
-              Pick up surplus food and deliver to food banks while earning points and rewards.
+              Make a difference while earning rewards. Pick up surplus food and deliver to food banks.
             </Typography>
 
             {/* Benefits */}
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                <CardGiftcard sx={{ fontSize: 24 }} />
-                <Typography>Earn points & redeem rewards</Typography>
-              </Box>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                <Schedule sx={{ fontSize: 24 }} />
-                <Typography>Flexible scheduling</Typography>
-              </Box>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                <TrendingUp sx={{ fontSize: 24 }} />
-                <Typography>Level up with deliveries</Typography>
-              </Box>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                <Nature sx={{ fontSize: 24 }} />
-                <Typography>Environmental impact</Typography>
-              </Box>
-            </Box>
-          </Box>
-
-          {/* Right Side - Delivery Truck Icon */}
-          <Box
-            sx={{
-              display: { xs: 'none', md: 'flex' },
-              alignItems: 'center',
-              justifyContent: 'center',
-              flex: 1,
-            }}
-          >
             <Box
               sx={{
-                width: 200,
-                height: 200,
-                borderRadius: 3,
-                background: 'rgba(255, 255, 255, 0.1)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
+                display: 'grid',
+                gridTemplateColumns: { xs: '1fr 1fr', md: 'repeat(4, 1fr)' },
+                gap: 3,
+                maxWidth: '800px',
+                mx: 'auto',
+                mb: 6,
               }}
             >
-              <LocalShipping sx={{ fontSize: 120, color: 'white' }} />
+              <Box sx={{ textAlign: 'center' }}>
+                <CardGiftcard sx={{ fontSize: 32, mb: 1, color: '#848D58' }} />
+                <Typography variant="body2" sx={{ fontWeight: 300 }}>
+                  Earn Rewards
+                </Typography>
+              </Box>
+              <Box sx={{ textAlign: 'center' }}>
+                <Schedule sx={{ fontSize: 32, mb: 1, color: '#848D58' }} />
+                <Typography variant="body2" sx={{ fontWeight: 300 }}>
+                  Flexible Hours
+                </Typography>
+              </Box>
+              <Box sx={{ textAlign: 'center' }}>
+                <TrendingUp sx={{ fontSize: 32, mb: 1, color: '#848D58' }} />
+                <Typography variant="body2" sx={{ fontWeight: 300 }}>
+                  Level Up
+                </Typography>
+              </Box>
+              <Box sx={{ textAlign: 'center' }}>
+                <Nature sx={{ fontSize: 32, mb: 1, color: '#848D58' }} />
+                <Typography variant="body2" sx={{ fontWeight: 300 }}>
+                  Help Environment
+                </Typography>
+              </Box>
             </Box>
           </Box>
-        </Box>
-      </Box>
 
-      {/* Bottom White Section - Login Card */}
-      <Container maxWidth="sm" sx={{ py: 4, position: 'relative', zIndex: 1 }}>
-        <Card
-          sx={{
-            borderRadius: 3,
-            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
-            border: '1px solid rgba(0, 0, 0, 0.05)',
-            mt: -4,
-          }}
-        >
-          <CardContent sx={{ p: 6 }}>
-            <Typography
-              variant="h4"
-              component="h2"
-              sx={{ fontWeight: 'bold', mb: 1, textAlign: 'center' }}
-            >
-              {isSignIn ? 'Sign In' : 'Get Started'}
-            </Typography>
-            
-            <Typography
-              variant="body1"
-              sx={{ textAlign: 'center', color: '#666', mb: 4 }}
-            >
-              {isSignIn ? 'Welcome back! Sign in to your account.' : 'Create your account or sign in with Google.'}
-            </Typography>
-
-            {/* Google Login Button */}
-            <Button
-              variant="outlined"
-              fullWidth
-              onClick={handleGoogleLogin}
-              disabled={loading}
-              startIcon={<Google />}
-              sx={{
-                borderColor: '#4CAF50',
-                color: '#4CAF50',
-                py: 2,
-                fontSize: '1.1rem',
-                fontWeight: 'bold',
-                mb: 3,
-                '&:hover': {
-                  borderColor: '#388E3C',
-                  background: 'rgba(76, 175, 80, 0.04)',
-                },
-              }}
-            >
-              Continue with Google
-            </Button>
-
-            {/* Divider */}
-            <Box sx={{ display: 'flex', alignItems: 'center', my: 3 }}>
-              <Divider sx={{ flex: 1 }} />
-              <Typography sx={{ mx: 2, color: '#666', fontSize: '0.9rem' }}>
-                OR {isSignIn ? 'SIGN IN' : 'CREATE ACCOUNT'} WITH EMAIL
-              </Typography>
-              <Divider sx={{ flex: 1 }} />
-            </Box>
-
-            {/* Error Message */}
-            {error && (
-              <Typography color="error" sx={{ mb: 2, textAlign: 'center' }}>
-                {error}
-              </Typography>
-            )}
-
-            {/* Form Fields */}
-            <TextField
-              fullWidth
-              label="Email Address"
-              placeholder="Enter your email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              sx={{ mb: 3 }}
-              type="email"
-            />
-            
-            <TextField
-              fullWidth
-              label="Password"
-              placeholder={isSignIn ? "Enter your password" : "Create a password"}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              sx={{ mb: 3 }}
-              type="password"
-            />
-
-            <Button
-              variant="contained"
-              fullWidth
-              onClick={handleEmailAuth}
-              disabled={loading}
-              sx={{
-                background: '#4CAF50',
-                py: 2,
-                fontSize: '1.1rem',
-                fontWeight: 'bold',
-                mb: 3,
-                '&:hover': {
-                  background: '#388E3C',
-                },
-              }}
-            >
-              {loading 
-                ? (isSignIn ? 'Signing In...' : 'Creating Account...') 
-                : (isSignIn ? 'Sign In' : 'Create Account')
-              }
-            </Button>
-
-            {/* Toggle between Sign In and Sign Up */}
-            <Box sx={{ textAlign: 'center' }}>
-              <Typography variant="body2" sx={{ color: '#666', mb: 1 }}>
-                {isSignIn ? "Don't have an account?" : "Already have an account?"}
-              </Typography>
-              <Button
-                variant="text"
-                onClick={() => {
-                  setIsSignIn(!isSignIn);
-                  setError('');
-                }}
+          {/* Login Card */}
+          <Card
+            sx={{
+              background: 'rgba(255, 255, 255, 0.95)',
+              backdropFilter: 'blur(10px)',
+              borderRadius: '20px',
+              border: '1px solid rgba(255, 255, 255, 0.2)',
+              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
+              maxWidth: '500px',
+              mx: 'auto',
+            }}
+          >
+            <CardContent sx={{ p: 6 }}>
+              <Typography
+                variant="h4"
                 sx={{
-                  color: '#4CAF50',
-                  textTransform: 'none',
-                  fontSize: '0.9rem',
-                  fontWeight: 'bold',
+                  fontFamily: '"Helvetica Neue", "Helvetica", "Arial", sans-serif',
+                  fontWeight: 400,
+                  textAlign: 'center',
+                  mb: 1,
+                  color: '#2C3E50',
                 }}
               >
-                {isSignIn ? 'Create Account' : 'Sign In'}
-              </Button>
-            </Box>
+                {isSignIn ? 'Welcome Back' : 'Get Started'}
+              </Typography>
+              
+              <Typography
+                variant="body1"
+                sx={{
+                  textAlign: 'center',
+                  color: '#5A6C7D',
+                  mb: 4,
+                  fontFamily: '"Helvetica Neue", "Helvetica", "Arial", sans-serif',
+                  fontWeight: 300,
+                }}
+              >
+                {isSignIn ? 'Sign in to your courier account' : 'Create your courier account'}
+              </Typography>
 
-            {/* Disclaimer */}
-            <Typography
-              variant="body2"
-              sx={{ textAlign: 'center', color: '#999', fontSize: '0.8rem' }}
-            >
-              This is a demo app. Data won't be saved permanently.
-          </Typography>
-        </CardContent>
-      </Card>
-    </Container>
+              {/* Google Login Button */}
+              <Button
+                variant="outlined"
+                fullWidth
+                onClick={handleGoogleLogin}
+                disabled={loading}
+                startIcon={<Google />}
+                sx={{
+                  borderColor: '#848D58',
+                  color: '#848D58',
+                  py: 2,
+                  fontSize: '1rem',
+                  fontFamily: '"Helvetica Neue", "Helvetica", "Arial", sans-serif',
+                  fontWeight: 400,
+                  mb: 3,
+                  borderRadius: '12px',
+                  '&:hover': {
+                    borderColor: '#6F7549',
+                    background: 'rgba(132, 141, 88, 0.04)',
+                  },
+                }}
+              >
+                Continue with Google
+              </Button>
+
+              {/* Divider */}
+              <Box sx={{ display: 'flex', alignItems: 'center', my: 3 }}>
+                <Divider sx={{ flex: 1 }} />
+                <Typography sx={{ mx: 2, color: '#5A6C7D', fontSize: '0.9rem' }}>
+                  OR {isSignIn ? 'SIGN IN' : 'CREATE ACCOUNT'} WITH EMAIL
+                </Typography>
+                <Divider sx={{ flex: 1 }} />
+              </Box>
+
+              {/* Error Message */}
+              {error && (
+                <Typography color="error" sx={{ mb: 2, textAlign: 'center' }}>
+                  {error}
+                </Typography>
+              )}
+
+              {/* Form Fields */}
+              <TextField
+                fullWidth
+                label="Email Address"
+                placeholder="Enter your email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                sx={{ mb: 3 }}
+                type="email"
+              />
+              
+              <TextField
+                fullWidth
+                label="Password"
+                placeholder={isSignIn ? "Enter your password" : "Create a password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                sx={{ mb: 3 }}
+                type="password"
+              />
+
+              <Button
+                variant="contained"
+                fullWidth
+                onClick={handleEmailAuth}
+                disabled={loading}
+                sx={{
+                  background: '#848D58',
+                  py: 2,
+                  fontSize: '1rem',
+                  fontFamily: '"Helvetica Neue", "Helvetica", "Arial", sans-serif',
+                  fontWeight: 400,
+                  mb: 3,
+                  borderRadius: '12px',
+                  '&:hover': {
+                    background: '#6F7549',
+                  },
+                }}
+              >
+                {loading 
+                  ? (isSignIn ? 'Signing In...' : 'Creating Account...') 
+                  : (isSignIn ? 'Sign In' : 'Create Account')
+                }
+              </Button>
+
+              {/* Toggle between Sign In and Sign Up */}
+              <Box sx={{ textAlign: 'center' }}>
+                <Typography variant="body2" sx={{ color: '#5A6C7D', mb: 1 }}>
+                  {isSignIn ? "Don't have an account?" : "Already have an account?"}
+                </Typography>
+                <Button
+                  variant="text"
+                  onClick={() => {
+                    setIsSignIn(!isSignIn);
+                    setError('');
+                  }}
+                  sx={{
+                    color: '#848D58',
+                    textTransform: 'none',
+                    fontSize: '0.9rem',
+                    fontFamily: '"Helvetica Neue", "Helvetica", "Arial", sans-serif',
+                    fontWeight: 400,
+                  }}
+                >
+                  {isSignIn ? 'Create Account' : 'Sign In'}
+                </Button>
+              </Box>
+            </CardContent>
+          </Card>
+        </motion.div>
+      </Container>
     </Box>
   );
 };
