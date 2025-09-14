@@ -147,17 +147,26 @@ const VolunteerDashboard: React.FC = () => {
   const fetchCurrentTasks = async () => {
     try {
       const user = auth.currentUser;
-      if (!user) return;
+      if (!user) {
+        console.log('No authenticated user, skipping task fetch');
+        return;
+      }
 
+      console.log(`Fetching tasks for volunteer: ${user.uid}`);
       const tasksResponse = await fetch(`${API_BASE_URL}/api/packages/volunteer/${user.uid}`);
       const tasksData = await tasksResponse.json();
+      
+      console.log('Tasks response:', tasksData);
       
       if (tasksData.success) {
         // Show both assigned and picked_up tasks
         const activeTasks = tasksData.packages.filter((task: any) => 
           task.status === 'assigned' || task.status === 'picked_up'
         );
+        console.log(`Found ${activeTasks.length} active tasks:`, activeTasks);
         setCurrentTasks(activeTasks);
+      } else {
+        console.error('Failed to fetch tasks:', tasksData.error);
       }
     } catch (error) {
       console.error('Error fetching current tasks:', error);
@@ -173,6 +182,8 @@ const VolunteerDashboard: React.FC = () => {
         console.log('❌ No authenticated user');
         return;
       }
+
+      console.log(`Fetching data for user: ${user.uid}`);
 
       // Fetch available packages
       const packagesResponse = await fetch(`${API_BASE_URL}/api/packages/available`);
@@ -286,28 +297,38 @@ const VolunteerDashboard: React.FC = () => {
     }
   };
 
-  // Prompt for location on initial load
+  // Handle authentication state and fetch data when user is authenticated
   useEffect(() => {
-    const promptForLocation = async () => {
-      if (!locationPrompted) {
-        setLocationPrompted(true);
-        try {
-          console.log('🚀 Initial location setup...');
-          const location = await getUserLocation();
-          setUserLocation(location);
-          // Fetch data immediately with the new location
-          await fetchDataWithLocation(location);
-        } catch (error) {
-          console.error('Error getting location:', error);
-          // Fallback to default location
-          const defaultLocation = { lat: 42.3601, lng: -71.0589 };
-          setUserLocation(defaultLocation);
-          await fetchDataWithLocation(defaultLocation);
+    const unsubscribe = auth.onAuthStateChanged(async (user) => {
+      if (user) {
+        // User is authenticated, get location and fetch data
+        if (!locationPrompted) {
+          setLocationPrompted(true);
+          try {
+            console.log('🚀 Initial location setup...');
+            const location = await getUserLocation();
+            setUserLocation(location);
+            // Fetch data immediately with the new location
+            await fetchDataWithLocation(location);
+          } catch (error) {
+            console.error('Error getting location:', error);
+            // Fallback to default location
+            const defaultLocation = { lat: 42.3601, lng: -71.0589 };
+            setUserLocation(defaultLocation);
+            await fetchDataWithLocation(defaultLocation);
+          }
+        } else {
+          // Location already prompted, just fetch data
+          await fetchData();
         }
+      } else {
+        // User is not authenticated, clear data
+        setCurrentTasks([]);
+        setAvailablePackages([]);
       }
-    };
-    
-    promptForLocation();
+    });
+
+    return () => unsubscribe();
   }, []);
 
   // PIN entry functions for pickup confirmation
