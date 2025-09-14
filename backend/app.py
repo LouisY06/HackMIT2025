@@ -16,10 +16,11 @@ CORS(app)
 DATABASE = 'packages.db'
 
 def init_db():
-    """Initialize the database with the packages table"""
+    """Initialize the database with all tables"""
     conn = sqlite3.connect(DATABASE)
     cursor = conn.cursor()
     
+    # Packages table
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS packages (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -36,6 +37,42 @@ def init_db():
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
             volunteer_id TEXT,
             pickup_completed_at DATETIME
+        )
+    ''')
+    
+    # Volunteer profiles table
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS volunteer_profiles (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            firebase_uid TEXT UNIQUE NOT NULL,
+            email TEXT UNIQUE NOT NULL,
+            profile_data TEXT NOT NULL,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+    ''')
+    
+    # Store profiles table
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS store_profiles (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            firebase_uid TEXT UNIQUE NOT NULL,
+            email TEXT UNIQUE NOT NULL,
+            profile_data TEXT NOT NULL,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+    ''')
+    
+    # Food Bank profiles table
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS foodbank_profiles (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            firebase_uid TEXT UNIQUE NOT NULL,
+            email TEXT UNIQUE NOT NULL,
+            profile_data TEXT NOT NULL,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
         )
     ''')
     
@@ -262,6 +299,172 @@ def get_qr_data(package_id):
         
         qr_data = json.loads(result[0])
         return jsonify({'success': True, 'package_data': qr_data})
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+# User Profile API endpoints
+
+@app.route('/api/users/profile', methods=['POST'])
+def create_user_profile():
+    """Create or update a user profile"""
+    try:
+        data = request.get_json()
+        
+        required_fields = ['firebase_uid', 'email', 'user_type', 'profile_data']
+        for field in required_fields:
+            if field not in data:
+                return jsonify({'success': False, 'error': f'Missing required field: {field}'}), 400
+        
+        conn = sqlite3.connect(DATABASE)
+        cursor = conn.cursor()
+        
+        user_type = data['user_type']
+        table_name = f"{user_type}_profiles"
+        
+        # Check if user already exists
+        cursor.execute(f'SELECT id FROM {table_name} WHERE firebase_uid = ?', (data['firebase_uid'],))
+        existing_user = cursor.fetchone()
+        
+        if existing_user:
+            # Update existing profile
+            cursor.execute(f'''
+                UPDATE {table_name} 
+                SET email = ?, profile_data = ?, updated_at = CURRENT_TIMESTAMP
+                WHERE firebase_uid = ?
+            ''', (data['email'], json.dumps(data['profile_data']), data['firebase_uid']))
+        else:
+            # Create new profile
+            cursor.execute(f'''
+                INSERT INTO {table_name} (firebase_uid, email, profile_data)
+                VALUES (?, ?, ?)
+            ''', (data['firebase_uid'], data['email'], json.dumps(data['profile_data'])))
+        
+        conn.commit()
+        conn.close()
+        
+        return jsonify({'success': True, 'message': 'Profile saved successfully'})
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/users/profile/<firebase_uid>', methods=['GET'])
+def get_user_profile(firebase_uid):
+    """Get user profile by Firebase UID"""
+    try:
+        conn = sqlite3.connect(DATABASE)
+        cursor = conn.cursor()
+        
+        # Check all user type tables
+        user_types = ['volunteer', 'store', 'foodbank']
+        profile = None
+        user_type = None
+        
+        for ut in user_types:
+            cursor.execute(f'''
+                SELECT email, profile_data, created_at, updated_at
+                FROM {ut}_profiles WHERE firebase_uid = ?
+            ''', (firebase_uid,))
+            result = cursor.fetchone()
+            if result:
+                profile = result
+                user_type = ut
+                break
+        
+        conn.close()
+        
+        if profile:
+            return jsonify({
+                'success': True,
+                'profile': {
+                    'email': profile[0],
+                    'user_type': user_type,
+                    'profile_data': json.loads(profile[1]),
+                    'created_at': profile[2],
+                    'updated_at': profile[3]
+                }
+            })
+        else:
+            return jsonify({'success': False, 'error': 'Profile not found'}), 404
+            
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/users/check-profile/<firebase_uid>', methods=['GET'])
+def check_profile_completion(firebase_uid):
+    """Check if user has completed their profile"""
+    try:
+        conn = sqlite3.connect(DATABASE)
+        cursor = conn.cursor()
+        
+        # Check all user type tables
+        user_types = ['volunteer', 'store', 'foodbank']
+        profile_found = False
+        user_type = None
+        
+        for ut in user_types:
+            cursor.execute(f'SELECT id FROM {ut}_profiles WHERE firebase_uid = ?', (firebase_uid,))
+            result = cursor.fetchone()
+            if result:
+                profile_found = True
+                user_type = ut
+                break
+        
+        conn.close()
+        
+        return jsonify({
+            'success': True,
+            'profile_completed': profile_found,
+            'user_type': user_type
+        })
+            
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/users/check-profile/<user_type>/<firebase_uid>', methods=['GET'])
+def check_specific_profile_completion(user_type, firebase_uid):
+    """Check if user has completed their profile for a specific user type"""
+    try:
+        if user_type not in ['volunteer', 'store', 'foodbank']:
+            return jsonify({'success': False, 'error': 'Invalid user type'}), 400
+        
+        conn = sqlite3.connect(DATABASE)
+        cursor = conn.cursor()
+        
+        table_name = f"{user_type}_profiles"
+        cursor.execute(f'SELECT id FROM {table_name} WHERE firebase_uid = ?', (firebase_uid,))
+        result = cursor.fetchone()
+        
+        conn.close()
+        
+        return jsonify({
+            'success': True,
+            'profile_completed': bool(result)
+        })
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/users/check-email/<user_type>/<email>', methods=['GET'])
+def check_email_exists(user_type, email):
+    """Check if email exists in a specific user type table"""
+    try:
+        if user_type not in ['volunteer', 'store', 'foodbank']:
+            return jsonify({'success': False, 'error': 'Invalid user type'}), 400
+        
+        conn = sqlite3.connect(DATABASE)
+        cursor = conn.cursor()
+        
+        table_name = f"{user_type}_profiles"
+        cursor.execute(f'SELECT id FROM {table_name} WHERE email = ?', (email,))
+        result = cursor.fetchone()
+        
+        conn.close()
+        
+        return jsonify({
+            'success': True,
+            'email_exists': bool(result)
+        })
         
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500

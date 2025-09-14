@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup } from 'firebase/auth';
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup, UserCredential } from 'firebase/auth';
 import { auth, googleProvider } from '../config/firebase';
 import {
   Box,
@@ -28,8 +28,21 @@ const StoreLogin: React.FC = () => {
     setError('');
 
     try {
-      await signInWithPopup(auth, googleProvider);
-      navigate('/store/dashboard');
+      const result = await signInWithPopup(auth, googleProvider);
+      // Check if user has completed profile for store user type
+      const user = auth.currentUser;
+      if (user) {
+        const profileResponse = await fetch(`http://localhost:5001/api/users/check-profile/store/${user.uid}`);
+        const profileData = await profileResponse.json();
+        
+        if (profileData.success && profileData.profile_completed) {
+          navigate('/store/dashboard');
+        } else {
+          navigate('/store/profile-setup');
+        }
+      } else {
+        navigate('/store/profile-setup');
+      }
     } catch (error: any) {
       setError(error.message);
     } finally {
@@ -49,10 +62,34 @@ const StoreLogin: React.FC = () => {
     try {
       if (isSignIn) {
         await signInWithEmailAndPassword(auth, email, password);
+        // Check if user has completed profile for store user type
+        const user = auth.currentUser;
+        if (user) {
+          const profileResponse = await fetch(`http://localhost:5001/api/users/check-profile/store/${user.uid}`);
+          const profileData = await profileResponse.json();
+          
+          if (profileData.success && profileData.profile_completed) {
+            navigate('/store/dashboard');
+          } else {
+            navigate('/store/profile-setup');
+          }
+        } else {
+          navigate('/store/profile-setup');
+        }
       } else {
+        // Check if email already exists in store table
+        const emailCheckResponse = await fetch(`http://localhost:5001/api/users/check-email/store/${email}`);
+        const emailCheckData = await emailCheckResponse.json();
+        
+        if (emailCheckData.success && emailCheckData.email_exists) {
+          setError('An account with this email already exists. Please sign in instead.');
+          return;
+        }
+        
+        // Create new user and redirect to profile setup
         await createUserWithEmailAndPassword(auth, email, password);
+        navigate('/store/profile-setup');
       }
-      navigate('/store/dashboard');
     } catch (error: any) {
       setError(error.message);
     } finally {
