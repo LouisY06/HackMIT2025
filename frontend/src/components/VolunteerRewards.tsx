@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Gift, PartyPopper, Utensils, Coffee, Sandwich, Book, Coffee as DrinkIcon, ShoppingCart, Bus, Leaf as LeafIcon, ClipboardList } from 'lucide-react';
+import { Gift, PartyPopper, Utensils, Coffee, Sandwich, Book, Coffee as DrinkIcon, ShoppingCart, Bus, Leaf, Leaf as LeafIcon, ClipboardList } from 'lucide-react';
 import {
   Box,
   Typography,
@@ -153,7 +153,7 @@ const VolunteerRewards: React.FC = () => {
             <Typography variant="h6" sx={{ color: 'white', fontWeight: 'bold', mr: 1 }}>
               Waste→Worth
             </Typography>
-            <Typography sx={{ color: 'white' }}>🌿</Typography>
+            <Leaf size={20} style={{ color: 'white' }} />
           </Box>
           
           <Box sx={{ display: 'flex', gap: 2, flex: 1 }}>
