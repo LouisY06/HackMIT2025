@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Leaf, Package, Printer, Home, BarChart3, TrendingUp, LogOut, Search, Calendar, Smartphone, Users, Download } from 'lucide-react';
 import { API_BASE_URL } from '../config/api';
+import { auth } from '../config/firebase';
 import {
   Box,
   Typography,
@@ -134,7 +135,11 @@ const StorePackages: React.FC = () => {
   const fetchPackages = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${API_BASE_URL}/api/packages/store/sarah@flourbakery.com`);
+      // Get current user's email from Firebase auth
+      const currentUser = auth.currentUser;
+      const userEmail = currentUser?.email || 'sarah@flourbakery.com'; // fallback for testing
+      
+      const response = await fetch(`${API_BASE_URL}/api/packages/store/${userEmail}`);
       const result = await response.json();
       
       if (result.success) {
