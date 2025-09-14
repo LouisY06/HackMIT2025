@@ -744,6 +744,50 @@ def get_volunteer_packages(volunteer_id):
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
 
+@app.route('/api/volunteer/<volunteer_id>/stats', methods=['GET'])
+def get_volunteer_stats(volunteer_id):
+    """Get volunteer statistics including completed pickups, food saved, etc."""
+    try:
+        conn = sqlite3.connect(DATABASE)
+        cursor = conn.cursor()
+        
+        # Get all packages for this volunteer
+        cursor.execute('''
+            SELECT status, weight_lbs, pickup_completed_at
+            FROM packages 
+            WHERE volunteer_id = ?
+        ''', (volunteer_id,))
+        
+        packages = cursor.fetchall()
+        conn.close()
+        
+        # Calculate statistics
+        completed_pickups = len([p for p in packages if p[0] == 'completed'])
+        total_food_saved = sum(p[1] for p in packages if p[0] == 'completed')
+        
+        # Calculate CO2 reduced (rough estimate: 1 lb food waste = ~1.13 kg CO2)
+        co2_reduced = total_food_saved * 1.13
+        
+        # Calculate meals provided (rough estimate: 1 lb food = ~2.3 meals)
+        meals_provided = total_food_saved * 2.3
+        
+        # Calculate points (rough estimate: 10 points per lb of food saved)
+        points = int(total_food_saved * 10)
+        
+        stats = {
+            'completed_pickups': completed_pickups,
+            'food_saved_lbs': round(total_food_saved, 1),
+            'co2_reduced_kg': round(co2_reduced, 1),
+            'meals_provided': round(meals_provided, 0),
+            'points': points,
+            'rank': 1  # TODO: Implement ranking system
+        }
+        
+        return jsonify({'success': True, 'stats': stats})
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
 @app.route('/api/packages/<int:package_id>', methods=['DELETE'])
 def delete_package(package_id):
     """Delete a package from the database"""

@@ -58,11 +58,11 @@ import { API_BASE_URL } from '../config/api';
 const VolunteerDashboard: React.FC = () => {
   const navigate = useNavigate();
   const [userStats, setUserStats] = useState({
-    points: 1250,
-    completedPickups: 23,
-    foodSaved: 156,
-    co2Reduced: 89,
-    rank: 3,
+    points: 0,
+    completedPickups: 0,
+    foodSaved: 0,
+    co2Reduced: 0,
+    rank: 1,
   });
   const [availablePackages, setAvailablePackages] = useState<any[]>([]);
   const [currentTasks, setCurrentTasks] = useState<any[]>([]);
@@ -141,6 +141,37 @@ const VolunteerDashboard: React.FC = () => {
         }
       );
     });
+  };
+
+  // Fetch volunteer statistics
+  const fetchVolunteerStats = async () => {
+    try {
+      const user = auth.currentUser;
+      if (!user) {
+        console.log('No authenticated user, skipping stats fetch');
+        return;
+      }
+
+      console.log(`Fetching stats for volunteer: ${user.uid}`);
+      const statsResponse = await fetch(`${API_BASE_URL}/api/volunteer/${user.uid}/stats`);
+      const statsData = await statsResponse.json();
+      
+      console.log('Stats response:', statsData);
+      
+      if (statsData.success) {
+        setUserStats({
+          points: statsData.stats.points,
+          completedPickups: statsData.stats.completed_pickups,
+          foodSaved: statsData.stats.food_saved_lbs,
+          co2Reduced: statsData.stats.co2_reduced_kg,
+          rank: statsData.stats.rank,
+        });
+      } else {
+        console.error('Failed to fetch stats:', statsData.error);
+      }
+    } catch (error) {
+      console.error('Error fetching volunteer stats:', error);
+    }
   };
 
   // Fetch current tasks only
@@ -310,21 +341,35 @@ const VolunteerDashboard: React.FC = () => {
             setUserLocation(location);
             // Fetch data immediately with the new location
             await fetchDataWithLocation(location);
+            // Fetch volunteer statistics
+            await fetchVolunteerStats();
           } catch (error) {
             console.error('Error getting location:', error);
             // Fallback to default location
             const defaultLocation = { lat: 42.3601, lng: -71.0589 };
             setUserLocation(defaultLocation);
             await fetchDataWithLocation(defaultLocation);
+            // Fetch volunteer statistics
+            await fetchVolunteerStats();
           }
         } else {
           // Location already prompted, just fetch data
           await fetchData();
+          // Fetch volunteer statistics
+          await fetchVolunteerStats();
         }
       } else {
         // User is not authenticated, clear data
         setCurrentTasks([]);
         setAvailablePackages([]);
+        // Reset stats to 0
+        setUserStats({
+          points: 0,
+          completedPickups: 0,
+          foodSaved: 0,
+          co2Reduced: 0,
+          rank: 1,
+        });
       }
     });
 
@@ -366,8 +411,9 @@ const VolunteerDashboard: React.FC = () => {
         setPinEntryOpen(false);
         setPinValue('');
         setSelectedPackageId(null);
-        // Refresh only current tasks to update status
+        // Refresh current tasks and stats to update status
         fetchCurrentTasks();
+        fetchVolunteerStats();
       } else {
         alert(`❌ ${result.error}`);
       }
@@ -553,6 +599,20 @@ const VolunteerDashboard: React.FC = () => {
                     '& .MuiChip-icon': { color: '#848D58' },
                   }}
                 />
+                <IconButton
+                  onClick={fetchVolunteerStats}
+                  size="small"
+                  sx={{
+                    background: 'rgba(132, 141, 88, 0.1)',
+                    color: '#848D58',
+                    '&:hover': {
+                      background: 'rgba(132, 141, 88, 0.2)',
+                    },
+                  }}
+                  title="Refresh Stats"
+                >
+                  <RefreshCw size={18} />
+                </IconButton>
                 <IconButton
                   onClick={() => navigate('/')}
                   size="small"
