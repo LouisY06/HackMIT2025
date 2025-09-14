@@ -537,9 +537,9 @@ def get_available_packages():
                 'created_at': package[12],
                 'volunteer_id': package[13],
                 'pickup_completed_at': package[14],
-                'store_address': store_data.get('address', 'Address not available') if store_data else 'Address not available',
-                'store_lat': float(store_data.get('latitude', 0)) if store_data and store_data.get('latitude') else None,
-                'store_lng': float(store_data.get('longitude', 0)) if store_data and store_data.get('longitude') else None
+                'store_address': store_data.get('address', 'Address not available') if store_data and isinstance(store_data, dict) else 'Address not available',
+                'store_lat': float(store_data.get('latitude', 0)) if store_data and isinstance(store_data, dict) and store_data.get('latitude') else None,
+                'store_lng': float(store_data.get('longitude', 0)) if store_data and isinstance(store_data, dict) and store_data.get('longitude') else None
             }
             package_list.append(package_dict)
         
@@ -733,9 +733,9 @@ def get_volunteer_packages(volunteer_id):
                 'created_at': package[12],
                 'volunteer_id': package[13],
                 'pickup_completed_at': package[14],
-                'store_address': store_data.get('address', 'Address not available') if store_data else 'Address not available',
-                'store_lat': float(store_data.get('latitude', 0)) if store_data and store_data.get('latitude') else None,
-                'store_lng': float(store_data.get('longitude', 0)) if store_data and store_data.get('longitude') else None
+                'store_address': store_data.get('address', 'Address not available') if store_data and isinstance(store_data, dict) else 'Address not available',
+                'store_lat': float(store_data.get('latitude', 0)) if store_data and isinstance(store_data, dict) and store_data.get('latitude') else None,
+                'store_lng': float(store_data.get('longitude', 0)) if store_data and isinstance(store_data, dict) and store_data.get('longitude') else None
             }
             package_list.append(package_dict)
         
@@ -838,7 +838,7 @@ def get_foodbank_dashboard():
                 'food_type': delivery[4],
                 'volunteer_id': delivery[13],
                 'pickup_completed_at': delivery[14],
-                'store_address': store_data.get('address', 'Address not available') if store_data else 'Address not available'
+                'store_address': store_data.get('address', 'Address not available') if store_data and isinstance(store_data, dict) else 'Address not available'
             })
         
         # Calculate KPIs
@@ -889,9 +889,9 @@ def get_pending_deliveries():
         for package in packages:
             # Parse store profile data if available
             store_data = None
-            if package[14]:  # profile_data column (index 14, not 15)
+            if len(package) > 15 and package[15]:  # profile_data column (index 15)
                 try:
-                    store_data = json.loads(package[14])
+                    store_data = json.loads(package[15])
                 except json.JSONDecodeError:
                     store_data = None
             
@@ -911,9 +911,9 @@ def get_pending_deliveries():
                 'created_at': package[12],
                 'volunteer_id': package[13],
                 'pickup_completed_at': package[14],
-                'store_address': store_data.get('address', 'Address not available') if store_data else 'Address not available',
-                'store_lat': float(store_data.get('latitude', 0)) if store_data and store_data.get('latitude') else None,
-                'store_lng': float(store_data.get('longitude', 0)) if store_data and store_data.get('longitude') else None
+                'store_address': store_data.get('address', 'Address not available') if store_data and isinstance(store_data, dict) else 'Address not available',
+                'store_lat': float(store_data.get('latitude', 0)) if store_data and isinstance(store_data, dict) and store_data.get('latitude') else None,
+                'store_lng': float(store_data.get('longitude', 0)) if store_data and isinstance(store_data, dict) and store_data.get('longitude') else None
             }
             package_list.append(package_dict)
         
