@@ -10,3 +10,6 @@ restartPolicyType = "on_failure"
 [environments.production]
 DATABASE_URL = "sqlite:///app/backend/packages.db"
 FLASK_ENV = "production"
+
+[nixpacks]
+providers = ["python"]
