@@ -59,18 +59,21 @@ const StorePackages: React.FC = () => {
   const statusOptions = [
     { value: 'all', label: 'All Status' },
     { value: 'pending', label: 'Available' },
-    { value: 'in-progress', label: 'In Progress' },
-    { value: 'completed', label: 'Completed' },
+    { value: 'assigned', label: 'Assigned to Volunteer' },
+    { value: 'picked_up', label: 'Picked Up' },
+    { value: 'completed', label: 'Delivered' },
   ];
 
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'pending':
         return { bgcolor: '#e3f2fd', color: '#1976d2' }; // Blue for Available
-      case 'in-progress':
-        return { bgcolor: '#fff3e0', color: '#f57c00' }; // Orange for In Progress
+      case 'assigned':
+        return { bgcolor: '#fff3e0', color: '#f57c00' }; // Orange for Assigned
+      case 'picked_up':
+        return { bgcolor: '#f3e5f5', color: '#7b1fa2' }; // Purple for Picked Up
       case 'completed':
-        return { bgcolor: '#e8f5e8', color: '#2e7d32' }; // Green for Completed
+        return { bgcolor: '#e8f5e8', color: '#2e7d32' }; // Green for Delivered
       default:
         return { bgcolor: '#f5f5f5', color: '#666' };
     }
@@ -80,10 +83,12 @@ const StorePackages: React.FC = () => {
     switch (status) {
       case 'pending':
         return 'Available';
-      case 'in-progress':
-        return 'In Progress';
+      case 'assigned':
+        return 'Assigned to Volunteer';
+      case 'picked_up':
+        return 'Picked Up';
       case 'completed':
-        return 'Completed';
+        return 'Delivered';
       default:
         return status;
     }
@@ -100,7 +105,7 @@ const StorePackages: React.FC = () => {
 
   const calculateSummary = () => {
     const available = packages.filter(p => p.status === 'pending').length;
-    const inProgress = packages.filter(p => p.status === 'in-progress').length;
+    const inProgress = packages.filter(p => p.status === 'assigned' || p.status === 'picked_up').length;
     const completed = packages.filter(p => p.status === 'completed').length;
     const totalWeight = packages.reduce((sum, p) => sum + p.weight_lbs, 0);
     
@@ -167,7 +172,7 @@ const StorePackages: React.FC = () => {
 
   const handleDeletePackage = async (pkg: PackageData) => {
     if (pkg.status !== 'pending') {
-      alert('Cannot delete packages that are assigned or completed.');
+      alert('Cannot delete packages that are assigned, picked up, or completed.');
       return;
     }
 

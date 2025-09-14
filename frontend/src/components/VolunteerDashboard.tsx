@@ -132,6 +132,27 @@ const VolunteerDashboard: React.FC = () => {
     });
   };
 
+  // Fetch current tasks only
+  const fetchCurrentTasks = async () => {
+    try {
+      const user = auth.currentUser;
+      if (!user) return;
+
+      const tasksResponse = await fetch(`${API_BASE_URL}/api/packages/volunteer/${user.uid}`);
+      const tasksData = await tasksResponse.json();
+      
+      if (tasksData.success) {
+        // Show both assigned and picked_up tasks
+        const activeTasks = tasksData.packages.filter((task: any) => 
+          task.status === 'assigned' || task.status === 'picked_up'
+        );
+        setCurrentTasks(activeTasks);
+      }
+    } catch (error) {
+      console.error('Error fetching current tasks:', error);
+    }
+  };
+
   // Fetch data
   const fetchData = async () => {
     try {
@@ -264,8 +285,8 @@ const VolunteerDashboard: React.FC = () => {
         setPinEntryOpen(false);
         setPinValue('');
         setSelectedPackageId(null);
-        // Refresh tasks to update status
-        fetchData();
+        // Refresh only current tasks to update status
+        fetchCurrentTasks();
       } else {
         alert(`❌ ${result.error}`);
       }
