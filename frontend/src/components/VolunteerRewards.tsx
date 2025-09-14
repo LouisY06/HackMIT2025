@@ -1,6 +1,24 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Gift, PartyPopper, Utensils, Coffee, Sandwich, Book, Coffee as DrinkIcon, ShoppingCart, Bus, Leaf, Leaf as LeafIcon, ClipboardList, CreditCard, ShoppingBag, Ticket, Percent, Receipt, DollarSign } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+  Gift,
+  Coffee,
+  Utensils,
+  ShoppingBag,
+  CreditCard,
+  Ticket,
+  Receipt,
+  DollarSign,
+  Star,
+  ArrowLeft,
+  Trophy,
+  Zap,
+  Target,
+  CheckCircle,
+  Clock,
+  Sparkles,
+} from 'lucide-react';
 import {
   Box,
   Typography,
@@ -8,8 +26,7 @@ import {
   CardContent,
   Button,
   Chip,
-  AppBar,
-  Toolbar,
+  Container,
   IconButton,
   Tabs,
   Tab,
@@ -19,10 +36,6 @@ import {
   DialogActions,
   CircularProgress,
 } from '@mui/material';
-import { 
-  Logout,
-  Star
-} from '@mui/icons-material';
 
 const VolunteerRewards: React.FC = () => {
   const navigate = useNavigate();
@@ -36,439 +49,532 @@ const VolunteerRewards: React.FC = () => {
   const availableRewards = [
     {
       id: 1,
-      icon: "utensils",
-      title: "20% Off Next Meal",
-      provider: "Campus Café",
-      description: "Get 20% off your next meal at Campus Café",
-      points: 200
+      icon: "coffee",
+      title: "Free Coffee",
+      provider: "Local Café",
+      description: "Redeem for one free medium coffee at participating locations",
+      points: 100,
+      category: "food"
     },
     {
       id: 2,
-      icon: "coffee",
-      title: "Free Coffee",
-      provider: "Dunkin",
-      description: "Redeem for one free medium coffee",
-      points: 150
+      icon: "utensils",
+      title: "$10 Restaurant Voucher",
+      provider: "Partner Restaurants",
+      description: "$10 off your next meal at any partner restaurant",
+      points: 500,
+      category: "food"
     },
     {
       id: 3,
-      icon: "dollar-sign",
-      title: "$5 Off Order",
-      provider: "Chipotle",
-      description: "$5 off your next Chipotle order",
-      points: 300
+      icon: "shopping-bag",
+      title: "Eco-Friendly Tote Bag",
+      provider: "Reflourish",
+      description: "Limited edition Reflourish tote bag made from recycled materials",
+      points: 300,
+      category: "merchandise"
     },
     {
       id: 4,
-      icon: "ticket",
-      title: "Free Movie Ticket",
-      provider: "AMC Theatres",
-      description: "One free standard movie ticket",
-      points: 500
+      icon: "credit-card",
+      title: "$25 Gift Card",
+      provider: "Amazon",
+      description: "Digital gift card for online shopping",
+      points: 1200,
+      category: "gift-cards"
     },
     {
       id: 5,
-      icon: "book",
-      title: "15% Off Books",
-      provider: "Harvard Book Store",
-      description: "15% off any book purchase",
-      points: 250
+      icon: "ticket",
+      title: "Movie Ticket",
+      provider: "AMC Theaters",
+      description: "One free movie ticket for any standard showing",
+      points: 400,
+      category: "entertainment"
     },
     {
       id: 6,
-      icon: "coffee",
-      title: "Free Smoothie",
-      provider: "Jamba Juice",
-      description: "One free 16oz smoothie",
-      points: 180
+      icon: "receipt",
+      title: "Grocery Discount",
+      provider: "Whole Foods",
+      description: "15% off your next grocery shopping trip",
+      points: 350,
+      category: "food"
     },
     {
       id: 7,
-      icon: "receipt",
-      title: "$10 Off Grocery",
-      provider: "Whole Foods",
-      description: "$10 off your grocery purchase",
-      points: 400
+      icon: "dollar-sign",
+      title: "$5 Cash Reward",
+      provider: "PayPal",
+      description: "Direct cash transfer to your PayPal account",
+      points: 250,
+      category: "cash"
     },
     {
       id: 8,
-      icon: "bus",
-      title: "Free Transit Day Pass",
-      provider: "MBTA",
-      description: "One day unlimited MBTA pass",
-      points: 120
+      icon: "shopping-bag",
+      title: "Reflourish T-Shirt",
+      provider: "Reflourish",
+      description: "Official Reflourish volunteer t-shirt in your size",
+      points: 400,
+      category: "merchandise"
     }
   ];
 
-  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
-    setTabValue(newValue);
+  const redeemedRewards = [
+    {
+      id: 101,
+      title: "Free Coffee",
+      provider: "Local Café",
+      redeemedDate: "2024-01-15",
+      status: "used",
+      code: "COFFEE123"
+    },
+    {
+      id: 102,
+      title: "$5 Cash Reward",
+      provider: "PayPal",
+      redeemedDate: "2024-01-10",
+      status: "pending",
+      code: "CASH456"
+    }
+  ];
+
+  const getIcon = (iconName: string, size = 24, color = "#848D58") => {
+    const iconProps = { size, color };
+    switch (iconName) {
+      case 'coffee': return <Coffee {...iconProps} />;
+      case 'utensils': return <Utensils {...iconProps} />;
+      case 'shopping-bag': return <ShoppingBag {...iconProps} />;
+      case 'credit-card': return <CreditCard {...iconProps} />;
+      case 'ticket': return <Ticket {...iconProps} />;
+      case 'receipt': return <Receipt {...iconProps} />;
+      case 'dollar-sign': return <DollarSign {...iconProps} />;
+      default: return <Gift {...iconProps} />;
+    }
   };
 
-  const handleRedeem = (reward: any) => {
+  const getCategoryColor = (category: string) => {
+    switch (category) {
+      case 'food': return '#4CAF50';
+      case 'merchandise': return '#2196F3';
+      case 'gift-cards': return '#FF9800';
+      case 'entertainment': return '#9C27B0';
+      case 'cash': return '#F44336';
+      default: return '#848D58';
+    }
+  };
+
+  const handleRedeemReward = (reward: any) => {
     if (points >= reward.points) {
       setSelectedReward(reward);
       setConfirmDialogOpen(true);
     } else {
-      alert("Not enough points to redeem this reward!");
+      alert(`You need ${reward.points - points} more points to redeem this reward!`);
     }
   };
 
-  const handleConfirmRedemption = () => {
+  const confirmRedeem = async () => {
+    if (!selectedReward) return;
+    
     setConfirmDialogOpen(false);
     setLoadingDialogOpen(true);
     
-    // Simulate loading time
+    // Simulate API call
     setTimeout(() => {
-      setLoadingDialogOpen(false);
       setPoints(points - selectedReward.points);
+      setLoadingDialogOpen(false);
       setSuccessDialogOpen(true);
     }, 2000);
   };
 
-  const handleCloseSuccess = () => {
-    setSuccessDialogOpen(false);
-    setSelectedReward(null);
-  };
-
-  const handleCloseConfirm = () => {
-    setConfirmDialogOpen(false);
-    setSelectedReward(null);
-  };
-
-  const handleCopyCode = () => {
-    navigator.clipboard.writeText("SAVE20");
-    // Could add a toast notification here
-  };
-
-  const handleLogout = () => {
-    navigate('/');
-  };
+  const filteredRewards = tabValue === 0 ? availableRewards : 
+    availableRewards.filter(reward => {
+      switch (tabValue) {
+        case 1: return reward.category === 'food';
+        case 2: return reward.category === 'merchandise';
+        case 3: return reward.category === 'gift-cards';
+        case 4: return reward.category === 'entertainment';
+        default: return true;
+      }
+    });
 
   return (
-    <Box sx={{ minHeight: '100vh', backgroundColor: '#f5f5f5' }}>
-      {/* Header/Navigation */}
-      <AppBar position="static" sx={{ backgroundColor: '#4CAF50' }}>
-        <Toolbar>
-          <Box sx={{ display: 'flex', alignItems: 'center', mr: 4 }}>
-            <img 
-              src="/LogoOutlined.png" 
-              alt="Reflourish Logo" 
-              style={{ 
-                height: '48px', 
-                width: 'auto',
-                objectFit: 'contain'
-              }} 
-            />
-          </Box>
-          
-          <Box sx={{ display: 'flex', gap: 2, flex: 1 }}>
-            <Button 
-              color="inherit" 
-              onClick={() => navigate('/volunteer/dashboard')}
-              sx={{ '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.1)' } }}
-            >
-              Dashboard
-            </Button>
-            <Button 
-              color="inherit" 
-              onClick={() => navigate('/volunteer/find-pickups')}
-              sx={{ '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.1)' } }}
-            >
-              Find Tasks
-            </Button>
-            <Button 
-              color="inherit" 
-              sx={{ 
-                backgroundColor: 'rgba(255, 255, 255, 0.2)', 
-                '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.3)' }
-              }}
-            >
-              Rewards
-            </Button>
-            <Button 
-              color="inherit" 
-              onClick={() => navigate('/volunteer/leaderboard')}
-              sx={{ '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.1)' } }}
-            >
-              Leaderboard
-            </Button>
-            <Button 
-              color="inherit" 
-              onClick={() => navigate('/volunteer/global-impact')}
-              sx={{ '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.1)' } }}
-            >
-              Global Impact
-            </Button>
-          </Box>
-
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <Typography variant="body2" sx={{ color: 'white' }}>
-              Marcus Chen Level 3
-            </Typography>
-            <Chip 
-              label={`${points} pts`} 
-              sx={{ 
-                backgroundColor: '#FFF9C4', 
-                color: '#F57F17',
-                fontWeight: 'bold'
-              }} 
-            />
-            <IconButton onClick={handleLogout} color="inherit">
-              <Logout />
-            </IconButton>
-          </Box>
-        </Toolbar>
-      </AppBar>
-
-      {/* Available Points Banner */}
-      <Box
-        sx={{
-          background: 'linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%)',
-          p: 4,
-          color: 'white'
-        }}
+    <Box
+      sx={{
+        backgroundImage: 'url(/VolunteerLogin.png)',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+        minHeight: '100vh',
+        position: 'relative',
+        pb: 4,
+        '&::before': {
+          content: '""',
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.3)',
+          zIndex: 1,
+        },
+        '& > *': {
+          position: 'relative',
+          zIndex: 2,
+        },
+      }}
+    >
+      {/* Header */}
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, ease: "easeOut" }}
       >
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Box>
-            <Typography variant="body1" sx={{ opacity: 0.9 }}>
-              Available Points
-            </Typography>
-            <Typography variant="h2" sx={{ fontWeight: 'bold' }}>
-              {points}
-            </Typography>
-          </Box>
-          <Star sx={{ fontSize: 60, opacity: 0.8 }} />
-        </Box>
-      </Box>
-
-      {/* Tabs */}
-      <Box sx={{ backgroundColor: 'white', px: 3 }}>
-        <Tabs 
-          value={tabValue} 
-          onChange={handleTabChange}
-          sx={{ 
-            '& .MuiTab-root': { 
-              textTransform: 'none',
-              fontWeight: 'bold'
-            }
+        <Box
+          sx={{
+            background: 'rgba(0, 0, 0, 0.7)',
+            backdropFilter: 'blur(10px)',
+            borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+            p: 3,
           }}
         >
-          <Tab label="Available Rewards" />
-          <Tab label={`My Rewards (0)`} />
-        </Tabs>
-      </Box>
-
-      {/* Rewards Grid */}
-      <Box sx={{ p: 3 }}>
-        <Box 
-          sx={{ 
-            display: 'grid', 
-            gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', 
-            gap: 3 
-          }}
-        >
-          {availableRewards.map((reward) => (
-            <Card key={reward.id} sx={{ boxShadow: 2, borderRadius: 2 }}>
-              <CardContent sx={{ p: 3 }}>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
-                  <Box sx={{ 
-                    display: 'flex', 
-                    alignItems: 'center', 
+          <Container maxWidth="xl">
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                <IconButton
+                  onClick={() => navigate('/volunteer/dashboard')}
+                  sx={{
+                    background: 'rgba(132, 141, 88, 0.1)',
+                    color: '#848D58',
+                    '&:hover': {
+                      background: 'rgba(132, 141, 88, 0.2)',
+                    },
+                  }}
+                >
+                  <ArrowLeft size={24} />
+                </IconButton>
+                <Box
+                  sx={{
+                    width: 50,
+                    height: 50,
+                    borderRadius: '50%',
+                    background: 'linear-gradient(135deg, #848D58 0%, #6F7549 100%)',
+                    display: 'flex',
+                    alignItems: 'center',
                     justifyContent: 'center',
-                    width: 48,
-                    height: 48,
-                    backgroundColor: '#e8f5e8',
-                    borderRadius: 2,
-                    color: '#4CAF50'
-                  }}>
-                    {reward.icon === 'utensils' && <Utensils size={24} />}
-                    {reward.icon === 'coffee' && <Coffee size={24} />}
-                    {reward.icon === 'gift' && <Gift size={24} />}
-                    {reward.icon === 'book' && <Book size={24} />}
-                    {reward.icon === 'shopping-cart' && <ShoppingCart size={24} />}
-                    {reward.icon === 'bus' && <Bus size={24} />}
-                    {reward.icon === 'leaf' && <Leaf size={24} />}
-                    {reward.icon === 'credit-card' && <CreditCard size={24} />}
-                    {reward.icon === 'shopping-bag' && <ShoppingBag size={24} />}
-                    {reward.icon === 'ticket' && <Ticket size={24} />}
-                    {reward.icon === 'receipt' && <Receipt size={24} />}
-                    {reward.icon === 'dollar-sign' && <DollarSign size={24} />}
-                  </Box>
-                  <Chip 
-                    label={`${reward.points} points`}
-                    size="small"
-                    sx={{ 
-                      backgroundColor: '#4CAF50', 
-                      color: 'white',
-                      fontWeight: 'bold'
-                    }}
-                  />
+                  }}
+                >
+                  <Gift size={24} color="white" />
                 </Box>
-
-                <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 1 }}>
-                  {reward.title}
-                </Typography>
-
-                <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-                  {reward.provider}
-                </Typography>
-
-                <Typography variant="body2" sx={{ mb: 3, color: '#666' }}>
-                  {reward.description}
-                </Typography>
-
-                <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-                  <Button
-                    variant="contained"
-                    onClick={() => handleRedeem(reward)}
-                    disabled={points < reward.points}
-                    sx={{
-                      backgroundColor: '#4CAF50',
-                      '&:hover': { backgroundColor: '#45a049' },
-                      '&:disabled': { backgroundColor: '#E0E0E0' }
+                <Box>
+                  <Typography 
+                    variant="h4" 
+                    sx={{ 
+                      fontWeight: 700,
+                      color: 'white',
+                      fontFamily: '"Helvetica Neue", "Helvetica", "Arial", sans-serif',
                     }}
                   >
-                    Redeem
-                  </Button>
+                    Rewards Store
+                  </Typography>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Typography 
+                      variant="subtitle1" 
+                      sx={{ 
+                        color: 'rgba(255, 255, 255, 0.8)',
+                        fontWeight: 300,
+                        fontFamily: '"Helvetica Neue", "Helvetica", "Arial", sans-serif',
+                      }}
+                    >
+                      Redeem your impact points for amazing rewards
+                    </Typography>
+                    <Gift size={20} color="rgba(255, 255, 255, 0.8)" />
+                  </Box>
                 </Box>
-              </CardContent>
-            </Card>
-          ))}
+              </Box>
+
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                  <Chip
+                    icon={<Star size={18} />}
+                    label={`${points} points`}
+                    sx={{
+                      background: 'linear-gradient(135deg, #848D58 0%, #6F7549 100%)',
+                      color: 'white',
+                      fontWeight: 600,
+                      fontSize: '1rem',
+                      px: 1,
+                      '& .MuiChip-icon': { color: 'white' },
+                    }}
+                  />
+                </motion.div>
+              </Box>
+            </Box>
+          </Container>
         </Box>
-      </Box>
+      </motion.div>
+
+      <Container maxWidth="xl" sx={{ mt: 4 }}>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+        >
+          {/* Points Summary */}
+          <Card
+            sx={{
+              borderRadius: 3,
+              background: 'rgba(255, 255, 255, 0.95)',
+              backdropFilter: 'blur(10px)',
+              border: '1px solid rgba(132, 141, 88, 0.1)',
+              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
+              mb: 4,
+            }}
+          >
+            <CardContent sx={{ p: 4 }}>
+              <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' }, gap: 3 }}>
+                <motion.div
+                  whileHover={{ scale: 1.02 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <Box
+                    sx={{
+                      textAlign: 'center',
+                      p: 3,
+                      borderRadius: 2,
+                      background: 'linear-gradient(135deg, #4CAF50 0%, #45a049 100%)',
+                      color: 'white',
+                    }}
+                  >
+                    <Trophy size={32} style={{ marginBottom: 8 }} />
+                    <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>
+                      {points}
+                    </Typography>
+                    <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                      Available Points
+                    </Typography>
+                  </Box>
+                </motion.div>
+
+                <motion.div
+                  whileHover={{ scale: 1.02 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <Box
+                    sx={{
+                      textAlign: 'center',
+                      p: 3,
+                      borderRadius: 2,
+                      background: 'linear-gradient(135deg, #2196F3 0%, #1976D2 100%)',
+                      color: 'white',
+                    }}
+                  >
+                    <Target size={32} style={{ marginBottom: 8 }} />
+                    <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>
+                      2,340
+                    </Typography>
+                    <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                      Total Earned
+                    </Typography>
+                  </Box>
+                </motion.div>
+
+                <motion.div
+                  whileHover={{ scale: 1.02 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <Box
+                    sx={{
+                      textAlign: 'center',
+                      p: 3,
+                      borderRadius: 2,
+                      background: 'linear-gradient(135deg, #FF9800 0%, #F57C00 100%)',
+                      color: 'white',
+                    }}
+                  >
+                    <CheckCircle size={32} style={{ marginBottom: 8 }} />
+                    <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>
+                      {redeemedRewards.length}
+                    </Typography>
+                    <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                      Rewards Redeemed
+                    </Typography>
+                  </Box>
+                </motion.div>
+              </Box>
+            </CardContent>
+          </Card>
+
+          {/* Rewards Categories */}
+          <Card
+            sx={{
+              borderRadius: 3,
+              background: 'rgba(255, 255, 255, 0.95)',
+              backdropFilter: 'blur(10px)',
+              border: '1px solid rgba(132, 141, 88, 0.1)',
+              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
+            }}
+          >
+            <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+              <Tabs 
+                value={tabValue} 
+                onChange={(_, newValue) => setTabValue(newValue)}
+                variant="scrollable"
+                scrollButtons="auto"
+                sx={{
+                  '& .MuiTab-root': {
+                    textTransform: 'none',
+                    fontWeight: 600,
+                    fontSize: '1rem',
+                    minHeight: 60,
+                    fontFamily: '"Helvetica Neue", "Helvetica", "Arial", sans-serif',
+                  },
+                  '& .Mui-selected': {
+                    color: '#848D58 !important',
+                  },
+                  '& .MuiTabs-indicator': {
+                    backgroundColor: '#848D58',
+                    height: 3,
+                  }
+                }}
+              >
+                <Tab icon={<Sparkles size={20} />} label="All Rewards" iconPosition="start" />
+                <Tab icon={<Utensils size={20} />} label="Food & Dining" iconPosition="start" />
+                <Tab icon={<ShoppingBag size={20} />} label="Merchandise" iconPosition="start" />
+                <Tab icon={<CreditCard size={20} />} label="Gift Cards" iconPosition="start" />
+                <Tab icon={<Ticket size={20} />} label="Entertainment" iconPosition="start" />
+              </Tabs>
+            </Box>
+
+            <CardContent sx={{ p: 4 }}>
+              <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', lg: 'repeat(3, 1fr)' }, gap: 3 }}>
+                <AnimatePresence>
+                  {filteredRewards.map((reward, index) => (
+                    <motion.div
+                      key={reward.id}
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.9 }}
+                      transition={{ delay: index * 0.1, duration: 0.3 }}
+                      whileHover={{ scale: 1.03, y: -4 }}
+                    >
+                      <Card
+                        sx={{
+                          borderRadius: 3,
+                          border: `2px solid ${getCategoryColor(reward.category)}20`,
+                          background: 'white',
+                          transition: 'all 0.2s ease',
+                          cursor: 'pointer',
+                          '&:hover': {
+                            boxShadow: `0 8px 25px ${getCategoryColor(reward.category)}20`,
+                          },
+                        }}
+                        onClick={() => handleRedeemReward(reward)}
+                      >
+                        <CardContent sx={{ p: 3 }}>
+                          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
+                            <Box
+                              sx={{
+                                width: 50,
+                                height: 50,
+                                borderRadius: '50%',
+                                background: `${getCategoryColor(reward.category)}15`,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                              }}
+                            >
+                              {getIcon(reward.icon, 24, getCategoryColor(reward.category))}
+                            </Box>
+                            <Chip
+                              label={`${reward.points} pts`}
+                              size="small"
+                              sx={{
+                                backgroundColor: points >= reward.points ? '#4CAF5015' : '#f5f5f5',
+                                color: points >= reward.points ? '#4CAF50' : '#666',
+                                fontWeight: 600,
+                              }}
+                            />
+                          </Box>
+
+                          <Typography variant="h6" sx={{ fontWeight: 700, mb: 1 }}>
+                            {reward.title}
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                            {reward.provider}
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary" sx={{ mb: 3, minHeight: 40 }}>
+                            {reward.description}
+                          </Typography>
+
+                          <Button
+                            variant="contained"
+                            fullWidth
+                            disabled={points < reward.points}
+                            sx={{
+                              background: points >= reward.points 
+                                ? `linear-gradient(135deg, ${getCategoryColor(reward.category)} 0%, ${getCategoryColor(reward.category)}CC 100%)`
+                                : '#f5f5f5',
+                              color: points >= reward.points ? 'white' : '#999',
+                              borderRadius: 2,
+                              textTransform: 'none',
+                              fontWeight: 600,
+                              '&:hover': {
+                                background: points >= reward.points 
+                                  ? `linear-gradient(135deg, ${getCategoryColor(reward.category)}DD 0%, ${getCategoryColor(reward.category)}AA 100%)`
+                                  : '#f5f5f5',
+                              },
+                            }}
+                          >
+                            {points >= reward.points ? 'Redeem Now' : `Need ${reward.points - points} more pts`}
+                          </Button>
+                        </CardContent>
+                      </Card>
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
+              </Box>
+            </CardContent>
+          </Card>
+        </motion.div>
+      </Container>
 
       {/* Confirmation Dialog */}
-      <Dialog open={confirmDialogOpen} onClose={handleCloseConfirm} maxWidth="sm" fullWidth>
-        <DialogTitle sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <Gift size={20} style={{ marginRight: '8px' }} />
-            <Typography variant="h6">Redeem Reward</Typography>
-          </Box>
-          <IconButton onClick={handleCloseConfirm} size="small">
-            ✕
-          </IconButton>
-        </DialogTitle>
+      <Dialog open={confirmDialogOpen} onClose={() => setConfirmDialogOpen(false)}>
+        <DialogTitle>Confirm Redemption</DialogTitle>
         <DialogContent>
-          <Typography variant="body1" sx={{ mb: 3 }}>
-            Confirm you want to redeem this reward.
-          </Typography>
-          
-          {selectedReward && (
-            <Box sx={{ mb: 3 }}>
-              <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 1 }}>
-                {selectedReward.title}
-              </Typography>
-              <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                {selectedReward.provider}
-              </Typography>
-              <Chip 
-                label={`${selectedReward.points} points`}
-                sx={{ backgroundColor: '#4CAF50', color: 'white' }}
-              />
-            </Box>
-          )}
-
-          <Typography variant="body2" color="text.secondary">
-            You currently have <strong>{points} points</strong>. After redeeming this reward, you'll have <strong>{selectedReward ? points - selectedReward.points : points} points</strong> remaining.
+          <Typography>
+            Are you sure you want to redeem "{selectedReward?.title}" for {selectedReward?.points} points?
           </Typography>
         </DialogContent>
-        <DialogActions sx={{ p: 3 }}>
-          <Button onClick={handleCloseConfirm} variant="outlined">
-            Cancel
-          </Button>
-          <Button 
-            onClick={handleConfirmRedemption} 
-            variant="contained"
-            sx={{ backgroundColor: '#4CAF50', '&:hover': { backgroundColor: '#45a049' } }}
-          >
-            Confirm Redemption
+        <DialogActions>
+          <Button onClick={() => setConfirmDialogOpen(false)}>Cancel</Button>
+          <Button onClick={confirmRedeem} variant="contained" sx={{ background: '#848D58' }}>
+            Redeem
           </Button>
         </DialogActions>
       </Dialog>
 
       {/* Loading Dialog */}
-      <Dialog open={loadingDialogOpen} onClose={() => {}} maxWidth="xs" fullWidth>
+      <Dialog open={loadingDialogOpen}>
         <DialogContent sx={{ textAlign: 'center', p: 4 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 2 }}>
-            <CircularProgress size={20} />
-            <Typography>Redeeming reward...</Typography>
-          </Box>
+          <CircularProgress sx={{ color: '#848D58', mb: 2 }} />
+          <Typography>Processing your redemption...</Typography>
         </DialogContent>
       </Dialog>
 
       {/* Success Dialog */}
-      <Dialog open={successDialogOpen} onClose={handleCloseSuccess} maxWidth="sm" fullWidth>
-        <DialogTitle sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <Typography variant="h6" sx={{ display: 'flex', alignItems: 'center' }}>
-            Reward Redeemed! <PartyPopper size={20} style={{ marginLeft: '8px' }} />
-          </Typography>
-          <IconButton onClick={handleCloseSuccess} size="small">
-            ✕
-          </IconButton>
-        </DialogTitle>
+      <Dialog open={successDialogOpen} onClose={() => setSuccessDialogOpen(false)}>
+        <DialogTitle>Redemption Successful! 🎉</DialogTitle>
         <DialogContent>
-          <Box sx={{ textAlign: 'center', mb: 3 }}>
-            <Box
-              sx={{
-                width: 60,
-                height: 60,
-                borderRadius: '50%',
-                backgroundColor: '#4CAF50',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                mx: 'auto',
-                mb: 2
-              }}
-            >
-              <Typography sx={{ color: 'white', fontSize: '2rem' }}>✓</Typography>
-            </Box>
-            <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2 }}>
-              Your {selectedReward?.title} is ready to use
-            </Typography>
-          </Box>
-
-          <Box sx={{ mb: 3 }}>
-            <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 1 }}>
-              Your coupon code:
-            </Typography>
-            <Box 
-              sx={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                gap: 1,
-                p: 2,
-                backgroundColor: '#f5f5f5',
-                borderRadius: 1,
-                border: '2px solid #e0e0e0'
-              }}
-            >
-              <Typography variant="h6" sx={{ fontWeight: 'bold', flex: 1 }}>
-                SAVE20
-              </Typography>
-              <Button 
-                variant="outlined" 
-                size="small"
-                onClick={handleCopyCode}
-                sx={{ minWidth: 'auto', p: 1 }}
-              >
-                📋
-              </Button>
-            </Box>
-          </Box>
-
-          <Typography variant="body2" color="text.secondary">
-            Show this code to {selectedReward?.provider} to redeem your reward.
+          <Typography>
+            Your reward has been redeemed successfully! Check your email for the redemption code.
           </Typography>
         </DialogContent>
-        <DialogActions sx={{ p: 3 }}>
-          <Button 
-            onClick={handleCloseSuccess} 
-            variant="contained"
-            fullWidth
-            sx={{ backgroundColor: '#424242', '&:hover': { backgroundColor: '#303030' } }}
-          >
-            Continue Earning Points
+        <DialogActions>
+          <Button onClick={() => setSuccessDialogOpen(false)} variant="contained" sx={{ background: '#848D58' }}>
+            Great!
           </Button>
         </DialogActions>
       </Dialog>
