@@ -314,10 +314,15 @@ const VolunteerFindPickups: React.FC = () => {
           py: { xs: 1, sm: 0 }
         }}>
           <Box sx={{ display: 'flex', alignItems: 'center', mr: { sm: 4 } }}>
-            <Typography variant="h6" sx={{ color: 'white', fontWeight: 'bold', mr: 1 }}>
-              Waste→Worth
-            </Typography>
-            <Typography sx={{ color: 'white' }}>🌿</Typography>
+            <img 
+              src="/LogoOutlined.png" 
+              alt="Reflourish Logo" 
+              style={{ 
+                height: '48px', 
+                width: 'auto',
+                objectFit: 'contain'
+              }} 
+            />
           </Box>
           
           <Box sx={{ 
@@ -347,7 +352,7 @@ const VolunteerFindPickups: React.FC = () => {
                 px: { xs: 1, sm: 2 }
               }}
             >
-              📱 Find Tasks
+              Find Tasks
             </Button>
             <Button 
               color="inherit" 
