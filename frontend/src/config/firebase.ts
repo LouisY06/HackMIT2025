@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase/app';
-import { getAuth, GoogleAuthProvider } from 'firebase/auth';
+import { getAuth, GoogleAuthProvider, setPersistence, browserLocalPersistence } from 'firebase/auth';
 
 const firebaseConfig = {
   apiKey: "AIzaSyDaL5XruDZWhm4oha9xOjMzvhnsqGConec",
@@ -21,8 +21,21 @@ const app = initializeApp(firebaseConfig);
 // Initialize Firebase Authentication and get a reference to the service
 export const auth = getAuth(app);
 
+// Set auth persistence to LOCAL (persists across browser sessions)
+setPersistence(auth, browserLocalPersistence)
+  .then(() => {
+    console.log('✅ Firebase auth persistence set to LOCAL');
+  })
+  .catch((error) => {
+    console.error('❌ Failed to set auth persistence:', error);
+  });
+
 // Initialize Google Auth Provider
 export const googleProvider = new GoogleAuthProvider();
+// Force account selection for Google login
+googleProvider.setCustomParameters({
+  prompt: 'select_account'
+});
 
 console.log('Firebase auth initialized:', !!auth);
 console.log('Current URL:', window.location.href);
