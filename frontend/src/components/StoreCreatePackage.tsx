@@ -123,55 +123,60 @@ const StoreCreatePackage: React.FC = () => {
   // Camera functions
   const startCamera = useCallback(async () => {
     try {
-      console.log('Starting camera...');
+      console.log('🎥 Starting camera...');
+      setError(''); // Clear any previous errors
       
       // Check if getUserMedia is supported
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
         throw new Error('Camera not supported by this browser');
       }
       
+      // Try basic constraints first for better compatibility
       const constraints = {
-        video: { 
-          facingMode: { ideal: 'environment' }, // Prefer back camera but fallback to any
-          width: { ideal: 640, max: 1280 },
-          height: { ideal: 480, max: 720 }
-        }
+        video: true
       };
       
-      console.log('Requesting camera with constraints:', constraints);
+      console.log('📷 Requesting camera access...');
       const stream = await navigator.mediaDevices.getUserMedia(constraints);
       
-      console.log('Camera stream obtained:', stream);
+      console.log('✅ Camera stream obtained:', stream);
+      console.log('🔍 Stream active:', stream.active);
+      console.log('🎬 Video tracks:', stream.getVideoTracks().length);
       
-      if (videoRef.current) {
+      if (videoRef.current && stream) {
+        console.log('🎯 Setting video source...');
         videoRef.current.srcObject = stream;
         streamRef.current = stream;
         
-        // Set initial camera state immediately
+        // Show camera UI immediately
         setShowCamera(true);
-        setError('');
         
-        // Wait for video to load and play
+        // Force video to play
+        try {
+          await videoRef.current.play();
+          console.log('▶️ Video playing successfully');
+        } catch (playError) {
+          console.log('⏸️ Video autoplay blocked, user interaction required:', playError);
+        }
+        
+        // Handle metadata loaded
         videoRef.current.onloadedmetadata = () => {
-          console.log('Video metadata loaded');
-          if (videoRef.current) {
-            videoRef.current.play().catch(e => {
-              console.error('Video play failed:', e);
-            });
-          }
+          console.log('📐 Video dimensions:', videoRef.current?.videoWidth, 'x', videoRef.current?.videoHeight);
         };
         
         // Handle video errors
         videoRef.current.onerror = (e) => {
-          console.error('Video error:', e);
-          setError('📷 Camera failed to load. Please try again.');
-          setShowCamera(false);
+          console.error('❌ Video error:', e);
+          setError('📷 Video failed to load. Trying again...');
+          // Don't hide camera UI, let user retry
         };
+      } else {
+        throw new Error('Video element not available or stream is null');
       }
     } catch (err) {
-      console.error('Error accessing camera:', err);
+      console.error('💥 Camera error:', err);
       const errorMessage = err instanceof Error ? err.message : 'Unknown error';
-      setError(`📷 Camera access failed: ${errorMessage}. You can still create packages manually below.`);
+      setError(`📷 Camera access failed: ${errorMessage}. Click "Try Camera Again" or create packages manually.`);
       setShowCamera(false);
     }
   }, []);
@@ -415,22 +420,42 @@ const StoreCreatePackage: React.FC = () => {
                 <Typography variant="body2" sx={{ mt: 1, color: '#666' }}>
                   Starting camera...
                 </Typography>
+                <Button
+                  variant="text"
+                  startIcon={<Camera />}
+                  onClick={startCamera}
+                  sx={{ mt: 1, fontSize: '0.8rem' }}
+                >
+                  Start Manually
+                </Button>
               </Box>
             )}
 
             {!showCamera && !capturedImage && error && (
               <Box sx={{ textAlign: 'center', py: 3 }}>
-                <Typography variant="body2" sx={{ mb: 2, color: '#666' }}>
-                  Camera not available, but you can still create packages manually.
+                <Typography variant="body2" sx={{ mb: 2, color: '#d32f2f' }}>
+                  {error}
                 </Typography>
-                <Button
-                  variant="outlined"
-                  startIcon={<Camera />}
-                  onClick={startCamera}
-                  sx={{ borderRadius: 2 }}
-                >
-                  Try Camera Again
-                </Button>
+                <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center', flexWrap: 'wrap' }}>
+                  <Button
+                    variant="contained"
+                    startIcon={<Camera />}
+                    onClick={startCamera}
+                    sx={{ borderRadius: 2 }}
+                  >
+                    Try Camera Again
+                  </Button>
+                  <Button
+                    variant="outlined"
+                    onClick={() => {
+                      setError('');
+                      setShowCamera(false);
+                    }}
+                    sx={{ borderRadius: 2 }}
+                  >
+                    Create Manually
+                  </Button>
+                </Box>
               </Box>
             )}
 
