@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import LandingPage from './components/LandingPage';
+import MainLogin from './components/MainLogin';
 import VolunteerLogin from './components/VolunteerLogin';
 import VolunteerDashboard from './components/VolunteerDashboard';
 import VolunteerFindPickups from './components/VolunteerFindPickups';
@@ -41,6 +42,10 @@ function App() {
       <Router>
         <Routes>
           <Route path="/" element={<LandingPage />} />
+          <Route path="/login" element={<MainLogin />} />
+          <Route path="/volunteer-login" element={<VolunteerLogin />} />
+          <Route path="/store-login" element={<StoreLogin />} />
+          <Route path="/foodbank-login" element={<FoodBankLogin />} />
           <Route path="/volunteer" element={<VolunteerLogin />} />
           <Route path="/volunteer/profile-setup" element={<VolunteerProfileSetup />} />
           <Route path="/volunteer/dashboard" element={<VolunteerDashboard />} />
