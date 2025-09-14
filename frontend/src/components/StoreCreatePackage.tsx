@@ -40,6 +40,7 @@ const StoreCreatePackage: React.FC = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [qrCodePath, setQrCodePath] = useState('');
+  const [pickupPin, setPickupPin] = useState('');
 
   const foodTypes = [
     'Bakery Items',
@@ -84,9 +85,10 @@ const StoreCreatePackage: React.FC = () => {
       });
 
       if (result.success) {
-        setSuccess('Package created successfully! QR code generated.');
+        setSuccess('Package created successfully! PIN generated for pickup.');
         setQrCodePath(result.qr_code_image_path);
-        // Don't auto-redirect, let user see the QR code
+        setPickupPin(result.pickup_pin);
+        // Don't auto-redirect, let user see the PIN
       } else {
         setError(result.error || 'Failed to create package');
       }
@@ -181,32 +183,60 @@ const StoreCreatePackage: React.FC = () => {
           </Alert>
         )}
 
-        {qrCodePath && (
-          <Card sx={{ borderRadius: 3, p: 4, mb: 3 }}>
+        {pickupPin && (
+          <Card sx={{ borderRadius: 3, p: 4, mb: 3, border: '2px solid #4CAF50' }}>
             <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3 }}>
-                <Typography sx={{ fontSize: 24 }}>📱</Typography>
-                <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
-                  Generated QR Code
+                <Typography sx={{ fontSize: 24 }}>🔢</Typography>
+                <Typography variant="h5" sx={{ fontWeight: 'bold', color: '#4CAF50' }}>
+                  Pickup PIN Generated
                 </Typography>
               </Box>
               
-              <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
-                <Box
-                  component="img"
-                  src={`${API_BASE_URL}/uploads/${qrCodePath.split('/').pop()}`}
-                  alt="Package QR Code"
-                  sx={{
-                    maxWidth: 300,
-                    maxHeight: 300,
-                    border: '2px solid #e0e0e0',
-                    borderRadius: 3,
-                    p: 2,
-                  }}
-                />
-                <Typography variant="body2" sx={{ color: '#666', textAlign: 'center' }}>
-                  Volunteers can scan this QR code to view package details and confirm pickup
-                </Typography>
+              <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
+                <Box sx={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: 2,
+                  p: 3,
+                  backgroundColor: '#f8f9fa',
+                  borderRadius: 3,
+                  border: '2px dashed #4CAF50'
+                }}>
+                  <Typography variant="body1" sx={{ fontWeight: 'bold', color: '#666' }}>
+                    Give this PIN to the volunteer:
+                  </Typography>
+                  <Typography 
+                    variant="h3" 
+                    sx={{ 
+                      fontFamily: 'monospace',
+                      fontWeight: 'bold',
+                      color: '#4CAF50',
+                      letterSpacing: '0.2em',
+                      backgroundColor: 'white',
+                      padding: '8px 16px',
+                      borderRadius: 2,
+                      border: '2px solid #4CAF50'
+                    }}
+                  >
+                    {pickupPin}
+                  </Typography>
+                </Box>
+                
+                <Box sx={{ textAlign: 'center', maxWidth: 400 }}>
+                  <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 1, color: '#4CAF50' }}>
+                    📋 Instructions:
+                  </Typography>
+                  <Typography variant="body1" sx={{ mb: 2 }}>
+                    1. **Tell the volunteer this PIN** when they arrive
+                  </Typography>
+                  <Typography variant="body1" sx={{ mb: 2 }}>
+                    2. **Volunteer enters PIN** in their app
+                  </Typography>
+                  <Typography variant="body1" sx={{ color: '#4CAF50', fontWeight: 'bold' }}>
+                    3. **Package confirmed** - pickup complete! ✅
+                  </Typography>
+                </Box>
               </Box>
             </CardContent>
           </Card>
