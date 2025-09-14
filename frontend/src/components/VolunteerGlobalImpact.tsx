@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Leaf, Trophy, PartyPopper } from 'lucide-react';
 import {
   Box,
   Typography,
@@ -113,7 +114,7 @@ const VolunteerGlobalImpact: React.FC = () => {
         <Box sx={{ display: 'flex', gap: 3, mb: 4, flexDirection: { xs: 'column', md: 'row' } }}>
           <Card sx={{ flex: 1, background: 'linear-gradient(135deg, #4CAF50 0%, #66BB6A 100%)', color: 'white' }}>
             <CardContent sx={{ textAlign: 'center', p: 3 }}>
-              <Typography sx={{ fontSize: 40, mb: 2 }}>🌱</Typography>
+              <Leaf size={40} style={{ marginBottom: '16px' }} />
               <Typography variant="h3" sx={{ fontWeight: 'bold', mb: 1 }}>
                 58.0M
               </Typography>
@@ -279,19 +280,19 @@ const VolunteerGlobalImpact: React.FC = () => {
             <Card sx={{ p: 2 }}>
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                  <Typography sx={{ fontSize: 20 }}>🏆</Typography>
+                  <Trophy size={20} />
                   <Typography variant="body1">
                     Reached 50M lbs food saved!
                   </Typography>
                 </Box>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                  <Typography sx={{ fontSize: 20 }}>🎉</Typography>
+                  <PartyPopper size={20} />
                   <Typography variant="body1">
                     2M meals milestone achieved
                   </Typography>
                 </Box>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                  <Typography sx={{ fontSize: 20 }}>🎊</Typography>
+                  <PartyPopper size={20} />
                   <Typography variant="body1">
                     10K volunteers joined the movement
                   </Typography>

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Leaf, Package } from 'lucide-react';
 import {
   Box,
   Typography,
@@ -100,7 +101,7 @@ const FoodBankDeliveryLog: React.FC = () => {
       <AppBar position="static" sx={{ bgcolor: 'white', boxShadow: 'none', borderBottom: '1px solid #e0e0e0' }}>
         <Toolbar>
           <Box sx={{ display: 'flex', alignItems: 'center', mr: 4 }}>
-            <Typography sx={{ fontSize: 24, mr: 1 }}>🌱</Typography>
+            <Leaf size={24} style={{ marginRight: '8px' }} />
             <Typography variant="h6" sx={{ color: 'black', fontWeight: 'bold' }}>
               Waste→Worth
             </Typography>
@@ -192,7 +193,7 @@ const FoodBankDeliveryLog: React.FC = () => {
         <Box sx={{ display: 'flex', gap: 3, mb: 4, flexWrap: 'wrap' }}>
           <Card sx={{ flex: '1 1 200px', minWidth: '200px', borderRadius: 3, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
             <CardContent sx={{ textAlign: 'center', py: 3 }}>
-              <Typography sx={{ fontSize: 40, color: '#2196F3', mb: 2 }}>📦</Typography>
+              <Package size={40} style={{ color: '#2196F3', marginBottom: '16px' }} />
               <Typography variant="h4" sx={{ fontWeight: 'bold', mb: 1 }}>
                 {deliveryMetrics.totalDeliveries}
               </Typography>
@@ -314,7 +315,7 @@ const FoodBankDeliveryLog: React.FC = () => {
                 py: 8,
                 textAlign: 'center'
               }}>
-                <Typography sx={{ fontSize: 80, mb: 2 }}>📦</Typography>
+                <Package size={80} style={{ marginBottom: '16px' }} />
                 <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 1 }}>
                   No deliveries found
                 </Typography>
