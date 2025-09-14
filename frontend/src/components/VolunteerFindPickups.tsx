@@ -27,8 +27,8 @@ import {
 import { Package, Leaf, Timer } from 'lucide-react';
 import GoogleMapsComponent from './GoogleMapsComponent';
 import { auth } from '../config/firebase';
-import QRCodeScanner from './QRCodeScanner';
-import { API_BASE_URL } from '../config/api';
+import PinEntryModal from './PinEntryModal';
+import { API_BASE_URL, API_ENDPOINTS, apiCall } from '../config/api';
 
 const VolunteerFindPickups: React.FC = () => {
   const navigate = useNavigate();
@@ -39,8 +39,9 @@ const VolunteerFindPickups: React.FC = () => {
   const [stores, setStores] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [userLocation, setUserLocation] = useState<{lat: number, lng: number} | null>(null);
-  const [qrScannerOpen, setQrScannerOpen] = useState(false);
+  const [pinModalOpen, setPinModalOpen] = useState(false);
   const [selectedPackageId, setSelectedPackageId] = useState<number | null>(null);
+  const [selectedStoreName, setSelectedStoreName] = useState<string>('');
 
   // Function to calculate distance between two coordinates using Haversine formula
   const calculateDistance = (lat1: number, lng1: number, lat2: number, lng2: number): number => {
@@ -203,7 +204,7 @@ const VolunteerFindPickups: React.FC = () => {
       timeWindow: pickup.timeWindow
     }));
 
-  const handleAcceptMission = (pickupId: number) => {
+  const handleAcceptMission = (pickupId: number, storeName: string) => {
     // Get current user from Firebase Auth
     const user = auth.currentUser;
     if (!user) {
@@ -211,82 +212,32 @@ const VolunteerFindPickups: React.FC = () => {
       return;
     }
 
-    // Open QR scanner with the database ID for now
-    // The actual comparison will be done in the QR scanner
+    // Open PIN entry modal
     setSelectedPackageId(pickupId);
-    setQrScannerOpen(true);
+    setSelectedStoreName(storeName);
+    setPinModalOpen(true);
   };
 
-  const handleQRScanSuccess = async (scannedId: string) => {
+  const handlePinVerified = async (packageId: number) => {
     try {
-      const user = auth.currentUser;
-      if (!user || !selectedPackageId) return;
-
-      // Find the selected pickup to get its QR code data
-      const selectedPickup = availablePickups.find(pickup => pickup.id === selectedPackageId);
-      if (!selectedPickup) {
-        alert('❌ Package not found in available pickups');
-        setQrScannerOpen(false);
-        setSelectedPackageId(null);
-        return;
-      }
-
-      // Extract expected package ID from the selected pickup's QR code data
-      let expectedPackageId = selectedPackageId.toString(); // fallback to database ID
-      try {
-        if (selectedPickup.qrCodeData) {
-          const qrData = JSON.parse(selectedPickup.qrCodeData);
-          expectedPackageId = qrData.package_id ? qrData.package_id.toString() : selectedPackageId.toString();
-        }
-      } catch (e) {
-        console.warn('Could not parse QR code data:', e);
-      }
-
-      // Verify the scanned ID matches the expected package ID from QR code
-      if (scannedId !== expectedPackageId) {
-        alert(`❌ QR Code mismatch! Expected package ${expectedPackageId}, but scanned ${scannedId}`);
-        setQrScannerOpen(false);
-        setSelectedPackageId(null);
-        return;
-      }
-
-      // Assign the package to the volunteer using database ID
-      const response = await fetch(`${API_BASE_URL}/api/packages/${selectedPackageId}/assign`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          volunteer_id: user.uid
-        })
-      });
-
-      const data = await response.json();
-
-      if (data.success) {
-        alert(`🎯 Mission accepted! Package ${selectedPackageId} has been assigned to you.`);
-        // Refresh the packages list to update the UI
-        window.location.reload();
-      } else {
-        alert(`Error: ${data.error}`);
-      }
+      alert(`🎯 Mission accepted! Package ${packageId} has been assigned to you.`);
+      // Refresh the packages list to update the UI
+      window.location.reload();
     } catch (error) {
-      console.error('Error accepting mission:', error);
-      alert('Failed to accept mission. Please try again.');
-    } finally {
-      setQrScannerOpen(false);
-      setSelectedPackageId(null);
+      console.error('Error after PIN verification:', error);
+      alert('Package assigned but failed to refresh. Please check your dashboard.');
     }
   };
 
-  const handleQRScanError = (error: string) => {
-    console.error('QR Scan error:', error);
-    alert(`QR Scan failed: ${error}`);
+  const handlePinError = (error: string) => {
+    console.error('PIN verification error:', error);
+    alert(`PIN verification failed: ${error}`);
   };
 
-  const handleQRScannerClose = () => {
-    setQrScannerOpen(false);
+  const handlePinModalClose = () => {
+    setPinModalOpen(false);
     setSelectedPackageId(null);
+    setSelectedStoreName('');
   };
 
   const handleViewDetails = (pickupId: number) => {
@@ -696,7 +647,7 @@ const VolunteerFindPickups: React.FC = () => {
                             backgroundColor: '#4CAF50',
                             '&:hover': { backgroundColor: '#388E3C' }
                           }}
-                          onClick={() => handleAcceptMission(pickup.id)}
+                          onClick={() => handleAcceptMission(pickup.id, pickup.storeName)}
                         >
                           Accept Mission
                         </Button>
@@ -718,14 +669,15 @@ const VolunteerFindPickups: React.FC = () => {
         </Box>
       </Box>
 
-      {/* QR Code Scanner Modal */}
-      <QRCodeScanner
-        open={qrScannerOpen}
-        onClose={handleQRScannerClose}
-        onScanSuccess={handleQRScanSuccess}
-        onScanError={handleQRScanError}
-        expectedPackageId={selectedPackageId || undefined}
-        title={selectedPackageId ? `Scan QR Code for Package #${selectedPackageId}` : "Scan QR Code"}
+      {/* PIN Entry Modal */}
+      <PinEntryModal
+        open={pinModalOpen}
+        onClose={handlePinModalClose}
+        onPinVerified={handlePinVerified}
+        onPinError={handlePinError}
+        packageId={selectedPackageId || undefined}
+        storeName={selectedStoreName}
+        title={selectedPackageId ? `Enter PIN for Package #${selectedPackageId}` : "Enter Pickup PIN"}
       />
     </Box>
   );

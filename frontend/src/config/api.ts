@@ -39,6 +39,7 @@ export const API_ENDPOINTS = {
   
   // Package endpoints
   AVAILABLE_PACKAGES: '/api/packages/available',
+  VERIFY_PICKUP_PIN: (id: number) => `/api/packages/${id}/verify-pin`,
   ASSIGN_PACKAGE: (id: number) => `/api/packages/${id}/assign`,
   COMPLETE_PACKAGE: (id: number) => `/api/packages/${id}/complete`,
   VOLUNTEER_PACKAGES: (volunteerId: string) => `/api/packages/volunteer/${volunteerId}`,

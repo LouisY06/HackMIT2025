@@ -4,6 +4,7 @@ import sqlite3
 import qrcode
 import os
 import json
+import random
 from datetime import datetime
 from dotenv import load_dotenv
 
@@ -33,6 +34,7 @@ def init_db():
             special_instructions TEXT,
             qr_code_data TEXT,
             qr_code_image_path TEXT,
+            pickup_pin TEXT NOT NULL,
             status TEXT DEFAULT 'pending',
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
             volunteer_id TEXT,
@@ -106,6 +108,10 @@ def generate_qr_code(package_data, package_id):
     
     return qr_path
 
+def generate_pickup_pin():
+    """Generate a 4-digit PIN for package pickup confirmation"""
+    return f"{random.randint(1000, 9999)}"
+
 @app.route('/api/packages/create', methods=['POST'])
 def create_package():
     """Create a new package and generate QR code"""
@@ -120,8 +126,9 @@ def create_package():
             if field not in data or not data[field]:
                 return jsonify({'success': False, 'error': f'Missing required field: {field}'}), 400
         
-        # Generate unique package ID
+        # Generate unique package ID and pickup PIN
         package_id = str(int(datetime.now().timestamp() * 1000))
+        pickup_pin = generate_pickup_pin()
         
         # Create QR code data
         qr_data = {
@@ -147,8 +154,8 @@ def create_package():
             INSERT INTO packages (
                 store_name, store_email, weight_lbs, food_type,
                 pickup_window_start, pickup_window_end, special_instructions,
-                qr_code_data, qr_code_image_path, status
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                qr_code_data, qr_code_image_path, pickup_pin, status
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ''', (
             data['store_name'],
             data['store_email'],
@@ -159,6 +166,7 @@ def create_package():
             data.get('special_instructions', ''),
             json.dumps(qr_data),
             qr_image_path,
+            pickup_pin,
             'pending'
         ))
         
@@ -168,6 +176,7 @@ def create_package():
         return jsonify({
             'success': True,
             'package_id': package_id,
+            'pickup_pin': pickup_pin,
             'qr_code_image_path': qr_image_path,
             'message': 'Package created successfully'
         })
@@ -563,6 +572,57 @@ def get_store_locations():
         return jsonify({
             'success': True,
             'stores': store_locations
+        })
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/packages/<int:package_id>/verify-pin', methods=['POST'])
+def verify_pickup_pin(package_id):
+    """Verify pickup PIN and assign package to volunteer"""
+    try:
+        data = request.get_json()
+        entered_pin = data.get('pin')
+        volunteer_id = data.get('volunteer_id')
+        
+        if not entered_pin or not volunteer_id:
+            return jsonify({'success': False, 'error': 'PIN and volunteer ID are required'}), 400
+        
+        conn = sqlite3.connect(DATABASE)
+        cursor = conn.cursor()
+        
+        # Check if package exists and get its PIN
+        cursor.execute('SELECT id, pickup_pin, status FROM packages WHERE id = ?', (package_id,))
+        package = cursor.fetchone()
+        
+        if not package:
+            conn.close()
+            return jsonify({'success': False, 'error': 'Package not found'}), 404
+        
+        if package[2] != 'pending':
+            conn.close()
+            return jsonify({'success': False, 'error': 'Package is no longer available'}), 400
+        
+        # Verify PIN
+        if str(entered_pin) != str(package[1]):
+            conn.close()
+            return jsonify({'success': False, 'error': 'Invalid PIN. Please check with the store.'}), 400
+        
+        # PIN is correct - assign package to volunteer
+        cursor.execute('''
+            UPDATE packages 
+            SET status = 'assigned', volunteer_id = ?
+            WHERE id = ?
+        ''', (volunteer_id, package_id))
+        
+        conn.commit()
+        conn.close()
+        
+        return jsonify({
+            'success': True, 
+            'message': 'PIN verified! Package assigned successfully.',
+            'package_id': package_id,
+            'volunteer_id': volunteer_id
         })
         
     except Exception as e:
