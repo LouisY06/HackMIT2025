@@ -12,7 +12,7 @@ COPY backend/ .
 # Create uploads directory
 RUN mkdir -p uploads
 
-# Expose port
+# Expose port (Railway will assign dynamic port)
 EXPOSE 5001
 
 # Start the application
