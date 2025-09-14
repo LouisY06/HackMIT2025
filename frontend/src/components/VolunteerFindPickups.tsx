@@ -232,18 +232,18 @@ const VolunteerFindPickups: React.FC = () => {
       }
 
       // Extract expected package ID from the selected pickup's QR code data
-      let expectedPackageId = selectedPackageId; // fallback to database ID
+      let expectedPackageId = selectedPackageId.toString(); // fallback to database ID
       try {
         if (selectedPickup.qrCodeData) {
           const qrData = JSON.parse(selectedPickup.qrCodeData);
-          expectedPackageId = qrData.package_id;
+          expectedPackageId = qrData.package_id ? qrData.package_id.toString() : selectedPackageId.toString();
         }
       } catch (e) {
         console.warn('Could not parse QR code data:', e);
       }
 
       // Verify the scanned ID matches the expected package ID from QR code
-      if (parseInt(scannedId) !== parseInt(expectedPackageId)) {
+      if (scannedId !== expectedPackageId) {
         alert(`❌ QR Code mismatch! Expected package ${expectedPackageId}, but scanned ${scannedId}`);
         setQrScannerOpen(false);
         setSelectedPackageId(null);
