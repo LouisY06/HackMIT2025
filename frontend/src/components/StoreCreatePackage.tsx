@@ -269,6 +269,37 @@ const StoreCreatePackage: React.FC = () => {
           </Card>
         )}
 
+        {/* Back Button - only show after package creation */}
+        {pickupPin && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.3 }}
+            style={{ marginBottom: '24px' }}
+          >
+            <Button
+              variant="outlined"
+              startIcon={<ArrowBack />}
+              onClick={() => navigate('/store/dashboard')}
+              sx={{
+                borderColor: '#7A8B5C',
+                color: '#7A8B5C',
+                borderRadius: 2,
+                textTransform: 'none',
+                fontWeight: 600,
+                px: 4,
+                py: 1.5,
+                '&:hover': {
+                  borderColor: '#6B7A4F',
+                  backgroundColor: 'rgba(122, 139, 92, 0.1)',
+                },
+              }}
+            >
+              Back to Dashboard
+            </Button>
+          </motion.div>
+        )}
+
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}

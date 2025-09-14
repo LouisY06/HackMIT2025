@@ -158,16 +158,37 @@ def create_package():
         # Generate QR code image
         qr_image_path = generate_qr_code(qr_data, package_id)
         
-        # Save to database
+        # Get store address from store profile
         conn = sqlite3.connect(DATABASE)
         cursor = conn.cursor()
+        
+        # Add store_address column if it doesn't exist
+        try:
+            cursor.execute('ALTER TABLE packages ADD COLUMN store_address TEXT')
+            conn.commit()
+        except sqlite3.OperationalError:
+            # Column already exists
+            pass
+        
+        # Get store profile data
+        cursor.execute('SELECT profile_data FROM store_profiles WHERE email = ?', (data['store_email'],))
+        store_profile = cursor.fetchone()
+        
+        store_address = 'Address not available'
+        if store_profile and store_profile[0]:
+            try:
+                profile_data = json.loads(store_profile[0])
+                if isinstance(profile_data, dict) and profile_data.get('address'):
+                    store_address = profile_data['address']
+            except json.JSONDecodeError:
+                pass
         
         cursor.execute('''
             INSERT INTO packages (
                 store_name, store_email, weight_lbs, food_type,
                 pickup_window_start, pickup_window_end, special_instructions,
-                qr_code_data, qr_code_image_path, pickup_pin, status
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                qr_code_data, qr_code_image_path, pickup_pin, status, store_address
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ''', (
             data['store_name'],
             data['store_email'],
@@ -179,7 +200,8 @@ def create_package():
             json.dumps(qr_data),
             qr_image_path,
             pickup_pin,
-            'pending'
+            'pending',
+            store_address
         ))
         
         conn.commit()
@@ -537,7 +559,7 @@ def get_available_packages():
                 'created_at': package[12],
                 'volunteer_id': package[13],
                 'pickup_completed_at': package[14],
-                'store_address': store_data.get('address', 'Address not available') if store_data and isinstance(store_data, dict) else 'Address not available',
+                'store_address': package[15] if len(package) > 15 and package[15] else (store_data.get('address', 'Address not available') if store_data and isinstance(store_data, dict) else 'Address not available'),
                 'store_lat': float(store_data.get('latitude', 0)) if store_data and isinstance(store_data, dict) and store_data.get('latitude') else None,
                 'store_lng': float(store_data.get('longitude', 0)) if store_data and isinstance(store_data, dict) and store_data.get('longitude') else None
             }
@@ -733,7 +755,7 @@ def get_volunteer_packages(volunteer_id):
                 'created_at': package[12],
                 'volunteer_id': package[13],
                 'pickup_completed_at': package[14],
-                'store_address': store_data.get('address', 'Address not available') if store_data and isinstance(store_data, dict) else 'Address not available',
+                'store_address': package[15] if len(package) > 15 and package[15] else (store_data.get('address', 'Address not available') if store_data and isinstance(store_data, dict) else 'Address not available'),
                 'store_lat': float(store_data.get('latitude', 0)) if store_data and isinstance(store_data, dict) and store_data.get('latitude') else None,
                 'store_lng': float(store_data.get('longitude', 0)) if store_data and isinstance(store_data, dict) and store_data.get('longitude') else None
             }
@@ -911,7 +933,7 @@ def get_pending_deliveries():
                 'created_at': package[12],
                 'volunteer_id': package[13],
                 'pickup_completed_at': package[14],
-                'store_address': store_data.get('address', 'Address not available') if store_data and isinstance(store_data, dict) else 'Address not available',
+                'store_address': package[15] if len(package) > 15 and package[15] else (store_data.get('address', 'Address not available') if store_data and isinstance(store_data, dict) else 'Address not available'),
                 'store_lat': float(store_data.get('latitude', 0)) if store_data and isinstance(store_data, dict) and store_data.get('latitude') else None,
                 'store_lng': float(store_data.get('longitude', 0)) if store_data and isinstance(store_data, dict) and store_data.get('longitude') else None
             }
