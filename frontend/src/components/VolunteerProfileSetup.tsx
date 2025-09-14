@@ -112,7 +112,7 @@ const VolunteerProfileSetup: React.FC = () => {
         throw new Error('No authenticated user found');
       }
 
-      const response = await fetch(`${API_BASE_URL}/volunteers`, {
+      const response = await fetch(`${API_BASE_URL}/api/users/profile`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -120,14 +120,17 @@ const VolunteerProfileSetup: React.FC = () => {
         body: JSON.stringify({
           firebase_uid: user.uid,
           email: formData.email,
-          first_name: formData.firstName,
-          last_name: formData.lastName,
-          phone: formData.phone,
-          location: formData.location,
-          interests: formData.interests.join(', '),
-          experience: formData.experience,
-          availability: formData.availability,
-          bio: formData.bio,
+          user_type: 'volunteer',
+          profile_data: {
+            firstName: formData.firstName,
+            lastName: formData.lastName,
+            phone: formData.phone,
+            location: formData.location,
+            interests: formData.interests.join(', '),
+            experience: formData.experience,
+            availability: formData.availability,
+            bio: formData.bio,
+          }
         }),
       });
 

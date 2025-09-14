@@ -101,28 +101,31 @@ const FoodBankProfileSetup: React.FC = () => {
         throw new Error('No authenticated user found');
       }
 
-      const response = await fetch(`${API_BASE_URL}/foodbanks`, {
+      const response = await fetch(`${API_BASE_URL}/api/users/profile`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           firebase_uid: user.uid,
-          organization_name: formData.organizationName,
-          contact_name: formData.contactName,
           email: formData.email,
-          phone: formData.phone,
-          address: formData.address,
-          city: formData.city,
-          state: formData.state,
-          zip_code: formData.zipCode,
-          organization_type: formData.organizationType,
-          tax_id: formData.taxId,
-          description: formData.description,
-          capacity: formData.capacity,
-          operating_hours: formData.operatingHours,
-          special_instructions: formData.specialInstructions,
-          serving_area: formData.servingArea,
+          user_type: 'foodbank',
+          profile_data: {
+            organizationName: formData.organizationName,
+            contactName: formData.contactName,
+            phone: formData.phone,
+            address: formData.address,
+            city: formData.city,
+            state: formData.state,
+            zipCode: formData.zipCode,
+            organizationType: formData.organizationType,
+            taxId: formData.taxId,
+            description: formData.description,
+            capacity: formData.capacity,
+            operatingHours: formData.operatingHours,
+            specialInstructions: formData.specialInstructions,
+            servingArea: formData.servingArea,
+          }
         }),
       });
 

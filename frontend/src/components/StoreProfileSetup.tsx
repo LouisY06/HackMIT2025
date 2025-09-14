@@ -100,28 +100,31 @@ const StoreProfileSetup: React.FC = () => {
         throw new Error('No authenticated user found');
       }
 
-      const response = await fetch(`${API_BASE_URL}/stores`, {
+      const response = await fetch(`${API_BASE_URL}/api/users/profile`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           firebase_uid: user.uid,
-          store_name: formData.storeName,
-          owner_name: formData.ownerName,
           email: formData.email,
-          phone: formData.phone,
-          address: formData.address,
-          city: formData.city,
-          state: formData.state,
-          zip_code: formData.zipCode,
-          store_type: formData.storeType,
-          business_license: formData.businessLicense,
-          description: formData.description,
-          operating_hours: formData.operatingHours,
-          special_instructions: formData.specialInstructions,
-          latitude: formData.latitude ? parseFloat(formData.latitude) : null,
-          longitude: formData.longitude ? parseFloat(formData.longitude) : null,
+          user_type: 'store',
+          profile_data: {
+            storeName: formData.storeName,
+            ownerName: formData.ownerName,
+            phone: formData.phone,
+            address: formData.address,
+            city: formData.city,
+            state: formData.state,
+            zipCode: formData.zipCode,
+            storeType: formData.storeType,
+            businessLicense: formData.businessLicense,
+            description: formData.description,
+            operatingHours: formData.operatingHours,
+            specialInstructions: formData.specialInstructions,
+            latitude: formData.latitude ? parseFloat(formData.latitude) : null,
+            longitude: formData.longitude ? parseFloat(formData.longitude) : null,
+          }
         }),
       });
 
