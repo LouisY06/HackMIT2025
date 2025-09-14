@@ -1,7 +1,9 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
+import { onAuthStateChanged, User } from 'firebase/auth';
+import { auth } from './config/firebase';
 import LandingPage from './components/LandingPage';
 import MainLogin from './components/MainLogin';
 import VolunteerLogin from './components/VolunteerLogin';
@@ -36,6 +38,65 @@ const theme = createTheme({
   },
 });
 
+// Component to manage authentication state
+const AuthStateManager: React.FC = () => {
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    console.log('Setting up auth state listener...');
+    
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      console.log('Auth state changed:', {
+        user: currentUser?.email || 'No user',
+        uid: currentUser?.uid || 'No UID',
+        timestamp: new Date().toISOString()
+      });
+      
+      setUser(currentUser);
+      setLoading(false);
+      
+      // Store auth state in sessionStorage for debugging
+      if (currentUser) {
+        sessionStorage.setItem('reflourish_user', JSON.stringify({
+          email: currentUser.email,
+          uid: currentUser.uid,
+          lastLogin: new Date().toISOString()
+        }));
+        console.log('✅ User session stored:', currentUser.email);
+      } else {
+        sessionStorage.removeItem('reflourish_user');
+        console.log('❌ User session cleared');
+      }
+    });
+
+    // Check if there's a stored session on app load
+    const storedUser = sessionStorage.getItem('reflourish_user');
+    if (storedUser) {
+      console.log('📱 Found stored session:', JSON.parse(storedUser));
+    }
+
+    return () => {
+      console.log('🔧 Cleaning up auth listener');
+      unsubscribe();
+    };
+  }, []);
+
+  // Log current auth state for debugging
+  useEffect(() => {
+    if (!loading) {
+      console.log('🔍 Current auth state:', {
+        authenticated: !!user,
+        email: user?.email,
+        loading: loading,
+        environment: process.env.NODE_ENV
+      });
+    }
+  }, [user, loading]);
+
+  return null;
+};
+
 // Component to initialize dev helper with navigation
 const DevHelperInitializer: React.FC = () => {
   const navigate = useNavigate();
@@ -52,6 +113,7 @@ function App() {
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <Router>
+        <AuthStateManager />
         <DevHelperInitializer />
         <Routes>
           <Route path="/" element={<LandingPage />} />
