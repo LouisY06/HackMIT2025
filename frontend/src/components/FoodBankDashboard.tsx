@@ -114,7 +114,7 @@ const FoodBankDashboard: React.FC = () => {
 
           <Box sx={{ display: 'flex', gap: 2, mr: 'auto' }}>
             <Button
-              startIcon={<QrCodeScanner />}
+              startIcon={<CheckCircle />}
               sx={{
                 bgcolor: '#4CAF50',
                 color: 'white',
@@ -122,8 +122,9 @@ const FoodBankDashboard: React.FC = () => {
                 borderRadius: 2,
                 '&:hover': { bgcolor: '#45a049' },
               }}
+              onClick={() => window.location.href = '/foodbank/delivery-confirm'}
             >
-              Scanner
+              PIN Delivery
             </Button>
             <Button
               startIcon={<LocalShipping />}
@@ -357,11 +358,11 @@ const FoodBankDashboard: React.FC = () => {
                     <Button
                       fullWidth
                       variant="outlined"
-                      startIcon={<QrCodeScanner />}
+                      startIcon={<CheckCircle />}
                       sx={{ justifyContent: 'flex-start', borderRadius: 2 }}
-                      onClick={handleResetScanner}
+                      onClick={() => window.location.href = '/foodbank/delivery-confirm'}
                     >
-                      Reset Scanner
+                      PIN Delivery
                     </Button>
                   </Box>
                 </CardContent>
