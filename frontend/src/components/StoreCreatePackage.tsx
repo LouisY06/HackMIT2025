@@ -123,24 +123,54 @@ const StoreCreatePackage: React.FC = () => {
   // Camera functions
   const startCamera = useCallback(async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({
+      console.log('Starting camera...');
+      
+      // Check if getUserMedia is supported
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        throw new Error('Camera not supported by this browser');
+      }
+      
+      const constraints = {
         video: { 
-          facingMode: 'environment', // Use back camera on mobile
-          width: { ideal: 1280 },
-          height: { ideal: 720 }
+          facingMode: { ideal: 'environment' }, // Prefer back camera but fallback to any
+          width: { ideal: 1280, min: 640 },
+          height: { ideal: 720, min: 480 }
         }
-      });
+      };
+      
+      console.log('Requesting camera with constraints:', constraints);
+      const stream = await navigator.mediaDevices.getUserMedia(constraints);
+      
+      console.log('Camera stream obtained:', stream);
       
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
         streamRef.current = stream;
+        
+        // Set initial camera state immediately
+        setShowCamera(true);
+        setError('');
+        
+        // Wait for video to load and play
+        videoRef.current.onloadedmetadata = () => {
+          console.log('Video metadata loaded');
+          if (videoRef.current) {
+            videoRef.current.play().catch(e => {
+              console.error('Video play failed:', e);
+            });
+          }
+        };
+        
+        // Handle video errors
+        videoRef.current.onerror = (e) => {
+          console.error('Video error:', e);
+          setError('📷 Camera failed to load. Please try again.');
+          setShowCamera(false);
+        };
       }
-      setShowCamera(true);
-      setError('');
     } catch (err) {
       console.error('Error accessing camera:', err);
-      setError('📷 Camera access denied or not available. You can still create packages manually below.');
-      // Don't show camera UI if access fails
+      setError(`📷 Camera access failed: ${err.message}. You can still create packages manually below.`);
       setShowCamera(false);
     }
   }, []);
@@ -216,10 +246,14 @@ const StoreCreatePackage: React.FC = () => {
 
   // Auto-start camera when component mounts
   React.useEffect(() => {
-    startCamera();
+    // Delay camera start slightly to ensure DOM is ready
+    const timer = setTimeout(() => {
+      startCamera();
+    }, 500);
     
     // Cleanup function to stop camera when component unmounts
     return () => {
+      clearTimeout(timer);
       stopCamera();
     };
   }, [startCamera, stopCamera]);
@@ -408,14 +442,45 @@ const StoreCreatePackage: React.FC = () => {
                   ref={videoRef}
                   autoPlay
                   playsInline
+                  muted
                   style={{
                     width: '100%',
                     maxWidth: '400px',
+                    height: '300px',
+                    objectFit: 'cover',
                     borderRadius: '12px',
-                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                    backgroundColor: '#000'
                   }}
                 />
                 <canvas ref={canvasRef} style={{ display: 'none' }} />
+                
+                {/* Camera overlay to help with framing */}
+                <Box sx={{
+                  position: 'absolute',
+                  top: '50%',
+                  left: '50%',
+                  transform: 'translate(-50%, -50%)',
+                  border: '2px dashed rgba(255,255,255,0.8)',
+                  borderRadius: 2,
+                  width: '80%',
+                  height: '60%',
+                  pointerEvents: 'none',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}>
+                  <Typography variant="body2" sx={{ 
+                    color: 'white', 
+                    backgroundColor: 'rgba(0,0,0,0.7)',
+                    px: 2,
+                    py: 1,
+                    borderRadius: 1,
+                    fontSize: '0.8rem'
+                  }}>
+                    Position food here
+                  </Typography>
+                </Box>
                 
                 <Box sx={{ display: 'flex', gap: 2, mt: 2, justifyContent: 'center' }}>
                   <Button
@@ -442,6 +507,25 @@ const StoreCreatePackage: React.FC = () => {
                   >
                     Skip AI Analysis
                   </Button>
+                  
+                  {/* Debug button in development */}
+                  {process.env.NODE_ENV === 'development' && (
+                    <Button
+                      variant="text"
+                      onClick={() => {
+                        console.log('Camera debug info:');
+                        console.log('showCamera:', showCamera);
+                        console.log('videoRef.current:', videoRef.current);
+                        console.log('streamRef.current:', streamRef.current);
+                        console.log('Video readyState:', videoRef.current?.readyState);
+                        console.log('Video videoWidth:', videoRef.current?.videoWidth);
+                        console.log('Video videoHeight:', videoRef.current?.videoHeight);
+                      }}
+                      sx={{ fontSize: '0.7rem' }}
+                    >
+                      Debug
+                    </Button>
+                  )}
                 </Box>
               </Box>
             )}
