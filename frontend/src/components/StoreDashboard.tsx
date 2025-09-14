@@ -41,11 +41,13 @@ import {
   Divider,
   Badge,
 } from '@mui/material';
+import { API_BASE_URL } from '../config/api';
+import { auth } from '../config/firebase';
 
 const StoreDashboard: React.FC = () => {
   const navigate = useNavigate();
-  const [storeData] = useState({
-    name: "Flour Bakery",
+  const [storeData, setStoreData] = useState({
+    name: "Store",
     owner: "Sarah Williams",
     activePackages: 1,
     todaysPickups: 0,
@@ -58,6 +60,30 @@ const StoreDashboard: React.FC = () => {
     foodBanksServed: 3,
     avgPickupTime: 18,
   });
+
+  // Fetch store name from profile
+  useEffect(() => {
+    const fetchStoreName = async () => {
+      const user = auth.currentUser;
+      if (user) {
+        try {
+          const response = await fetch(`${API_BASE_URL}/api/users/profile/${user.uid}`);
+          const data = await response.json();
+          
+          if (data.success && data.profile.profile_data.name) {
+            setStoreData(prev => ({
+              ...prev,
+              name: data.profile.profile_data.name
+            }));
+          }
+        } catch (error) {
+          console.error('Error fetching store name:', error);
+        }
+      }
+    };
+
+    fetchStoreName();
+  }, []);
 
   const handleLogout = () => {
     navigate('/store');
@@ -166,7 +192,7 @@ const StoreDashboard: React.FC = () => {
                       fontSize: { xs: '1.5rem', sm: '2.125rem' },
                     }}
                   >
-                    Store Dashboard
+                    {storeData.name}
                   </Typography>
                   <Box sx={{ 
                     display: { xs: 'none', sm: 'flex' }, 
