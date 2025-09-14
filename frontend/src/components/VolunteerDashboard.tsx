@@ -17,6 +17,7 @@ import {
   Badge,
 } from '@mui/material';
 import { LocalShipping } from '@mui/icons-material';
+import { Gift, Trophy } from 'lucide-react';
 
 const VolunteerDashboard: React.FC = () => {
   const navigate = useNavigate();
@@ -300,7 +301,7 @@ const VolunteerDashboard: React.FC = () => {
               <CardContent>
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                   <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
-                    🎁 Rewards
+                    <Gift size={20} style={{ marginRight: '8px' }} /> Rewards
                   </Typography>
                 </Box>
                 <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 1 }}>
@@ -353,7 +354,7 @@ const VolunteerDashboard: React.FC = () => {
               <CardContent>
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                   <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
-                    🏆 Leaderboard
+                    <Trophy size={20} style={{ marginRight: '8px' }} /> Leaderboard
                   </Typography>
                 </Box>
                 <List dense>
@@ -376,7 +377,7 @@ const VolunteerDashboard: React.FC = () => {
                         secondary={`${user.points} points`}
                       />
                       {user.rank <= 3 && (
-                        <Typography sx={{ color: '#ff9800', fontSize: 20 }}>🏆</Typography>
+                        <Trophy size={20} style={{ color: '#ff9800' }} />
                       )}
                     </ListItem>
                   ))}

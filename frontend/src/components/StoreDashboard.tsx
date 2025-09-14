@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Package, Leaf, DollarSign, Clock } from 'lucide-react';
 import {
   Box,
   Typography,
@@ -175,7 +176,7 @@ const StoreDashboard: React.FC = () => {
           <Box sx={{ flex: '1 1 250px', minWidth: '250px' }}>
             <Card sx={{ height: '100%', borderRadius: 3 }}>
               <CardContent sx={{ textAlign: 'center', py: 3 }}>
-                <Typography sx={{ fontSize: 40, color: '#2196F3', mb: 1 }}>[📦]</Typography>
+                <Package size={40} style={{ color: '#2196F3', marginBottom: '8px' }} />
                 <Typography variant="h4" sx={{ fontWeight: 'bold', mb: 1 }}>
                   {storeData.activePackages}
                 </Typography>
@@ -203,7 +204,7 @@ const StoreDashboard: React.FC = () => {
           <Box sx={{ flex: '1 1 250px', minWidth: '250px' }}>
             <Card sx={{ height: '100%', borderRadius: 3 }}>
               <CardContent sx={{ textAlign: 'center', py: 3 }}>
-                <Typography sx={{ fontSize: 40, color: '#4CAF50', mb: 1 }}>[🌱]</Typography>
+                <Leaf size={40} style={{ color: '#4CAF50', marginBottom: '8px' }} />
                 <Typography variant="h4" sx={{ fontWeight: 'bold', mb: 1 }}>
                   {storeData.wasteDiverted} lbs
                 </Typography>
@@ -217,7 +218,7 @@ const StoreDashboard: React.FC = () => {
           <Box sx={{ flex: '1 1 250px', minWidth: '250px' }}>
             <Card sx={{ height: '100%', borderRadius: 3 }}>
               <CardContent sx={{ textAlign: 'center', py: 3 }}>
-                <Typography sx={{ fontSize: 40, color: '#FF9800', mb: 1 }}>[💰]</Typography>
+                <DollarSign size={40} style={{ color: '#FF9800', marginBottom: '8px' }} />
                 <Typography variant="h4" sx={{ fontWeight: 'bold', mb: 1 }}>
                   ${storeData.costSaved}
                 </Typography>
@@ -412,7 +413,7 @@ const StoreDashboard: React.FC = () => {
                 </Typography>
                 
                 <Box sx={{ textAlign: 'center', py: 4 }}>
-                  <Typography sx={{ fontSize: 80, color: '#ccc', mb: 2 }}>[📦]</Typography>
+                  <Package size={80} style={{ color: '#ccc', marginBottom: '16px' }} />
                   <Typography variant="body1" sx={{ color: '#666', mb: 2 }}>
                     No recent activity
                   </Typography>
@@ -456,7 +457,7 @@ const StoreDashboard: React.FC = () => {
                   </Box>
                   
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                    <Typography sx={{ color: '#FF9800' }}>[⏰]</Typography>
+                    <Clock size={16} style={{ color: '#FF9800' }} />
                     <Typography variant="body1">
                       Average pickup time {storeData.avgPickupTime} min
                     </Typography>

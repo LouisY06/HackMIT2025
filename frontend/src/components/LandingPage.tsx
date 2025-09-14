@@ -45,13 +45,13 @@ const LandingPage: React.FC = () => {
           variant="h2"
           component="h1"
           sx={{
-            fontFamily: '"Dancing Script", cursive',
-            fontWeight: 700,
+            fontFamily: '"Playfair Display", serif',
+            fontWeight: 800,
             fontSize: { xs: '3rem', md: '5rem' },
             textAlign: 'center',
             mb: 2,
             textShadow: '2px 2px 4px rgba(0,0,0,0.3)',
-            letterSpacing: '2px',
+            letterSpacing: '1px',
           }}
         >
           reflourish
