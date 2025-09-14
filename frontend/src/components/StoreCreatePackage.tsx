@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Leaf, Package, Home, BarChart3, TrendingUp, LogOut } from 'lucide-react';
+import { Leaf, Package, Home, BarChart3, TrendingUp, LogOut, Camera, X, RotateCw } from 'lucide-react';
 import { API_BASE_URL, API_ENDPOINTS, apiCall } from '../config/api';
 import { auth } from '../config/firebase';
 import {
@@ -17,6 +17,7 @@ import {
   InputLabel,
   Alert,
   CircularProgress,
+  Chip,
 } from '@mui/material';
 
 interface PackageFormData {
@@ -41,6 +42,15 @@ const StoreCreatePackage: React.FC = () => {
   const [success, setSuccess] = useState('');
   // Removed qrCodePath state - using PIN system instead
   const [pickupPin, setPickupPin] = useState('');
+  
+  // Camera and AI analysis states
+  const [showCamera, setShowCamera] = useState(false);
+  const [analyzing, setAnalyzing] = useState(false);
+  const [capturedImage, setCapturedImage] = useState<string | null>(null);
+  const [aiAnalysis, setAiAnalysis] = useState<any>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const streamRef = useRef<MediaStream | null>(null);
 
   const foodTypes = [
     'Bakery Items',
@@ -73,12 +83,19 @@ const StoreCreatePackage: React.FC = () => {
         return;
       }
 
+      // Check if user is authenticated
+      if (!auth.currentUser?.email) {
+        setError('Please log in to create a package');
+        setLoading(false);
+        return;
+      }
+
       // Submit to backend using the correct API endpoint
       const result = await apiCall(API_ENDPOINTS.CREATE_PACKAGE, {
         method: 'POST',
         body: JSON.stringify({
           store_name: 'Flour Bakery', // This would come from user profile
-          store_email: auth.currentUser?.email || 'sarah@flourbakery.com', // Get from Firebase auth
+          store_email: auth.currentUser.email,
           ...formData,
           weight_lbs: parseFloat(formData.weight_lbs),
         }),
@@ -102,6 +119,142 @@ const StoreCreatePackage: React.FC = () => {
   const handleCancel = () => {
     navigate('/store/dashboard');
   };
+
+  // Camera functions
+  const startCamera = useCallback(async () => {
+    try {
+      console.log('Starting camera...');
+      
+      // Check if getUserMedia is supported
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        throw new Error('Camera not supported by this browser');
+      }
+      
+      const constraints = {
+        video: { 
+          facingMode: { ideal: 'environment' }, // Prefer back camera but fallback to any
+          width: { ideal: 640, max: 1280 },
+          height: { ideal: 480, max: 720 }
+        }
+      };
+      
+      console.log('Requesting camera with constraints:', constraints);
+      const stream = await navigator.mediaDevices.getUserMedia(constraints);
+      
+      console.log('Camera stream obtained:', stream);
+      
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        streamRef.current = stream;
+        
+        // Set initial camera state immediately
+        setShowCamera(true);
+        setError('');
+        
+        // Wait for video to load and play
+        videoRef.current.onloadedmetadata = () => {
+          console.log('Video metadata loaded');
+          if (videoRef.current) {
+            videoRef.current.play().catch(e => {
+              console.error('Video play failed:', e);
+            });
+          }
+        };
+        
+        // Handle video errors
+        videoRef.current.onerror = (e) => {
+          console.error('Video error:', e);
+          setError('📷 Camera failed to load. Please try again.');
+          setShowCamera(false);
+        };
+      }
+    } catch (err) {
+      console.error('Error accessing camera:', err);
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+      setError(`📷 Camera access failed: ${errorMessage}. You can still create packages manually below.`);
+      setShowCamera(false);
+    }
+  }, []);
+
+  const stopCamera = useCallback(() => {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => track.stop());
+      streamRef.current = null;
+    }
+    setShowCamera(false);
+  }, []);
+
+  const capturePhoto = useCallback(() => {
+    if (videoRef.current && canvasRef.current) {
+      const video = videoRef.current;
+      const canvas = canvasRef.current;
+      const context = canvas.getContext('2d');
+      
+      if (context) {
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        context.drawImage(video, 0, 0);
+        
+        const imageDataUrl = canvas.toDataURL('image/jpeg', 0.8);
+        setCapturedImage(imageDataUrl);
+        stopCamera();
+        analyzeImage(imageDataUrl);
+      }
+    }
+  }, [stopCamera]);
+
+  const analyzeImage = async (imageDataUrl: string) => {
+    setAnalyzing(true);
+    setError('');
+    
+    try {
+      const response = await apiCall(API_ENDPOINTS.ANALYZE_FOOD_IMAGE, {
+        method: 'POST',
+        body: JSON.stringify({ image: imageDataUrl })
+      });
+
+      if (response.success) {
+        const { analysis } = response;
+        
+        // Store the AI analysis for display
+        setAiAnalysis(analysis);
+        
+        // Auto-fill the form with AI analysis
+        setFormData(prev => ({
+          ...prev,
+          food_type: analysis.food_type,
+          weight_lbs: analysis.estimated_weight_lbs.toString()
+        }));
+        
+        setSuccess(`🤖 AI Analysis Complete! Food: ${analysis.food_type} | Weight: ${analysis.estimated_weight_lbs} lbs | Confidence: ${analysis.confidence}`);
+      } else {
+        setError(response.error || 'Failed to analyze image');
+      }
+    } catch (err) {
+      console.error('Error analyzing image:', err);
+      setError('Failed to analyze image. Please try again or fill manually.');
+    } finally {
+      setAnalyzing(false);
+    }
+  };
+
+  const retakePhoto = () => {
+    setCapturedImage(null);
+    setAiAnalysis(null);
+    setSuccess('');
+    startCamera();
+  };
+
+  // Auto-start camera when component mounts
+  React.useEffect(() => {
+    // Start camera immediately
+    startCamera();
+    
+    // Cleanup function to stop camera when component unmounts
+    return () => {
+      stopCamera();
+    };
+  }, [startCamera, stopCamera]);
 
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: '#f8f9fa' }}>
@@ -241,6 +394,212 @@ const StoreCreatePackage: React.FC = () => {
             </CardContent>
           </Card>
         )}
+
+        {/* AI-Powered Photo Analysis */}
+        <Card sx={{ borderRadius: 3, p: 4, mb: 3, backgroundColor: '#f0f8ff', border: '2px solid #2196F3' }}>
+          <CardContent>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3 }}>
+              <Camera size={24} color="#2196F3" />
+              <Typography variant="h5" sx={{ fontWeight: 'bold', color: '#2196F3' }}>
+                AI-Powered Food Analysis
+              </Typography>
+            </Box>
+            
+            <Typography variant="body2" sx={{ color: '#666', mb: 3 }}>
+              {showCamera ? 'Position your food in the camera frame and tap capture for AI analysis' : 'Take a photo of your food to automatically identify the type and estimate weight using AI'}
+            </Typography>
+
+            {!showCamera && !capturedImage && !error && (
+              <Box sx={{ textAlign: 'center', py: 3 }}>
+                <CircularProgress sx={{ color: '#2196F3' }} />
+                <Typography variant="body2" sx={{ mt: 1, color: '#666' }}>
+                  Starting camera...
+                </Typography>
+              </Box>
+            )}
+
+            {!showCamera && !capturedImage && error && (
+              <Box sx={{ textAlign: 'center', py: 3 }}>
+                <Typography variant="body2" sx={{ mb: 2, color: '#666' }}>
+                  Camera not available, but you can still create packages manually.
+                </Typography>
+                <Button
+                  variant="outlined"
+                  startIcon={<Camera />}
+                  onClick={startCamera}
+                  sx={{ borderRadius: 2 }}
+                >
+                  Try Camera Again
+                </Button>
+              </Box>
+            )}
+
+            {showCamera && (
+              <Box sx={{ position: 'relative' }}>
+                <video
+                  ref={videoRef}
+                  autoPlay
+                  playsInline
+                  muted
+                  style={{
+                    width: '100%',
+                    maxWidth: '400px',
+                    height: '300px',
+                    objectFit: 'cover',
+                    borderRadius: '12px',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                    backgroundColor: '#000'
+                  }}
+                />
+                <canvas ref={canvasRef} style={{ display: 'none' }} />
+                
+                {/* Camera overlay to help with framing */}
+                <Box sx={{
+                  position: 'absolute',
+                  top: '50%',
+                  left: '50%',
+                  transform: 'translate(-50%, -50%)',
+                  border: '2px dashed rgba(255,255,255,0.8)',
+                  borderRadius: 2,
+                  width: '80%',
+                  height: '60%',
+                  pointerEvents: 'none',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}>
+                  <Typography variant="body2" sx={{ 
+                    color: 'white', 
+                    backgroundColor: 'rgba(0,0,0,0.7)',
+                    px: 2,
+                    py: 1,
+                    borderRadius: 1,
+                    fontSize: '0.8rem'
+                  }}>
+                    Position food here
+                  </Typography>
+                </Box>
+                
+                <Box sx={{ display: 'flex', gap: 2, mt: 2, justifyContent: 'center' }}>
+                  <Button
+                    variant="contained"
+                    onClick={capturePhoto}
+                    size="large"
+                    sx={{
+                      backgroundColor: '#4CAF50',
+                      '&:hover': { backgroundColor: '#45a049' },
+                      borderRadius: 3,
+                      px: 4,
+                      py: 1.5,
+                      fontSize: '1.1rem',
+                      fontWeight: 'bold'
+                    }}
+                  >
+                    📷 Capture & Analyze
+                  </Button>
+                  <Button
+                    variant="outlined"
+                    onClick={stopCamera}
+                    startIcon={<X />}
+                    sx={{ borderRadius: 3 }}
+                  >
+                    Skip AI Analysis
+                  </Button>
+                  
+                  {/* Debug button in development */}
+                  {process.env.NODE_ENV === 'development' && (
+                    <Button
+                      variant="text"
+                      onClick={() => {
+                        console.log('Camera debug info:');
+                        console.log('showCamera:', showCamera);
+                        console.log('videoRef.current:', videoRef.current);
+                        console.log('streamRef.current:', streamRef.current);
+                        console.log('Video readyState:', videoRef.current?.readyState);
+                        console.log('Video videoWidth:', videoRef.current?.videoWidth);
+                        console.log('Video videoHeight:', videoRef.current?.videoHeight);
+                      }}
+                      sx={{ fontSize: '0.7rem' }}
+                    >
+                      Debug
+                    </Button>
+                  )}
+                </Box>
+              </Box>
+            )}
+
+            {capturedImage && (
+              <Box>
+                <Box sx={{ display: 'flex', gap: 3, alignItems: 'flex-start' }}>
+                  <img
+                    src={capturedImage}
+                    alt="Captured food"
+                    style={{
+                      width: '50%',
+                      maxWidth: '250px',
+                      borderRadius: '12px',
+                      boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+                    }}
+                  />
+                  
+                  {aiAnalysis && (
+                    <Box sx={{ 
+                      flex: 1, 
+                      backgroundColor: '#f8f9fa', 
+                      borderRadius: 2, 
+                      p: 2,
+                      border: '1px solid #e0e0e0'
+                    }}>
+                      <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 1, color: '#2196F3' }}>
+                        🤖 AI Analysis Results
+                      </Typography>
+                      
+                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                        <Typography variant="body2">
+                          <strong>Food Type:</strong> {aiAnalysis.food_type}
+                        </Typography>
+                        <Typography variant="body2">
+                          <strong>Weight:</strong> {aiAnalysis.estimated_weight_lbs} lbs
+                        </Typography>
+                        <Typography variant="body2">
+                          <strong>Confidence:</strong> 
+                          <Chip 
+                            label={aiAnalysis.confidence} 
+                            size="small" 
+                            color={aiAnalysis.confidence === 'high' ? 'success' : aiAnalysis.confidence === 'medium' ? 'warning' : 'default'}
+                            sx={{ ml: 1 }}
+                          />
+                        </Typography>
+                        {aiAnalysis.reasoning && (
+                          <Typography variant="body2" sx={{ mt: 1, fontStyle: 'italic', color: '#666' }}>
+                            <strong>How we estimated:</strong> {aiAnalysis.reasoning}
+                          </Typography>
+                        )}
+                      </Box>
+                    </Box>
+                  )}
+                </Box>
+                
+                <Box sx={{ display: 'flex', gap: 2, mt: 2 }}>
+                  {analyzing ? (
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                      <CircularProgress size={20} />
+                      <Typography>🤖 AI is analyzing your food...</Typography>
+                    </Box>
+                  ) : (
+                    <Button
+                      variant="outlined"
+                      startIcon={<RotateCw />}
+                      onClick={retakePhoto}
+                    >
+                      Retake Photo
+                    </Button>
+                  )}
+                </Box>
+              </Box>
+            )}
+          </CardContent>
+        </Card>
 
         <Card sx={{ borderRadius: 3, p: 4 }}>
           <CardContent>

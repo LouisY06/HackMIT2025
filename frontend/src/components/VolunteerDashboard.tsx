@@ -72,6 +72,7 @@ const VolunteerDashboard: React.FC = () => {
   const [selectedPackageId, setSelectedPackageId] = useState<number | null>(null);
   const [pinValue, setPinValue] = useState('');
   const [userLocation, setUserLocation] = useState<{lat: number, lng: number} | null>(null);
+  const [locationPrompted, setLocationPrompted] = useState(false);
   
   // Delivery info modal states
   const [deliveryInfoOpen, setDeliveryInfoOpen] = useState(false);
@@ -136,17 +137,26 @@ const VolunteerDashboard: React.FC = () => {
   const fetchCurrentTasks = async () => {
     try {
       const user = auth.currentUser;
-      if (!user) return;
+      if (!user) {
+        console.log('No authenticated user, skipping task fetch');
+        return;
+      }
 
+      console.log(`Fetching tasks for volunteer: ${user.uid}`);
       const tasksResponse = await fetch(`${API_BASE_URL}/api/packages/volunteer/${user.uid}`);
       const tasksData = await tasksResponse.json();
+      
+      console.log('Tasks response:', tasksData);
       
       if (tasksData.success) {
         // Show both assigned and picked_up tasks
         const activeTasks = tasksData.packages.filter((task: any) => 
           task.status === 'assigned' || task.status === 'picked_up'
         );
+        console.log(`Found ${activeTasks.length} active tasks:`, activeTasks);
         setCurrentTasks(activeTasks);
+      } else {
+        console.error('Failed to fetch tasks:', tasksData.error);
       }
     } catch (error) {
       console.error('Error fetching current tasks:', error);
@@ -157,11 +167,16 @@ const VolunteerDashboard: React.FC = () => {
   const fetchData = async () => {
     try {
       const user = auth.currentUser;
-      if (!user) return;
+      if (!user) {
+        console.log('No authenticated user, skipping data fetch');
+        return;
+      }
+      
+      console.log(`Fetching data for user: ${user.uid}`);
 
-      // Get user location
-      const location = await getUserLocation();
-      setUserLocation(location);
+      // Use existing user location or get it if not available
+      const location = userLocation || await getUserLocation();
+      if (!userLocation) setUserLocation(location);
 
       // Fetch available packages
       const packagesResponse = await fetch(`${API_BASE_URL}/api/packages/available`);
@@ -188,6 +203,8 @@ const VolunteerDashboard: React.FC = () => {
               start: pkg.pickup_window_start,
               end: pkg.pickup_window_end,
             },
+            lat: pkg.store_lat,
+            lng: pkg.store_lng,
           };
         });
         
@@ -228,6 +245,8 @@ const VolunteerDashboard: React.FC = () => {
           points: 110,
           urgency: 'high',
           pickupWindow: { start: new Date(), end: new Date(Date.now() + 2 * 60 * 60 * 1000) },
+          lat: 42.3601,
+          lng: -71.0589,
         },
         {
           id: 2,
@@ -239,6 +258,8 @@ const VolunteerDashboard: React.FC = () => {
           points: 90,
           urgency: 'medium',
           pickupWindow: { start: new Date(), end: new Date(Date.now() + 3 * 60 * 60 * 1000) },
+          lat: 42.3651,
+          lng: -71.0639,
         },
       ]);
     } finally {
@@ -246,8 +267,20 @@ const VolunteerDashboard: React.FC = () => {
     }
   };
 
+  // Handle authentication state and fetch data when user is authenticated
   useEffect(() => {
-    fetchData();
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      if (user) {
+        // User is authenticated, fetch data
+        fetchData();
+      } else {
+        // User is not authenticated, clear data
+        setCurrentTasks([]);
+        setAvailablePackages([]);
+      }
+    });
+
+    return () => unsubscribe();
   }, []);
 
   // PIN entry functions for pickup confirmation
@@ -342,8 +375,8 @@ const VolunteerDashboard: React.FC = () => {
         }}
       >
         <motion.div
-          animate={{ rotate: 360 }}
-          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+          animate={{ rotate: [0, 360] }}
+          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
         >
           <RefreshCw size={48} color="#848D58" />
         </motion.div>
@@ -378,26 +411,28 @@ const VolunteerDashboard: React.FC = () => {
       }}
     >
       {/* Header */}
-      <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, ease: "easeOut" }}
-      >
+      <Box>
         <Box
           sx={{
             background: 'rgba(0, 0, 0, 0.7)',
             backdropFilter: 'blur(10px)',
             borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
-            p: 3,
+            p: { xs: 2, md: 3 },
           }}
         >
           <Container maxWidth="xl">
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Box sx={{ 
+              display: 'flex', 
+              justifyContent: 'space-between', 
+              alignItems: 'center',
+              flexDirection: { xs: 'column', sm: 'row' },
+              gap: { xs: 2, sm: 0 }
+            }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1.5, sm: 2 } }}>
                 <Box
                   sx={{
-                    width: 60,
-                    height: 60,
+                    width: { xs: 40, sm: 60 },
+                    height: { xs: 40, sm: 60 },
                     borderRadius: '50%',
                     background: 'linear-gradient(135deg, #848D58 0%, #6F7549 100%)',
                     display: 'flex',
@@ -409,16 +444,21 @@ const VolunteerDashboard: React.FC = () => {
                 </Box>
                 <Box>
                   <Typography 
-                    variant="h4" 
+                    variant="h4"
                     sx={{ 
                       fontWeight: 700,
                       color: 'white',
                       fontFamily: '"Helvetica Neue", "Helvetica", "Arial", sans-serif',
+                      fontSize: { xs: '1.5rem', sm: '2.125rem' },
                     }}
                   >
                     Volunteer Dashboard
                   </Typography>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Box sx={{ 
+                    display: { xs: 'none', sm: 'flex' }, 
+                    alignItems: 'center', 
+                    gap: 1 
+                  }}>
                     <Typography 
                       variant="subtitle1" 
                       sx={{ 
@@ -434,36 +474,40 @@ const VolunteerDashboard: React.FC = () => {
                 </Box>
               </Box>
 
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                  <Chip
-                    icon={<Star size={18} />}
-                    label={`${userStats.points} points`}
-                    sx={{
-                      background: 'linear-gradient(135deg, #848D58 0%, #6F7549 100%)',
-                      color: 'white',
-                      fontWeight: 600,
-                      fontSize: '1rem',
-                      px: 1,
-                      '& .MuiChip-icon': { color: 'white' },
-                    }}
-                  />
-                </motion.div>
-                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                  <Chip
-                    icon={<Trophy size={18} />}
-                    label={`Rank #${userStats.rank}`}
-                    variant="outlined"
-                    sx={{
-                      borderColor: '#848D58',
-                      color: '#848D58',
-                      fontWeight: 600,
-                      '& .MuiChip-icon': { color: '#848D58' },
-                    }}
-                  />
-                </motion.div>
+              <Box sx={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: { xs: 1, sm: 2 },
+                flexWrap: 'wrap',
+                justifyContent: 'center'
+              }}>
+                <Chip
+                  icon={<Star size={16} />}
+                  label={`${userStats.points} pts`}
+                  sx={{
+                    background: 'linear-gradient(135deg, #848D58 0%, #6F7549 100%)',
+                    color: 'white',
+                    fontWeight: 600,
+                    fontSize: { xs: '0.8rem', sm: '1rem' },
+                    px: 1,
+                    '& .MuiChip-icon': { color: 'white' },
+                  }}
+                />
+                <Chip
+                  icon={<Trophy size={16} />}
+                  label={`#${userStats.rank}`}
+                  variant="outlined"
+                  sx={{
+                    borderColor: '#848D58',
+                    color: '#848D58',
+                    fontWeight: 600,
+                    fontSize: { xs: '0.8rem', sm: '1rem' },
+                    '& .MuiChip-icon': { color: '#848D58' },
+                  }}
+                />
                 <IconButton
                   onClick={() => navigate('/')}
+                  size="small"
                   sx={{
                     background: 'rgba(132, 141, 88, 0.1)',
                     color: '#848D58',
@@ -472,15 +516,15 @@ const VolunteerDashboard: React.FC = () => {
                     },
                   }}
                 >
-                  <LogOut size={20} />
+                  <LogOut size={18} />
                 </IconButton>
               </Box>
             </Box>
           </Container>
         </Box>
-      </motion.div>
+      </Box>
 
-      <Container maxWidth="xl" sx={{ mt: 4 }}>
+      <Container maxWidth="xl" sx={{ mt: { xs: 2, md: 4 }, px: { xs: 2, md: 3 } }}>
         <motion.div
           variants={containerVariants}
           initial="hidden"
@@ -492,7 +536,7 @@ const VolunteerDashboard: React.FC = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.1 }}
           >
-            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(4, 1fr)' }, gap: 3, mb: 4 }}>
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: 'repeat(2, 1fr)', md: 'repeat(4, 1fr)' }, gap: { xs: 2, md: 3 }, mb: 4 }}>
               <Box>
                 <motion.div
                   whileHover={{ 
@@ -511,17 +555,19 @@ const VolunteerDashboard: React.FC = () => {
                       position: 'relative',
                     }}
                   >
-                    <CardContent sx={{ p: 3 }}>
+                    <CardContent sx={{ p: { xs: 2, md: 3 } }}>
                       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                         <Box>
-                          <Typography variant="h3" sx={{ fontWeight: 700, mb: 0.5 }}>
+                          <Typography variant="h3" sx={{ fontWeight: 700, mb: 0.5, fontSize: { xs: '2rem', md: '3rem' } }}>
                             {userStats.completedPickups}
                           </Typography>
-                          <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                          <Typography variant="body2" sx={{ opacity: 0.9, fontSize: { xs: '0.75rem', md: '0.875rem' } }}>
                             Completed Pickups
                           </Typography>
                         </Box>
-                        <CheckCircle size={40} style={{ opacity: 0.8 }} />
+                        <Box sx={{ '& svg': { width: { xs: 24, md: 40 }, height: { xs: 24, md: 40 } } }}>
+                          <CheckCircle size={40} style={{ opacity: 0.8 }} />
+                        </Box>
                       </Box>
                     </CardContent>
                   </Card>
@@ -544,17 +590,19 @@ const VolunteerDashboard: React.FC = () => {
                       borderRadius: 3,
                     }}
                   >
-                    <CardContent sx={{ p: 3 }}>
+                    <CardContent sx={{ p: { xs: 2, md: 3 } }}>
                       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                         <Box>
-                          <Typography variant="h3" sx={{ fontWeight: 700, mb: 0.5 }}>
+                          <Typography variant="h3" sx={{ fontWeight: 700, mb: 0.5, fontSize: { xs: '2rem', md: '3rem' } }}>
                             {userStats.foodSaved}
                           </Typography>
-                          <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                          <Typography variant="body2" sx={{ opacity: 0.9, fontSize: { xs: '0.75rem', md: '0.875rem' } }}>
                             lbs Food Saved
                           </Typography>
                         </Box>
-                        <Leaf size={40} style={{ opacity: 0.8 }} />
+                        <Box sx={{ '& svg': { width: { xs: 24, md: 40 }, height: { xs: 24, md: 40 } } }}>
+                          <Leaf size={40} style={{ opacity: 0.8 }} />
+                        </Box>
                       </Box>
                     </CardContent>
                   </Card>
@@ -577,17 +625,19 @@ const VolunteerDashboard: React.FC = () => {
                       borderRadius: 3,
                     }}
                   >
-                    <CardContent sx={{ p: 3 }}>
+                    <CardContent sx={{ p: { xs: 2, md: 3 } }}>
                       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                         <Box>
-                          <Typography variant="h3" sx={{ fontWeight: 700, mb: 0.5 }}>
+                          <Typography variant="h3" sx={{ fontWeight: 700, mb: 0.5, fontSize: { xs: '2rem', md: '3rem' } }}>
                             {userStats.co2Reduced}
                           </Typography>
-                          <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                          <Typography variant="body2" sx={{ opacity: 0.9, fontSize: { xs: '0.75rem', md: '0.875rem' } }}>
                             kg CO₂ Reduced
                           </Typography>
                         </Box>
-                        <Globe size={40} style={{ opacity: 0.8 }} />
+                        <Box sx={{ '& svg': { width: { xs: 24, md: 40 }, height: { xs: 24, md: 40 } } }}>
+                          <Globe size={40} style={{ opacity: 0.8 }} />
+                        </Box>
                       </Box>
                     </CardContent>
                   </Card>
@@ -610,17 +660,19 @@ const VolunteerDashboard: React.FC = () => {
                       borderRadius: 3,
                     }}
                   >
-                    <CardContent sx={{ p: 3 }}>
+                    <CardContent sx={{ p: { xs: 2, md: 3 } }}>
                       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                         <Box>
-                          <Typography variant="h3" sx={{ fontWeight: 700, mb: 0.5 }}>
+                          <Typography variant="h3" sx={{ fontWeight: 700, mb: 0.5, fontSize: { xs: '2rem', md: '3rem' } }}>
                             {Math.round(userStats.foodSaved * 0.8)}
                           </Typography>
-                          <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                          <Typography variant="body2" sx={{ opacity: 0.9, fontSize: { xs: '0.75rem', md: '0.875rem' } }}>
                             Meals Provided
                           </Typography>
                         </Box>
-                        <Heart size={40} style={{ opacity: 0.8 }} />
+                        <Box sx={{ '& svg': { width: { xs: 24, md: 40 }, height: { xs: 24, md: 40 } } }}>
+                          <Heart size={40} style={{ opacity: 0.8 }} />
+                        </Box>
                       </Box>
                     </CardContent>
                   </Card>
@@ -630,7 +682,7 @@ const VolunteerDashboard: React.FC = () => {
           </motion.div>
 
           {/* Main Content */}
-          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '2fr 1fr' }, gap: 4 }}>
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '2fr 1fr' }, gap: { xs: 3, lg: 4 } }}>
             {/* Available Pickups */}
             <Box>
               <motion.div
@@ -933,7 +985,7 @@ const VolunteerDashboard: React.FC = () => {
                               py: 1.5,
                             }}
                           >
-                            Find Nearby Pickups
+                            Open Maps
                           </Button>
                         </motion.div>
                         <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>

@@ -8,6 +8,7 @@ const getApiBaseUrl = (): string => {
   if (process.env.NODE_ENV === 'development') {
     console.log('Using development URL: http://localhost:5001');
     return 'http://localhost:5001';
+    
   }
   
   // Check for custom API URL in environment (set by Vercel)
@@ -36,6 +37,7 @@ export const API_ENDPOINTS = {
   STORE_LOCATIONS: '/api/stores/locations',
   CREATE_PACKAGE: '/api/packages/create',
   STORE_PACKAGES: (email: string) => `/api/packages/store/${email}`,
+  ANALYZE_FOOD_IMAGE: '/api/analyze-food-image',
   
   // Package endpoints
   AVAILABLE_PACKAGES: '/api/packages/available',

@@ -309,7 +309,7 @@ const VolunteerFindPickups: React.FC = () => {
                       fontFamily: '"Helvetica Neue", "Helvetica", "Arial", sans-serif',
                     }}
                   >
-                    Find Nearby Pickups
+                    Open Maps
                   </Typography>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                     <Typography 
@@ -429,155 +429,39 @@ const VolunteerFindPickups: React.FC = () => {
             </CardContent>
           </Card>
 
-          {/* Results */}
-          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '1fr 400px' }, gap: 4 }}>
-            {/* Package List */}
-            <Box>
-              <Card
-                sx={{
-                  borderRadius: 3,
-                  background: 'rgba(255, 255, 255, 0.95)',
-                  backdropFilter: 'blur(10px)',
-                  border: '1px solid rgba(132, 141, 88, 0.1)',
-                  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
-                }}
-              >
-                <CardContent sx={{ p: 4 }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                      <Package size={24} color="#848D58" />
-                      <Typography 
-                        variant="h5" 
-                        sx={{ 
-                          fontWeight: 700,
-                          fontFamily: '"Helvetica Neue", "Helvetica", "Arial", sans-serif',
-                        }}
-                      >
-                        Available Packages
-                      </Typography>
-                    </Box>
-                    <Chip
-                      label={`${sortedPackages.length} found`}
-                      variant="outlined"
-                      sx={{ borderColor: '#848D58', color: '#848D58', fontWeight: 600 }}
-                    />
+          {/* Full Map View */}
+          <Box>
+            <Card
+              sx={{
+                borderRadius: 3,
+                background: 'rgba(255, 255, 255, 0.95)',
+                backdropFilter: 'blur(10px)',
+                border: '1px solid rgba(132, 141, 88, 0.1)',
+                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
+              }}
+            >
+              <CardContent sx={{ p: 4 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                    <MapPin size={24} color="#848D58" />
+                    <Typography 
+                      variant="h5" 
+                      sx={{ 
+                        fontWeight: 700,
+                        fontFamily: '"Helvetica Neue", "Helvetica", "Arial", sans-serif',
+                      }}
+                    >
+                      Restaurant Locations
+                    </Typography>
                   </Box>
+                  <Chip
+                    label={`${sortedPackages.length} locations`}
+                    variant="outlined"
+                    sx={{ borderColor: '#848D58', color: '#848D58', fontWeight: 600 }}
+                  />
+                </Box>
 
-                  <Box sx={{ maxHeight: 600, overflowY: 'auto', pr: 1 }}>
-                    {sortedPackages.map((pkg, index) => (
-                      <motion.div
-                        key={pkg.id}
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: index * 0.1, duration: 0.5 }}
-                        whileHover={{ scale: 1.02 }}
-                      >
-                        <Card
-                          sx={{
-                            mb: 2,
-                            borderRadius: 2,
-                            border: `2px solid ${getUrgencyColor(pkg.urgency)}20`,
-                            background: 'white',
-                            transition: 'all 0.2s ease',
-                            '&:hover': {
-                              boxShadow: `0 4px 20px ${getUrgencyColor(pkg.urgency)}20`,
-                            },
-                          }}
-                        >
-                          <CardContent sx={{ p: 3 }}>
-                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
-                              <Box sx={{ flex: 1 }}>
-                                <Typography variant="h6" sx={{ fontWeight: 700, mb: 1 }}>
-                                  {pkg.storeName}
-                                </Typography>
-                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                                  <MapPin size={16} color="#666" />
-                                  <Typography variant="body2" color="text.secondary">
-                                    {pkg.address} • {pkg.distance}
-                                  </Typography>
-                                </Box>
-                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
-                                  <Chip
-                                    icon={getUrgencyIcon(pkg.urgency)}
-                                    label={pkg.urgency}
-                                    size="small"
-                                    sx={{
-                                      backgroundColor: `${getUrgencyColor(pkg.urgency)}15`,
-                                      color: getUrgencyColor(pkg.urgency),
-                                      fontWeight: 600,
-                                      textTransform: 'capitalize',
-                                    }}
-                                  />
-                                  <Typography variant="body2" color="text.secondary">
-                                    {pkg.foodType} • {pkg.weight} lbs
-                                  </Typography>
-                                </Box>
-                              </Box>
-                              <Chip
-                                label={`${pkg.points} pts`}
-                                sx={{
-                                  background: 'linear-gradient(135deg, #848D58 0%, #6F7549 100%)',
-                                  color: 'white',
-                                  fontWeight: 600,
-                                }}
-                              />
-                            </Box>
-                            <Box sx={{ display: 'flex', gap: 2 }}>
-                              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                                <Button
-                                  variant="contained"
-                                  startIcon={<Target size={18} />}
-                                  onClick={() => handleAcceptMission(pkg.id, pkg.storeName)}
-                                  sx={{
-                                    background: 'linear-gradient(135deg, #848D58 0%, #6F7549 100%)',
-                                    borderRadius: 2,
-                                    textTransform: 'none',
-                                    fontWeight: 600,
-                                    '&:hover': {
-                                      background: 'linear-gradient(135deg, #6F7549 0%, #5A5F3A 100%)',
-                                    },
-                                  }}
-                                >
-                                  Accept Mission
-                                </Button>
-                              </motion.div>
-                              <Button
-                                variant="outlined"
-                                startIcon={<Navigation size={18} />}
-                                onClick={() => handleViewDetails(pkg.id)}
-                                sx={{
-                                  borderColor: '#848D58',
-                                  color: '#848D58',
-                                  borderRadius: 2,
-                                  textTransform: 'none',
-                                  fontWeight: 600,
-                                }}
-                              >
-                                View Details
-                              </Button>
-                            </Box>
-                          </CardContent>
-                        </Card>
-                      </motion.div>
-                    ))}
-                  </Box>
-                </CardContent>
-              </Card>
-            </Box>
-
-            {/* Map */}
-            <Box>
-              <Card
-                sx={{
-                  borderRadius: 3,
-                  background: 'rgba(255, 255, 255, 0.95)',
-                  backdropFilter: 'blur(10px)',
-                  border: '1px solid rgba(132, 141, 88, 0.1)',
-                  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
-                  height: 600,
-                }}
-              >
-                <CardContent sx={{ p: 0, height: '100%' }}>
+                <Box sx={{ height: 600, borderRadius: 2, overflow: 'hidden' }}>
                   <GoogleMapsComponent
                     apiKey={process.env.REACT_APP_GOOGLE_MAPS_API_KEY || ''}
                     pickups={sortedPackages.map(pkg => ({
@@ -591,10 +475,17 @@ const VolunteerFindPickups: React.FC = () => {
                     }))}
                     userLocation={userLocation || undefined}
                     height="600px"
+                    onAcceptMission={(id, storeName) => handleAcceptMission(parseInt(id), storeName)}
                   />
-                </CardContent>
-              </Card>
-            </Box>
+                </Box>
+                
+                <Box sx={{ mt: 3, textAlign: 'center' }}>
+                  <Typography variant="body1" sx={{ mb: 2, color: 'text.secondary' }}>
+                    Click on any restaurant marker to see details and accept missions
+                  </Typography>
+                </Box>
+              </CardContent>
+            </Card>
           </Box>
         </motion.div>
       </Container>
