@@ -96,6 +96,7 @@ const StorePackages: React.FC = () => {
     });
   };
 
+
   const calculateSummary = () => {
     const available = packages.filter(p => p.status === 'pending').length;
     const inProgress = packages.filter(p => p.status === 'in-progress').length;
