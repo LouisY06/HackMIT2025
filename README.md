@@ -1,10 +1,10 @@
-# Waste→Worth Platform
+# Reflourish Platform
 
 A gamified reverse logistics platform that transforms food waste into community impact. The platform connects volunteers, stores, and food banks to reduce waste while rewarding community service.
 
 ## 🎯 Project Overview
 
-**Waste→Worth** is a sustainability-focused platform that addresses food waste through a three-tier system:
+**Reflourish** is a sustainability-focused platform that addresses food waste through a three-tier system:
 
 - **Volunteers** (High School Students + General Public): Earn community service hours and points by collecting waste packages
 - **Stores** (Restaurants, Groceries, Bakeries): Efficiently dispose of excess food while reducing waste costs and improving sustainability image

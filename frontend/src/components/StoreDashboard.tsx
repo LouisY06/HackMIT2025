@@ -148,6 +148,20 @@ const StoreDashboard: React.FC = () => {
             >
               Global Impact
             </Button>
+            <Button
+              onClick={() => navigate('/store/ai-insights')}
+              variant="text"
+              sx={{
+                color: '#666',
+                textTransform: 'none',
+                fontWeight: 'bold',
+                '&:hover': {
+                  backgroundColor: 'rgba(0,0,0,0.04)',
+                },
+              }}
+            >
+              AI Insights
+            </Button>
           </Box>
         </Box>
 
@@ -376,6 +390,37 @@ const StoreDashboard: React.FC = () => {
                     </Box>
                     <Typography variant="body2" sx={{ color: '#666', textAlign: 'left' }}>
                       See platform-wide impact
+                    </Typography>
+                  </Button>
+                  
+                  <Button
+                    variant="outlined"
+                    fullWidth
+                    onClick={() => navigate('/store/ai-insights')}
+                    sx={{
+                      p: 3,
+                      height: '120px',
+                      borderRadius: 3,
+                      borderColor: '#9C27B0',
+                      color: '#9C27B0',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'flex-start',
+                      justifyContent: 'flex-start',
+                      '&:hover': {
+                        borderColor: '#7B1FA2',
+                        backgroundColor: 'rgba(156, 39, 176, 0.04)',
+                      },
+                    }}
+                  >
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+                      <Typography sx={{ fontSize: '24px' }}>🤖</Typography>
+                      <Typography variant="body1" sx={{ fontWeight: 'bold' }}>
+                        AI Insights
+                      </Typography>
+                    </Box>
+                    <Typography variant="body2" sx={{ color: '#666', textAlign: 'left' }}>
+                      Get AI-powered analytics
                     </Typography>
                   </Button>
                 </Box>

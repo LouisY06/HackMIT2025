@@ -12,17 +12,20 @@ import VolunteerFindPickups from './components/VolunteerFindPickups';
 import VolunteerRewards from './components/VolunteerRewards';
 import VolunteerLeaderboard from './components/VolunteerLeaderboard';
 import VolunteerGlobalImpact from './components/VolunteerGlobalImpact';
+import VolunteerAIInsights from './components/VolunteerAIInsights';
 import StoreLogin from './components/StoreLogin';
 import StoreDashboard from './components/StoreDashboard';
 import StoreCreatePackage from './components/StoreCreatePackage';
 import StorePackages from './components/StorePackages';
 import StoreImpact from './components/StoreImpact';
 import StoreGlobalImpact from './components/StoreGlobalImpact';
+import StoreAIInsights from './components/StoreAIInsights';
 import FoodBankLogin from './components/FoodBankLogin';
 import FoodBankDashboard from './components/FoodBankDashboard';
 import FoodBankDeliveryLog from './components/FoodBankDeliveryLog';
 import FoodBankDeliveryConfirm from './components/FoodBankDeliveryConfirm';
 import FoodBankGlobalImpact from './components/FoodBankGlobalImpact';
+import GlobalAIImpact from './components/GlobalAIImpact';
 import VolunteerProfileSetup from './components/VolunteerProfileSetup';
 import StoreProfileSetup from './components/StoreProfileSetup';
 import FoodBankProfileSetup from './components/FoodBankProfileSetup';
@@ -129,6 +132,7 @@ function App() {
           <Route path="/volunteer/rewards" element={<VolunteerRewards />} />
           <Route path="/volunteer/leaderboard" element={<VolunteerLeaderboard />} />
           <Route path="/volunteer/global-impact" element={<VolunteerGlobalImpact />} />
+          <Route path="/volunteer/ai-insights" element={<VolunteerAIInsights />} />
           <Route path="/store" element={<StoreLogin />} />
           <Route path="/store/profile-setup" element={<StoreProfileSetup />} />
           <Route path="/store/dashboard" element={<StoreDashboard />} />
@@ -136,12 +140,14 @@ function App() {
           <Route path="/store/packages" element={<StorePackages />} />
           <Route path="/store/impact" element={<StoreImpact />} />
           <Route path="/store/global-impact" element={<StoreGlobalImpact />} />
+          <Route path="/store/ai-insights" element={<StoreAIInsights />} />
           <Route path="/foodbank" element={<FoodBankLogin />} />
           <Route path="/foodbank/profile-setup" element={<FoodBankProfileSetup />} />
           <Route path="/foodbank/dashboard" element={<FoodBankDashboard />} />
           <Route path="/foodbank/delivery-log" element={<FoodBankDeliveryLog />} />
           <Route path="/foodbank/delivery-confirm" element={<FoodBankDeliveryConfirm />} />
           <Route path="/foodbank/global-impact" element={<FoodBankGlobalImpact />} />
+          <Route path="/global-ai-impact" element={<GlobalAIImpact />} />
         </Routes>
       </Router>
     </ThemeProvider>
