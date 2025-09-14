@@ -37,6 +37,7 @@ export const API_ENDPOINTS = {
   STORE_LOCATIONS: '/api/stores/locations',
   CREATE_PACKAGE: '/api/packages/create',
   STORE_PACKAGES: (email: string) => `/api/packages/store/${email}`,
+  ANALYZE_FOOD_IMAGE: '/api/analyze-food-image',
   
   // Package endpoints
   AVAILABLE_PACKAGES: '/api/packages/available',

@@ -5,13 +5,22 @@ import qrcode
 import os
 import json
 import random
+import base64
 from datetime import datetime
 from dotenv import load_dotenv
+import anthropic
+from PIL import Image
+import io
 
 load_dotenv()
 
 app = Flask(__name__)
 CORS(app)
+
+# Initialize Anthropic client
+anthropic_client = anthropic.Anthropic(
+    api_key=os.getenv('ANTHROPIC_API_KEY')
+)
 
 # Database setup
 DATABASE = 'packages.db'
@@ -957,6 +966,132 @@ def health_check():
             'timestamp': datetime.now().isoformat(),
             'error': str(e)
         }), 500
+
+@app.route('/api/analyze-food-image', methods=['POST'])
+def analyze_food_image():
+    """Analyze food image using Anthropic Claude to determine food type and estimate weight"""
+    try:
+        data = request.get_json()
+        
+        if 'image' not in data:
+            return jsonify({'success': False, 'error': 'No image data provided'}), 400
+        
+        # Extract base64 image data (remove data:image/jpeg;base64, prefix if present)
+        image_data = data['image']
+        if image_data.startswith('data:image'):
+            image_data = image_data.split(',')[1]
+        
+        # Validate the image
+        try:
+            image_bytes = base64.b64decode(image_data)
+            image = Image.open(io.BytesIO(image_bytes))
+            
+            # Convert to RGB if necessary and resize if too large
+            if image.mode != 'RGB':
+                image = image.convert('RGB')
+            
+            # Resize if image is too large (max 1024x1024)
+            if image.width > 1024 or image.height > 1024:
+                image.thumbnail((1024, 1024), Image.Resampling.LANCZOS)
+            
+            # Convert back to base64
+            output_buffer = io.BytesIO()
+            image.save(output_buffer, format='JPEG', quality=85)
+            processed_image_data = base64.b64encode(output_buffer.getvalue()).decode()
+            
+        except Exception as e:
+            return jsonify({'success': False, 'error': f'Invalid image data: {str(e)}'}), 400
+        
+        # Check if Anthropic API key is configured
+        if not os.getenv('ANTHROPIC_API_KEY'):
+            return jsonify({
+                'success': False, 
+                'error': 'Anthropic API key not configured on server'
+            }), 500
+        
+        # Analyze image with Claude
+        try:
+            message = anthropic_client.messages.create(
+                model="claude-3-5-sonnet-20241022",
+                max_tokens=500,
+                messages=[{
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "image",
+                            "source": {
+                                "type": "base64",
+                                "media_type": "image/jpeg",
+                                "data": processed_image_data
+                            }
+                        },
+                        {
+                            "type": "text",
+                            "text": """Analyze this food image and provide a JSON response with the following information:
+
+1. food_type: A specific, descriptive name for the food (e.g., "Mixed Fresh Produce", "Prepared Sandwiches", "Baked Goods - Bread", "Dairy Products", "Canned Goods")
+2. estimated_weight_lbs: Your best estimate of the total weight in pounds (be realistic - consider portion sizes, container weight, etc.)
+3. confidence: Your confidence level (high/medium/low)
+4. description: A brief description of what you see
+
+Respond ONLY with valid JSON in this exact format:
+{
+  "food_type": "string",
+  "estimated_weight_lbs": number,
+  "confidence": "high|medium|low",
+  "description": "string"
+}"""
+                        }
+                    ]
+                }]
+            )
+            
+            # Parse Claude's response
+            claude_response = message.content[0].text.strip()
+            
+            # Try to extract JSON from the response
+            try:
+                # Find JSON in the response (in case Claude adds extra text)
+                start_idx = claude_response.find('{')
+                end_idx = claude_response.rfind('}') + 1
+                
+                if start_idx >= 0 and end_idx > start_idx:
+                    json_str = claude_response[start_idx:end_idx]
+                    analysis_result = json.loads(json_str)
+                else:
+                    raise ValueError("No valid JSON found in response")
+                
+                # Validate the response structure
+                required_keys = ['food_type', 'estimated_weight_lbs', 'confidence', 'description']
+                if not all(key in analysis_result for key in required_keys):
+                    raise ValueError("Missing required keys in response")
+                
+                # Ensure weight is a number and reasonable
+                weight = float(analysis_result['estimated_weight_lbs'])
+                if weight < 0.1 or weight > 100:  # Reasonable bounds
+                    weight = max(0.5, min(weight, 50))  # Clamp to reasonable range
+                analysis_result['estimated_weight_lbs'] = round(weight, 1)
+                
+                return jsonify({
+                    'success': True,
+                    'analysis': analysis_result
+                })
+                
+            except (json.JSONDecodeError, ValueError) as e:
+                return jsonify({
+                    'success': False,
+                    'error': f'Failed to parse AI response: {str(e)}',
+                    'raw_response': claude_response
+                }), 500
+                
+        except Exception as e:
+            return jsonify({
+                'success': False,
+                'error': f'AI analysis failed: {str(e)}'
+            }), 500
+            
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 # Serve React App
 @app.route('/', defaults={'path': ''})

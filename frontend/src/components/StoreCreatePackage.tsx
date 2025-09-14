@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Leaf, Package, Home, BarChart3, TrendingUp, LogOut } from 'lucide-react';
+import { Leaf, Package, Home, BarChart3, TrendingUp, LogOut, Camera, X, RotateCw } from 'lucide-react';
 import { API_BASE_URL, API_ENDPOINTS, apiCall } from '../config/api';
 import { auth } from '../config/firebase';
 import {
@@ -41,6 +41,14 @@ const StoreCreatePackage: React.FC = () => {
   const [success, setSuccess] = useState('');
   // Removed qrCodePath state - using PIN system instead
   const [pickupPin, setPickupPin] = useState('');
+  
+  // Camera and AI analysis states
+  const [showCamera, setShowCamera] = useState(false);
+  const [analyzing, setAnalyzing] = useState(false);
+  const [capturedImage, setCapturedImage] = useState<string | null>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const streamRef = useRef<MediaStream | null>(null);
 
   const foodTypes = [
     'Bakery Items',
@@ -108,6 +116,93 @@ const StoreCreatePackage: React.FC = () => {
 
   const handleCancel = () => {
     navigate('/store/dashboard');
+  };
+
+  // Camera functions
+  const startCamera = useCallback(async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { 
+          facingMode: 'environment', // Use back camera on mobile
+          width: { ideal: 1280 },
+          height: { ideal: 720 }
+        }
+      });
+      
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        streamRef.current = stream;
+      }
+      setShowCamera(true);
+      setError('');
+    } catch (err) {
+      console.error('Error accessing camera:', err);
+      setError('Unable to access camera. Please check permissions and try again.');
+    }
+  }, []);
+
+  const stopCamera = useCallback(() => {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => track.stop());
+      streamRef.current = null;
+    }
+    setShowCamera(false);
+  }, []);
+
+  const capturePhoto = useCallback(() => {
+    if (videoRef.current && canvasRef.current) {
+      const video = videoRef.current;
+      const canvas = canvasRef.current;
+      const context = canvas.getContext('2d');
+      
+      if (context) {
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        context.drawImage(video, 0, 0);
+        
+        const imageDataUrl = canvas.toDataURL('image/jpeg', 0.8);
+        setCapturedImage(imageDataUrl);
+        stopCamera();
+        analyzeImage(imageDataUrl);
+      }
+    }
+  }, [stopCamera]);
+
+  const analyzeImage = async (imageDataUrl: string) => {
+    setAnalyzing(true);
+    setError('');
+    
+    try {
+      const response = await apiCall(API_ENDPOINTS.ANALYZE_FOOD_IMAGE, {
+        method: 'POST',
+        body: JSON.stringify({ image: imageDataUrl })
+      });
+
+      if (response.success) {
+        const { analysis } = response;
+        
+        // Auto-fill the form with AI analysis
+        setFormData(prev => ({
+          ...prev,
+          food_type: analysis.food_type,
+          weight_lbs: analysis.estimated_weight_lbs.toString()
+        }));
+        
+        setSuccess(`AI Analysis Complete! Food type: ${analysis.food_type}, Estimated weight: ${analysis.estimated_weight_lbs} lbs (${analysis.confidence} confidence)`);
+      } else {
+        setError(response.error || 'Failed to analyze image');
+      }
+    } catch (err) {
+      console.error('Error analyzing image:', err);
+      setError('Failed to analyze image. Please try again or fill manually.');
+    } finally {
+      setAnalyzing(false);
+    }
+  };
+
+  const retakePhoto = () => {
+    setCapturedImage(null);
+    startCamera();
   };
 
   return (
@@ -248,6 +343,108 @@ const StoreCreatePackage: React.FC = () => {
             </CardContent>
           </Card>
         )}
+
+        {/* AI-Powered Photo Analysis */}
+        <Card sx={{ borderRadius: 3, p: 4, mb: 3, backgroundColor: '#f0f8ff', border: '2px solid #2196F3' }}>
+          <CardContent>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3 }}>
+              <Camera size={24} color="#2196F3" />
+              <Typography variant="h5" sx={{ fontWeight: 'bold', color: '#2196F3' }}>
+                AI-Powered Food Analysis
+              </Typography>
+            </Box>
+            
+            <Typography variant="body2" sx={{ color: '#666', mb: 3 }}>
+              Take a photo of your food to automatically identify the type and estimate weight using AI
+            </Typography>
+
+            {!showCamera && !capturedImage && (
+              <Button
+                variant="contained"
+                startIcon={<Camera />}
+                onClick={startCamera}
+                sx={{
+                  backgroundColor: '#2196F3',
+                  '&:hover': { backgroundColor: '#1976D2' },
+                  borderRadius: 2,
+                  px: 3,
+                  py: 1.5
+                }}
+              >
+                📸 Take Photo for AI Analysis
+              </Button>
+            )}
+
+            {showCamera && (
+              <Box sx={{ position: 'relative' }}>
+                <video
+                  ref={videoRef}
+                  autoPlay
+                  playsInline
+                  style={{
+                    width: '100%',
+                    maxWidth: '400px',
+                    borderRadius: '12px',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+                  }}
+                />
+                <canvas ref={canvasRef} style={{ display: 'none' }} />
+                
+                <Box sx={{ display: 'flex', gap: 2, mt: 2 }}>
+                  <Button
+                    variant="contained"
+                    onClick={capturePhoto}
+                    sx={{
+                      backgroundColor: '#4CAF50',
+                      '&:hover': { backgroundColor: '#45a049' }
+                    }}
+                  >
+                    📷 Capture
+                  </Button>
+                  <Button
+                    variant="outlined"
+                    onClick={stopCamera}
+                    startIcon={<X />}
+                  >
+                    Cancel
+                  </Button>
+                </Box>
+              </Box>
+            )}
+
+            {capturedImage && (
+              <Box>
+                <img
+                  src={capturedImage}
+                  alt="Captured food"
+                  style={{
+                    width: '100%',
+                    maxWidth: '300px',
+                    borderRadius: '12px',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+                  }}
+                />
+                
+                <Box sx={{ display: 'flex', gap: 2, mt: 2 }}>
+                  {analyzing ? (
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                      <CircularProgress size={20} />
+                      <Typography>🤖 AI is analyzing your food...</Typography>
+                    </Box>
+                  ) : (
+                    <Button
+                      variant="outlined"
+                      startIcon={<RotateCw />}
+                      onClick={retakePhoto}
+                    >
+                      Retake Photo
+                    </Button>
+                  )}
+                </Box>
+              </Box>
+            )}
+          </CardContent>
+        </Card>
 
         <Card sx={{ borderRadius: 3, p: 4 }}>
           <CardContent>
