@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup } from 'firebase/auth';
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup, UserCredential } from 'firebase/auth';
 import { auth, googleProvider } from '../config/firebase';
 import {
   Box,
@@ -27,8 +27,21 @@ const VolunteerLogin: React.FC = () => {
     setError('');
 
     try {
-      await signInWithPopup(auth, googleProvider);
-      navigate('/volunteer/dashboard');
+      const result = await signInWithPopup(auth, googleProvider);
+      // Check if user has completed profile for volunteer user type
+      const user = auth.currentUser;
+      if (user) {
+        const profileResponse = await fetch(`http://localhost:5001/api/users/check-profile/volunteer/${user.uid}`);
+        const profileData = await profileResponse.json();
+        
+        if (profileData.success && profileData.profile_completed) {
+          navigate('/volunteer/dashboard');
+        } else {
+          navigate('/volunteer/profile-setup');
+        }
+      } else {
+        navigate('/volunteer/profile-setup');
+      }
     } catch (error: any) {
       setError(error.message);
     } finally {
@@ -48,10 +61,34 @@ const VolunteerLogin: React.FC = () => {
     try {
       if (isSignIn) {
         await signInWithEmailAndPassword(auth, email, password);
+        // Check if user has completed profile for volunteer user type
+        const user = auth.currentUser;
+        if (user) {
+          const profileResponse = await fetch(`http://localhost:5001/api/users/check-profile/volunteer/${user.uid}`);
+          const profileData = await profileResponse.json();
+          
+          if (profileData.success && profileData.profile_completed) {
+            navigate('/volunteer/dashboard');
+          } else {
+            navigate('/volunteer/profile-setup');
+          }
+        } else {
+          navigate('/volunteer/profile-setup');
+        }
       } else {
+        // Check if email already exists in volunteer table
+        const emailCheckResponse = await fetch(`http://localhost:5001/api/users/check-email/volunteer/${email}`);
+        const emailCheckData = await emailCheckResponse.json();
+        
+        if (emailCheckData.success && emailCheckData.email_exists) {
+          setError('An account with this email already exists. Please sign in instead.');
+          return;
+        }
+        
+        // Create new user and redirect to profile setup
         await createUserWithEmailAndPassword(auth, email, password);
+        navigate('/volunteer/profile-setup');
       }
-      navigate('/volunteer/dashboard');
     } catch (error: any) {
       setError(error.message);
     } finally {

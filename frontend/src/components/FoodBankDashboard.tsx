@@ -15,6 +15,11 @@ import {
   IconButton,
   Chip,
   Avatar,
+  TextField,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from '@mui/material';
 import {
   QrCodeScanner,
@@ -34,6 +39,8 @@ const FoodBankDashboard: React.FC = () => {
   const [scanning, setScanning] = useState(false);
   const [cameraPermission, setCameraPermission] = useState<'pending' | 'granted' | 'denied'>('pending');
   const [, setScanResult] = useState<string | null>(null);
+  const [manualEntryOpen, setManualEntryOpen] = useState(false);
+  const [verificationCode, setVerificationCode] = useState('');
   const videoRef = useRef<HTMLVideoElement>(null);
   const codeReader = useRef<BrowserMultiFormatReader | null>(null);
   const scanningControls = useRef<any>(null);
@@ -125,8 +132,23 @@ const FoodBankDashboard: React.FC = () => {
   };
 
   const handleManualEntry = () => {
-    // TODO: Implement manual entry modal
-    alert('Manual entry feature coming soon!');
+    setManualEntryOpen(true);
+  };
+
+  const handleManualVerify = () => {
+    if (verificationCode.trim()) {
+      setManualEntryOpen(false);
+      setVerificationCode('');
+      // Simulate verification process
+      setTimeout(() => {
+        alert(`Delivery verified successfully! Verification code: ${verificationCode}`);
+      }, 500);
+    }
+  };
+
+  const handleManualEntryClose = () => {
+    setManualEntryOpen(false);
+    setVerificationCode('');
   };
 
   const handleResetScanner = () => {
@@ -607,6 +629,62 @@ const FoodBankDashboard: React.FC = () => {
           </Box>
         </Box>
       </Container>
+
+      {/* Manual Entry Modal */}
+      <Dialog 
+        open={manualEntryOpen} 
+        onClose={handleManualEntryClose}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle sx={{ textAlign: 'center', pb: 1 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
+            <Keyboard sx={{ color: '#4CAF50' }} />
+            <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+              Manual Delivery Verification
+            </Typography>
+          </Box>
+        </DialogTitle>
+        <DialogContent>
+          <Typography variant="body2" sx={{ color: '#666', mb: 3, textAlign: 'center' }}>
+            Enter the verification code provided by the volunteer to verify their delivery
+          </Typography>
+          <TextField
+            fullWidth
+            label="Verification Code"
+            placeholder="Enter verification code..."
+            value={verificationCode}
+            onChange={(e) => setVerificationCode(e.target.value)}
+            variant="outlined"
+            sx={{ mb: 2 }}
+            autoFocus
+          />
+          <Typography variant="caption" sx={{ color: '#999', fontStyle: 'italic' }}>
+            The verification code is typically a 6-8 digit alphanumeric code provided when the volunteer accepts a delivery package.
+          </Typography>
+        </DialogContent>
+        <DialogActions sx={{ p: 3, pt: 1 }}>
+          <Button 
+            onClick={handleManualEntryClose}
+            variant="outlined"
+            sx={{ borderRadius: 2 }}
+          >
+            Cancel
+          </Button>
+          <Button 
+            onClick={handleManualVerify}
+            variant="contained"
+            disabled={!verificationCode.trim()}
+            sx={{ 
+              bgcolor: '#4CAF50',
+              borderRadius: 2,
+              '&:hover': { bgcolor: '#45a049' }
+            }}
+          >
+            Verify Delivery
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       {/* CSS Animation for spinner */}
       <style>

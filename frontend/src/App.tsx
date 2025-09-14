@@ -19,6 +19,9 @@ import FoodBankLogin from './components/FoodBankLogin';
 import FoodBankDashboard from './components/FoodBankDashboard';
 import FoodBankDeliveryLog from './components/FoodBankDeliveryLog';
 import FoodBankGlobalImpact from './components/FoodBankGlobalImpact';
+import VolunteerProfileSetup from './components/VolunteerProfileSetup';
+import StoreProfileSetup from './components/StoreProfileSetup';
+import FoodBankProfileSetup from './components/FoodBankProfileSetup';
 
 const theme = createTheme({
   palette: {
@@ -39,18 +42,21 @@ function App() {
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/volunteer" element={<VolunteerLogin />} />
+          <Route path="/volunteer/profile-setup" element={<VolunteerProfileSetup />} />
           <Route path="/volunteer/dashboard" element={<VolunteerDashboard />} />
           <Route path="/volunteer/find-pickups" element={<VolunteerFindPickups />} />
           <Route path="/volunteer/rewards" element={<VolunteerRewards />} />
           <Route path="/volunteer/leaderboard" element={<VolunteerLeaderboard />} />
           <Route path="/volunteer/global-impact" element={<VolunteerGlobalImpact />} />
           <Route path="/store" element={<StoreLogin />} />
+          <Route path="/store/profile-setup" element={<StoreProfileSetup />} />
           <Route path="/store/dashboard" element={<StoreDashboard />} />
           <Route path="/store/create-package" element={<StoreCreatePackage />} />
           <Route path="/store/packages" element={<StorePackages />} />
           <Route path="/store/impact" element={<StoreImpact />} />
           <Route path="/store/global-impact" element={<StoreGlobalImpact />} />
           <Route path="/foodbank" element={<FoodBankLogin />} />
+          <Route path="/foodbank/profile-setup" element={<FoodBankProfileSetup />} />
           <Route path="/foodbank/dashboard" element={<FoodBankDashboard />} />
           <Route path="/foodbank/delivery-log" element={<FoodBankDeliveryLog />} />
           <Route path="/foodbank/global-impact" element={<FoodBankGlobalImpact />} />
