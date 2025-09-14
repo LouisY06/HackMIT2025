@@ -170,7 +170,8 @@ const StoreCreatePackage: React.FC = () => {
       }
     } catch (err) {
       console.error('Error accessing camera:', err);
-      setError(`📷 Camera access failed: ${err.message}. You can still create packages manually below.`);
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+      setError(`📷 Camera access failed: ${errorMessage}. You can still create packages manually below.`);
       setShowCamera(false);
     }
   }, []);
