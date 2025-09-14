@@ -33,7 +33,7 @@ const StoreLogin: React.FC = () => {
       // Check if user has completed profile for store user type
       const user = auth.currentUser;
       if (user) {
-        const profileResponse = await fetch(`http://${API_BASE_URL}/api/users/check-profile/store/${user.uid}`);
+        const profileResponse = await fetch(`${API_BASE_URL}/api/users/check-profile/store/${user.uid}`);
         const profileData = await profileResponse.json();
         
         if (profileData.success && profileData.profile_completed) {
@@ -66,7 +66,7 @@ const StoreLogin: React.FC = () => {
         // Check if user has completed profile for store user type
         const user = auth.currentUser;
         if (user) {
-          const profileResponse = await fetch(`http://${API_BASE_URL}/api/users/check-profile/store/${user.uid}`);
+          const profileResponse = await fetch(`${API_BASE_URL}/api/users/check-profile/store/${user.uid}`);
           const profileData = await profileResponse.json();
           
           if (profileData.success && profileData.profile_completed) {
@@ -80,7 +80,7 @@ const StoreLogin: React.FC = () => {
       } else {
         // Check if email already exists in store table
         try {
-          const emailCheckResponse = await fetch(`http://${API_BASE_URL}/api/users/check-email/store/${email}`);
+          const emailCheckResponse = await fetch(`${API_BASE_URL}/api/users/check-email/store/${email}`);
           
           if (!emailCheckResponse.ok) {
             throw new Error(`HTTP error! status: ${emailCheckResponse.status}`);
