@@ -136,17 +136,26 @@ const VolunteerDashboard: React.FC = () => {
   const fetchCurrentTasks = async () => {
     try {
       const user = auth.currentUser;
-      if (!user) return;
+      if (!user) {
+        console.log('No authenticated user, skipping task fetch');
+        return;
+      }
 
+      console.log(`Fetching tasks for volunteer: ${user.uid}`);
       const tasksResponse = await fetch(`${API_BASE_URL}/api/packages/volunteer/${user.uid}`);
       const tasksData = await tasksResponse.json();
+      
+      console.log('Tasks response:', tasksData);
       
       if (tasksData.success) {
         // Show both assigned and picked_up tasks
         const activeTasks = tasksData.packages.filter((task: any) => 
           task.status === 'assigned' || task.status === 'picked_up'
         );
+        console.log(`Found ${activeTasks.length} active tasks:`, activeTasks);
         setCurrentTasks(activeTasks);
+      } else {
+        console.error('Failed to fetch tasks:', tasksData.error);
       }
     } catch (error) {
       console.error('Error fetching current tasks:', error);
@@ -157,7 +166,12 @@ const VolunteerDashboard: React.FC = () => {
   const fetchData = async () => {
     try {
       const user = auth.currentUser;
-      if (!user) return;
+      if (!user) {
+        console.log('No authenticated user, skipping data fetch');
+        return;
+      }
+      
+      console.log(`Fetching data for user: ${user.uid}`);
 
       // Get user location
       const location = await getUserLocation();
@@ -247,7 +261,18 @@ const VolunteerDashboard: React.FC = () => {
   };
 
   useEffect(() => {
-    fetchData();
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      if (user) {
+        // User is authenticated, fetch data
+        fetchData();
+      } else {
+        // User is not authenticated, clear data
+        setCurrentTasks([]);
+        setAvailablePackages([]);
+      }
+    });
+
+    return () => unsubscribe();
   }, []);
 
   // PIN entry functions for pickup confirmation
