@@ -65,9 +65,15 @@ const StoreDashboard: React.FC = () => {
       >
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#333' }}>
-              Waste→Worth
-            </Typography>
+            <img 
+              src="/LogoOutlined.png" 
+              alt="Reflourish Logo" 
+              style={{ 
+                height: '56px', 
+                width: 'auto',
+                objectFit: 'contain'
+              }} 
+            />
           </Box>
           
           <Box sx={{ display: 'flex', gap: 2 }}>
@@ -174,9 +180,11 @@ const StoreDashboard: React.FC = () => {
         {/* KPI Cards */}
         <Box sx={{ display: 'flex', gap: 3, mb: 4, flexWrap: 'wrap' }}>
           <Box sx={{ flex: '1 1 250px', minWidth: '250px' }}>
-            <Card sx={{ height: '100%', borderRadius: 3 }}>
-              <CardContent sx={{ textAlign: 'center', py: 3 }}>
-                <Package size={40} style={{ color: '#2196F3', marginBottom: '8px' }} />
+            <Card sx={{ height: '140px', borderRadius: 3, display: 'flex', alignItems: 'center' }}>
+              <CardContent sx={{ textAlign: 'center', py: 3, width: '100%' }}>
+                <Box sx={{ height: '48px', display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 1 }}>
+                  <Package size={40} style={{ color: '#2196F3' }} />
+                </Box>
                 <Typography variant="h4" sx={{ fontWeight: 'bold', mb: 1 }}>
                   {storeData.activePackages}
                 </Typography>
@@ -188,9 +196,11 @@ const StoreDashboard: React.FC = () => {
           </Box>
           
           <Box sx={{ flex: '1 1 250px', minWidth: '250px' }}>
-            <Card sx={{ height: '100%', borderRadius: 3 }}>
-              <CardContent sx={{ textAlign: 'center', py: 3 }}>
-                <Typography sx={{ fontSize: 40, color: '#4CAF50', mb: 1 }}>[✓]</Typography>
+            <Card sx={{ height: '140px', borderRadius: 3, display: 'flex', alignItems: 'center' }}>
+              <CardContent sx={{ textAlign: 'center', py: 3, width: '100%' }}>
+                <Box sx={{ height: '48px', display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 1 }}>
+                  <Clock size={40} style={{ color: '#4CAF50' }} />
+                </Box>
                 <Typography variant="h4" sx={{ fontWeight: 'bold', mb: 1 }}>
                   {storeData.todaysPickups}
                 </Typography>
@@ -202,9 +212,11 @@ const StoreDashboard: React.FC = () => {
           </Box>
           
           <Box sx={{ flex: '1 1 250px', minWidth: '250px' }}>
-            <Card sx={{ height: '100%', borderRadius: 3 }}>
-              <CardContent sx={{ textAlign: 'center', py: 3 }}>
-                <Leaf size={40} style={{ color: '#4CAF50', marginBottom: '8px' }} />
+            <Card sx={{ height: '140px', borderRadius: 3, display: 'flex', alignItems: 'center' }}>
+              <CardContent sx={{ textAlign: 'center', py: 3, width: '100%' }}>
+                <Box sx={{ height: '48px', display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 1 }}>
+                  <Leaf size={40} style={{ color: '#4CAF50' }} />
+                </Box>
                 <Typography variant="h4" sx={{ fontWeight: 'bold', mb: 1 }}>
                   {storeData.wasteDiverted} lbs
                 </Typography>
@@ -216,9 +228,11 @@ const StoreDashboard: React.FC = () => {
           </Box>
           
           <Box sx={{ flex: '1 1 250px', minWidth: '250px' }}>
-            <Card sx={{ height: '100%', borderRadius: 3 }}>
-              <CardContent sx={{ textAlign: 'center', py: 3 }}>
-                <DollarSign size={40} style={{ color: '#FF9800', marginBottom: '8px' }} />
+            <Card sx={{ height: '140px', borderRadius: 3, display: 'flex', alignItems: 'center' }}>
+              <CardContent sx={{ textAlign: 'center', py: 3, width: '100%' }}>
+                <Box sx={{ height: '48px', display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 1 }}>
+                  <DollarSign size={40} style={{ color: '#FF9800' }} />
+                </Box>
                 <Typography variant="h4" sx={{ fontWeight: 'bold', mb: 1 }}>
                   ${storeData.costSaved}
                 </Typography>
@@ -233,125 +247,137 @@ const StoreDashboard: React.FC = () => {
         {/* Main Content */}
         <Box sx={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
           {/* Left Column */}
-          <Box sx={{ flex: '2 1 600px', minWidth: '300px' }}>
+          <Box sx={{ flex: '2 1 600px', minWidth: '300px', display: 'flex', flexDirection: 'column', gap: 4 }}>
             {/* Quick Actions */}
-            <Card sx={{ mb: 4, borderRadius: 3 }}>
+            <Card sx={{ borderRadius: 3 }}>
               <CardContent sx={{ p: 3 }}>
                 <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 3 }}>
                   Quick Actions
                 </Typography>
-                <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
-                  <Box sx={{ flex: '1 1 200px', minWidth: '200px' }}>
-                    <Button
-                      variant="outlined"
-                      fullWidth
-                      startIcon={<Typography>[+]</Typography>}
-                      onClick={handleCreatePackage}
-                      sx={{
-                        p: 2,
-                        borderRadius: 3,
-                        borderColor: '#4CAF50',
-                        color: '#4CAF50',
-                        '&:hover': {
-                          borderColor: '#45a049',
-                          backgroundColor: 'rgba(76, 175, 80, 0.04)',
-                        },
-                      }}
-                    >
-                      <Box sx={{ textAlign: 'left' }}>
-                        <Typography variant="body1" sx={{ fontWeight: 'bold' }}>
-                          Create Package
-                        </Typography>
-                        <Typography variant="body2" sx={{ color: '#666' }}>
-                          List new surplus food for pickup
-                        </Typography>
-                      </Box>
-                    </Button>
-                  </Box>
+                <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 2 }}>
+                  <Button
+                    variant="outlined"
+                    fullWidth
+                    onClick={handleCreatePackage}
+                    sx={{
+                      p: 3,
+                      height: '120px',
+                      borderRadius: 3,
+                      borderColor: '#4CAF50',
+                      color: '#4CAF50',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'flex-start',
+                      justifyContent: 'flex-start',
+                      '&:hover': {
+                        borderColor: '#45a049',
+                        backgroundColor: 'rgba(76, 175, 80, 0.04)',
+                      },
+                    }}
+                  >
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+                      <Typography sx={{ fontSize: '24px' }}>➕</Typography>
+                      <Typography variant="body1" sx={{ fontWeight: 'bold' }}>
+                        Create Package
+                      </Typography>
+                    </Box>
+                    <Typography variant="body2" sx={{ color: '#666', textAlign: 'left' }}>
+                      List new surplus food for pickup
+                    </Typography>
+                  </Button>
                   
-                  <Box sx={{ flex: '1 1 200px', minWidth: '200px' }}>
-                    <Button
-                      variant="outlined"
-                      fullWidth
-                      startIcon={<Typography>[👁]</Typography>}
-                      onClick={handleViewPackages}
-                      sx={{
-                        p: 2,
-                        borderRadius: 3,
-                        borderColor: '#2196F3',
-                        color: '#2196F3',
-                        '&:hover': {
-                          borderColor: '#1976D2',
-                          backgroundColor: 'rgba(33, 150, 243, 0.04)',
-                        },
-                      }}
-                    >
-                      <Box sx={{ textAlign: 'left' }}>
-                        <Typography variant="body1" sx={{ fontWeight: 'bold' }}>
-                          View Packages
-                        </Typography>
-                        <Typography variant="body2" sx={{ color: '#666' }}>
-                          Manage all listed packages
-                        </Typography>
-                      </Box>
-                    </Button>
-                  </Box>
+                  <Button
+                    variant="outlined"
+                    fullWidth
+                    onClick={handleViewPackages}
+                    sx={{
+                      p: 3,
+                      height: '120px',
+                      borderRadius: 3,
+                      borderColor: '#2196F3',
+                      color: '#2196F3',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'flex-start',
+                      justifyContent: 'flex-start',
+                      '&:hover': {
+                        borderColor: '#1976D2',
+                        backgroundColor: 'rgba(33, 150, 243, 0.04)',
+                      },
+                    }}
+                  >
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+                      <Typography sx={{ fontSize: '24px' }}>👁</Typography>
+                      <Typography variant="body1" sx={{ fontWeight: 'bold' }}>
+                        View Packages
+                      </Typography>
+                    </Box>
+                    <Typography variant="body2" sx={{ color: '#666', textAlign: 'left' }}>
+                      Manage all listed packages
+                    </Typography>
+                  </Button>
                   
-                  <Box sx={{ flex: '1 1 200px', minWidth: '200px' }}>
-                    <Button
-                      variant="outlined"
-                      fullWidth
-                      startIcon={<Typography>[📊]</Typography>}
-                      onClick={handleImpactReport}
-                      sx={{
-                        p: 2,
-                        borderRadius: 3,
-                        borderColor: '#9C27B0',
-                        color: '#9C27B0',
-                        '&:hover': {
-                          borderColor: '#7B1FA2',
-                          backgroundColor: 'rgba(156, 39, 176, 0.04)',
-                        },
-                      }}
-                    >
-                      <Box sx={{ textAlign: 'left' }}>
-                        <Typography variant="body1" sx={{ fontWeight: 'bold' }}>
-                          Impact Report
-                        </Typography>
-                        <Typography variant="body2" sx={{ color: '#666' }}>
-                          View sustainability metrics
-                        </Typography>
-                      </Box>
-                    </Button>
-                  </Box>
+                  <Button
+                    variant="outlined"
+                    fullWidth
+                    onClick={handleImpactReport}
+                    sx={{
+                      p: 3,
+                      height: '120px',
+                      borderRadius: 3,
+                      borderColor: '#9C27B0',
+                      color: '#9C27B0',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'flex-start',
+                      justifyContent: 'flex-start',
+                      '&:hover': {
+                        borderColor: '#7B1FA2',
+                        backgroundColor: 'rgba(156, 39, 176, 0.04)',
+                      },
+                    }}
+                  >
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+                      <Typography sx={{ fontSize: '24px' }}>📊</Typography>
+                      <Typography variant="body1" sx={{ fontWeight: 'bold' }}>
+                        Impact Report
+                      </Typography>
+                    </Box>
+                    <Typography variant="body2" sx={{ color: '#666', textAlign: 'left' }}>
+                      View sustainability metrics
+                    </Typography>
+                  </Button>
                   
-                  <Box sx={{ flex: '1 1 200px', minWidth: '200px' }}>
-                    <Button
-                      variant="outlined"
-                      fullWidth
-                      startIcon={<Typography>[📈]</Typography>}
-                      onClick={handleGlobalImpact}
-                      sx={{
-                        p: 2,
-                        borderRadius: 3,
-                        borderColor: '#4CAF50',
-                        color: '#4CAF50',
-                        '&:hover': {
-                          borderColor: '#45a049',
-                          backgroundColor: 'rgba(76, 175, 80, 0.04)',
-                        },
-                      }}
-                    >
-                      <Box sx={{ textAlign: 'left' }}>
-                        <Typography variant="body1" sx={{ fontWeight: 'bold' }}>
-                          Global Impact
-                        </Typography>
-                        <Typography variant="body2" sx={{ color: '#666' }}>
-                          See platform-wide impact
-                        </Typography>
-                      </Box>
-                    </Button>
-                  </Box>
+                  <Button
+                    variant="outlined"
+                    fullWidth
+                    onClick={handleGlobalImpact}
+                    sx={{
+                      p: 3,
+                      height: '120px',
+                      borderRadius: 3,
+                      borderColor: '#4CAF50',
+                      color: '#4CAF50',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'flex-start',
+                      justifyContent: 'flex-start',
+                      '&:hover': {
+                        borderColor: '#45a049',
+                        backgroundColor: 'rgba(76, 175, 80, 0.04)',
+                      },
+                    }}
+                  >
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+                      <Typography sx={{ fontSize: '24px' }}>📈</Typography>
+                      <Typography variant="body1" sx={{ fontWeight: 'bold' }}>
+                        Global Impact
+                      </Typography>
+                    </Box>
+                    <Typography variant="body2" sx={{ color: '#666', textAlign: 'left' }}>
+                      See platform-wide impact
+                    </Typography>
+                  </Button>
                 </Box>
               </CardContent>
             </Card>
@@ -368,8 +394,8 @@ const StoreDashboard: React.FC = () => {
                   See how {storeData.name} is making a difference
                 </Typography>
                 
-                <Box sx={{ display: 'flex', gap: 3, flexWrap: 'wrap' }}>
-                  <Box sx={{ flex: '1 1 200px', minWidth: '200px', textAlign: 'center' }}>
+                <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 3 }}>
+                  <Box sx={{ textAlign: 'center', p: 2 }}>
                     <Typography variant="h4" sx={{ fontWeight: 'bold', color: '#4CAF50', mb: 1 }}>
                       {storeData.co2Prevented} lbs
                     </Typography>
@@ -378,7 +404,7 @@ const StoreDashboard: React.FC = () => {
                     </Typography>
                   </Box>
                   
-                  <Box sx={{ flex: '1 1 200px', minWidth: '200px', textAlign: 'center' }}>
+                  <Box sx={{ textAlign: 'center', p: 2 }}>
                     <Typography variant="h4" sx={{ fontWeight: 'bold', color: '#2196F3', mb: 1 }}>
                       {storeData.mealsProvided}
                     </Typography>
@@ -387,7 +413,7 @@ const StoreDashboard: React.FC = () => {
                     </Typography>
                   </Box>
                   
-                  <Box sx={{ flex: '1 1 200px', minWidth: '200px', textAlign: 'center' }}>
+                  <Box sx={{ textAlign: 'center', p: 2 }}>
                     <Typography variant="h4" sx={{ fontWeight: 'bold', color: '#9C27B0', mb: 1 }}>
                       {storeData.familiesHelped}
                     </Typography>
@@ -401,10 +427,10 @@ const StoreDashboard: React.FC = () => {
           </Box>
 
           {/* Right Column */}
-          <Box sx={{ flex: '1 1 300px', minWidth: '300px' }}>
+          <Box sx={{ flex: '1 1 300px', minWidth: '300px', display: 'flex', flexDirection: 'column' }}>
             {/* Recent Activity */}
-            <Card sx={{ mb: 4, borderRadius: 3 }}>
-              <CardContent sx={{ p: 3 }}>
+            <Card sx={{ borderRadius: 3, mb: 4 }}>
+              <CardContent sx={{ p: 3, display: 'flex', flexDirection: 'column', height: '100%' }}>
                 <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 3 }}>
                   Recent Activity
                 </Typography>
@@ -412,12 +438,20 @@ const StoreDashboard: React.FC = () => {
                   Latest activity on your packages
                 </Typography>
                 
-                <Box sx={{ textAlign: 'center', py: 4 }}>
-                  <Package size={80} style={{ color: '#ccc', marginBottom: '16px' }} />
-                  <Typography variant="body1" sx={{ color: '#666', mb: 2 }}>
+                <Box sx={{ 
+                  textAlign: 'center', 
+                  display: 'flex', 
+                  flexDirection: 'column', 
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  py: 2,
+                  minHeight: '200px'
+                }}>
+                  <Package size={48} style={{ color: '#ccc', marginBottom: '12px' }} />
+                  <Typography variant="body1" sx={{ color: '#666', mb: 1 }}>
                     No recent activity
                   </Typography>
-                  <Typography variant="body2" sx={{ color: '#666', mb: 3 }}>
+                  <Typography variant="body2" sx={{ color: '#666', mb: 2 }}>
                     Create your first package to get started
                   </Typography>
                   <Button
@@ -427,6 +461,7 @@ const StoreDashboard: React.FC = () => {
                   >
                     View All Packages
                   </Button>
+                  <Box sx={{ flex: 1, minHeight: '40px' }} />
                 </Box>
               </CardContent>
             </Card>
