@@ -106,8 +106,8 @@ const FoodBankDashboard: React.FC = () => {
   };
 
   // Handle delivery confirmation
-  const handleConfirmDelivery = (package: any) => {
-    setSelectedPackage(package);
+  const handleConfirmDelivery = (deliveryPackage: any) => {
+    setSelectedPackage(deliveryPackage);
     setConfirmDialogOpen(true);
   };
 
