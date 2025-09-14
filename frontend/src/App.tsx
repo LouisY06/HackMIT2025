@@ -21,6 +21,7 @@ import StoreGlobalImpact from './components/StoreGlobalImpact';
 import FoodBankLogin from './components/FoodBankLogin';
 import FoodBankDashboard from './components/FoodBankDashboard';
 import FoodBankDeliveryLog from './components/FoodBankDeliveryLog';
+import FoodBankDeliveryConfirm from './components/FoodBankDeliveryConfirm';
 import FoodBankGlobalImpact from './components/FoodBankGlobalImpact';
 import VolunteerProfileSetup from './components/VolunteerProfileSetup';
 import StoreProfileSetup from './components/StoreProfileSetup';
@@ -139,6 +140,7 @@ function App() {
           <Route path="/foodbank/profile-setup" element={<FoodBankProfileSetup />} />
           <Route path="/foodbank/dashboard" element={<FoodBankDashboard />} />
           <Route path="/foodbank/delivery-log" element={<FoodBankDeliveryLog />} />
+          <Route path="/foodbank/delivery-confirm" element={<FoodBankDeliveryConfirm />} />
           <Route path="/foodbank/global-impact" element={<FoodBankGlobalImpact />} />
         </Routes>
       </Router>

@@ -497,6 +497,18 @@ const FoodBankDashboard: React.FC = () => {
                   </Button>
                   
                   <Button
+                    variant="contained"
+                    onClick={() => navigate('/foodbank/delivery-confirm')}
+                    sx={{ 
+                      borderRadius: 2,
+                      backgroundColor: '#4CAF50',
+                      '&:hover': { backgroundColor: '#45a049' }
+                    }}
+                  >
+                    📦 PIN Delivery
+                  </Button>
+                  
+                  <Button
                     variant="outlined"
                     startIcon={<Refresh />}
                     onClick={() => {

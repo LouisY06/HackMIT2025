@@ -17,13 +17,18 @@ import {
   Badge,
   Tabs,
   Tab,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
 } from '@mui/material';
 import { LocalShipping } from '@mui/icons-material';
 import { Gift, Trophy, Utensils, ShoppingBag, Coffee, CreditCard, MapPin, Smartphone, RotateCcw, TrendingUp, ShoppingCart, Ticket, Receipt, DollarSign } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { auth } from '../config/firebase';
 import { API_BASE_URL } from '../config/api';
-import QRCodeScanner from './QRCodeScanner';
+// Removed QRCodeScanner import - using PIN system instead
 
 const VolunteerDashboard: React.FC = () => {
   const navigate = useNavigate();
@@ -35,8 +40,10 @@ const VolunteerDashboard: React.FC = () => {
   const [currentTasks, setCurrentTasks] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [userLocation, setUserLocation] = useState<{lat: number, lng: number} | null>(null);
-  const [qrScannerOpen, setQrScannerOpen] = useState(false);
+  // PIN entry states for pickup confirmation
+  const [pinEntryOpen, setPinEntryOpen] = useState(false);
   const [selectedPackageId, setSelectedPackageId] = useState<number | null>(null);
+  const [pinValue, setPinValue] = useState('');
   const [activeTab, setActiveTab] = useState(0);
 
   // Distance calculation function using Haversine formula
@@ -214,99 +221,55 @@ const VolunteerDashboard: React.FC = () => {
     { id: 7, name: "$5 Off Order", cost: 250, icon: "dollar-sign" }
   ];
 
-  const handleQRScan = (packageId: number) => {
-    // Get current user from Firebase Auth
-    const user = auth.currentUser;
-    if (!user) {
-      alert('Please log in to scan QR codes');
+  // PIN entry functions for pickup confirmation
+  const handleEnterPin = (packageId: number) => {
+    setSelectedPackageId(packageId);
+    setPinEntryOpen(true);
+  };
+
+  const handlePinSubmit = async () => {
+    if (!pinValue || !selectedPackageId) {
+      alert('Please enter a PIN');
       return;
     }
 
-    // Open QR scanner with the expected package ID
-    setSelectedPackageId(packageId);
-    setQrScannerOpen(true);
-  };
+    const user = auth.currentUser;
+    if (!user) {
+      alert('Please log in to confirm pickup');
+      return;
+    }
 
-  const handleQRScanSuccess = async (scannedId: string) => {
     try {
-      const user = auth.currentUser;
-      if (!user || !selectedPackageId) return;
+      const response = await fetch(`${API_BASE_URL}/api/packages/${selectedPackageId}/pickup`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          pin: pinValue,
+          volunteer_id: user.uid
+        })
+      });
 
-      // Verify the scanned ID matches the expected package ID
-      if (parseInt(scannedId) !== selectedPackageId) {
-        alert(`❌ QR Code mismatch! Expected package ${selectedPackageId}, but scanned ${scannedId}`);
-        setQrScannerOpen(false);
+      const result = await response.json();
+
+      if (result.success) {
+        alert('✅ Package pickup confirmed! Now deliver to food bank.');
+        setPinEntryOpen(false);
+        setPinValue('');
         setSelectedPackageId(null);
-        return;
-      }
-
-      // Check if this is for accepting a new mission or completing an existing one
-      const isAssignedTask = currentTasks.some(task => task.id === selectedPackageId);
-      
-      if (isAssignedTask) {
-        // This is completing an assigned task
-        const response = await fetch(`${API_BASE_URL}/api/packages/${selectedPackageId}/complete`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            volunteer_id: user.uid
-          })
-        });
-
-        const data = await response.json();
-
-        if (data.success) {
-          alert(`✅ Task completed successfully! Package ${selectedPackageId} has been delivered.`);
-          // Refresh current tasks to remove the completed task
-          fetchCurrentTasks();
-          // Update points (mock implementation)
-          setPoints(prev => prev + 50);
-          setCompletedPickups(prev => prev + 1);
-          setFoodSaved(prev => prev + 10); // Mock food saved
-        } else {
-          alert(`Error: ${data.error}`);
-        }
+        // Refresh tasks to update status
+        fetchCurrentTasks();
       } else {
-        // This is accepting a new mission
-        const response = await fetch(`${API_BASE_URL}/api/packages/${selectedPackageId}/assign`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            volunteer_id: user.uid
-          })
-        });
-
-        const data = await response.json();
-
-        if (data.success) {
-          alert(`🎯 Mission accepted! Package ${selectedPackageId} has been assigned to you.`);
-          // Refresh both available packages and current tasks
-          fetchCurrentTasks();
-          window.location.reload();
-        } else {
-          alert(`Error: ${data.error}`);
-        }
+        alert(`❌ ${result.error}`);
       }
     } catch (error) {
-      console.error('Error processing QR scan:', error);
-      alert('Failed to process QR scan. Please try again.');
-    } finally {
-      setQrScannerOpen(false);
-      setSelectedPackageId(null);
+      console.error('Error confirming pickup:', error);
+      alert('Network error. Please try again.');
     }
   };
 
-  const handleQRScanError = (error: string) => {
-    console.error('QR Scan error:', error);
-    alert(`QR Scan failed: ${error}`);
-  };
-
-  const handleQRScannerClose = () => {
-    setQrScannerOpen(false);
+  const handlePinCancel = () => {
+    setPinEntryOpen(false);
+    setPinValue('');
     setSelectedPackageId(null);
   };
 
@@ -684,14 +647,14 @@ const VolunteerDashboard: React.FC = () => {
                             <Box sx={{ display: 'flex', gap: 1 }}>
                               <Button
                                 variant="contained"
-                                onClick={() => handleQRScan(location.id)}
+                                onClick={() => navigate('/volunteer/find-pickups')}
                                 sx={{ 
                                   backgroundColor: '#4CAF50',
                                   '&:hover': { backgroundColor: '#388E3C' }
                                 }}
                                 size="small"
                               >
-                                <Smartphone size={16} style={{ marginRight: '4px' }} /> Scan QR
+                                <Package size={16} style={{ marginRight: '4px' }} /> Accept Mission
                               </Button>
                               <Button
                                 variant="outlined"
@@ -727,8 +690,9 @@ const VolunteerDashboard: React.FC = () => {
                   mb: 2,
                   '&:hover': { backgroundColor: '#388E3C' }
                 }}
+                onClick={() => navigate('/volunteer/find-pickups')}
               >
-                <Smartphone size={16} style={{ marginRight: '4px' }} /> Scan QR Code
+                <Package size={16} style={{ marginRight: '4px' }} /> Find Pickup Missions
               </Button>
               <Button
                 variant="outlined"
@@ -842,19 +806,47 @@ const VolunteerDashboard: React.FC = () => {
                         }
                       />
                       <Box sx={{ ml: 2 }}>
-                        <Button
-                          variant="contained"
-                          size="small"
-                          sx={{
-                            backgroundColor: '#4CAF50',
-                            '&:hover': {
-                              backgroundColor: '#45a049'
-                            }
-                          }}
-                          onClick={() => handleQRScan(task.id)}
-                        >
-                          Scan QR Code
-                        </Button>
+                        {task.status === 'assigned' ? (
+                          <Button
+                            variant="contained"
+                            size="small"
+                            sx={{
+                              backgroundColor: '#4CAF50',
+                              '&:hover': {
+                                backgroundColor: '#45a049'
+                              }
+                            }}
+                            onClick={() => handleEnterPin(task.id)}
+                          >
+                            Enter PIN
+                          </Button>
+                        ) : task.status === 'picked_up' ? (
+                          <Button
+                            variant="contained"
+                            size="small"
+                            sx={{
+                              backgroundColor: '#FF9800',
+                              '&:hover': {
+                                backgroundColor: '#F57C00'
+                              }
+                            }}
+                          >
+                            Deliver to Food Bank
+                          </Button>
+                        ) : (
+                          <Button
+                            variant="contained"
+                            size="small"
+                            sx={{
+                              backgroundColor: '#9E9E9E',
+                              '&:hover': {
+                                backgroundColor: '#757575'
+                              }
+                            }}
+                          >
+                            Completed
+                          </Button>
+                        )}
                       </Box>
                     </ListItem>
                   ))}
@@ -916,15 +908,57 @@ const VolunteerDashboard: React.FC = () => {
         </Card>
       </Box>
 
-      {/* QR Code Scanner Modal */}
-      <QRCodeScanner
-        open={qrScannerOpen}
-        onClose={handleQRScannerClose}
-        onScanSuccess={handleQRScanSuccess}
-        onScanError={handleQRScanError}
-        expectedPackageId={selectedPackageId || undefined}
-        title={selectedPackageId ? `Scan QR Code for Package #${selectedPackageId}` : "Scan QR Code"}
-      />
+      {/* PIN Entry Modal for Pickup Confirmation */}
+      <Dialog open={pinEntryOpen} onClose={handlePinCancel} maxWidth="sm" fullWidth>
+        <DialogTitle sx={{ textAlign: 'center', fontWeight: 'bold' }}>
+          🔢 Enter Pickup PIN
+        </DialogTitle>
+        <DialogContent>
+          <Typography variant="body1" sx={{ mb: 3, textAlign: 'center' }}>
+            Enter the 4-digit PIN provided by the store to confirm package pickup.
+          </Typography>
+          <TextField
+            fullWidth
+            label="Pickup PIN"
+            value={pinValue}
+            onChange={(e) => setPinValue(e.target.value)}
+            placeholder="Enter 4-digit PIN"
+            inputProps={{ 
+              maxLength: 4,
+              style: { 
+                textAlign: 'center', 
+                fontSize: '1.5rem',
+                fontFamily: 'monospace'
+              }
+            }}
+            sx={{ mb: 2 }}
+          />
+          <Typography variant="body2" sx={{ color: '#666', textAlign: 'center' }}>
+            The store should provide this PIN when you arrive for pickup.
+          </Typography>
+        </DialogContent>
+        <DialogActions sx={{ justifyContent: 'center', gap: 2, pb: 3 }}>
+          <Button 
+            onClick={handlePinCancel}
+            variant="outlined"
+            sx={{ minWidth: 100 }}
+          >
+            Cancel
+          </Button>
+          <Button 
+            onClick={handlePinSubmit}
+            variant="contained"
+            sx={{ 
+              minWidth: 100,
+              backgroundColor: '#4CAF50',
+              '&:hover': { backgroundColor: '#45a049' }
+            }}
+            disabled={!pinValue || pinValue.length !== 4}
+          >
+            Confirm Pickup
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };
