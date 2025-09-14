@@ -101,7 +101,7 @@ const VolunteerProfileSetup: React.FC = () => {
       }
 
       // Save profile to backend
-      const response = await fetch('${API_BASE_URL}/api/users/profile', {
+      const response = await fetch(`${API_BASE_URL}/api/users/profile`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
