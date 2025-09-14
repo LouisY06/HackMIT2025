@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { auth } from '../config/firebase';
+import { API_BASE_URL } from '../config/api';
 import {
   Box,
   Typography,
@@ -100,7 +101,7 @@ const VolunteerProfileSetup: React.FC = () => {
       }
 
       // Save profile to backend
-      const response = await fetch('http://localhost:5001/api/users/profile', {
+      const response = await fetch('${API_BASE_URL}/api/users/profile', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
