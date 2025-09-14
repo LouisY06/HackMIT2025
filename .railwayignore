@@ -1,13 +1,12 @@
 # Railway ignore file - exclude frontend from backend deployment
 frontend/
 node_modules/
-package.json
-package-lock.json
-package.json.backup
-package-lock.json.backup
+package.json*
+package-lock.json*
 vercel.json
 DEPLOYMENT-GUIDE.md
 VERCEL-RAILWAY-DEPLOYMENT.md
 deploy-vercel-railway.sh
 README.md
 SETUP.md
+.nixpacks.toml
