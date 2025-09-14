@@ -113,7 +113,17 @@ const StorePackages: React.FC = () => {
   };
 
   useEffect(() => {
-    fetchPackages();
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      if (user) {
+        // User is authenticated, fetch packages
+        fetchPackages();
+      } else {
+        // User is not authenticated, clear packages
+        setPackages([]);
+      }
+    });
+
+    return () => unsubscribe();
   }, []);
 
   useEffect(() => {
@@ -141,17 +151,25 @@ const StorePackages: React.FC = () => {
       setLoading(true);
       // Get current user's email from Firebase auth
       const currentUser = auth.currentUser;
-      const userEmail = currentUser?.email || 'sarah@flourbakery.com'; // fallback for testing
+      if (!currentUser?.email) {
+        console.log('No authenticated user, skipping package fetch');
+        return;
+      }
       
-      const response = await fetch(`${API_BASE_URL}/api/packages/store/${userEmail}`);
+      console.log(`Fetching packages for store: ${currentUser.email}`);
+      const response = await fetch(`${API_BASE_URL}/api/packages/store/${currentUser.email}`);
       const result = await response.json();
+      
+      console.log('Store packages response:', result);
       
       if (result.success) {
         setPackages(result.packages);
+        console.log(`Loaded ${result.packages.length} packages for store`);
       } else {
         setError(result.error || 'Failed to fetch packages');
       }
     } catch (err) {
+      console.error('Error fetching packages:', err);
       setError('Network error. Please make sure the backend server is running.');
     } finally {
       setLoading(false);

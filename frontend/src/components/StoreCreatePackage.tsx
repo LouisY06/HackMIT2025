@@ -73,12 +73,19 @@ const StoreCreatePackage: React.FC = () => {
         return;
       }
 
+      // Check if user is authenticated
+      if (!auth.currentUser?.email) {
+        setError('Please log in to create a package');
+        setLoading(false);
+        return;
+      }
+
       // Submit to backend using the correct API endpoint
       const result = await apiCall(API_ENDPOINTS.CREATE_PACKAGE, {
         method: 'POST',
         body: JSON.stringify({
           store_name: 'Flour Bakery', // This would come from user profile
-          store_email: auth.currentUser?.email || 'sarah@flourbakery.com', // Get from Firebase auth
+          store_email: auth.currentUser.email,
           ...formData,
           weight_lbs: parseFloat(formData.weight_lbs),
         }),
