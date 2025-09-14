@@ -147,11 +147,13 @@ const StoreLogin: React.FC = () => {
           top: 0,
           left: 0,
           right: 0,
+          width: '100%',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
           p: 3,
           zIndex: 3,
+          boxSizing: 'border-box',
         }}
       >
         <Button
@@ -178,7 +180,7 @@ const StoreLogin: React.FC = () => {
             src="/LogoOutlined.png"
             alt="Reflourish"
             style={{
-              height: '40px',
+              height: '100px',
               filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.3))',
             }}
           />
