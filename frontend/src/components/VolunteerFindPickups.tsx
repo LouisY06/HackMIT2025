@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import {
   Box,
   Typography,
@@ -7,24 +8,27 @@ import {
   CardContent,
   Button,
   Chip,
-  Avatar,
   TextField,
   Select,
   MenuItem,
   FormControl,
   InputLabel,
-  AppBar,
-  Toolbar,
+  Container,
   IconButton,
 } from '@mui/material';
 import { 
-  ArrowBack, 
-  FilterList, 
-  LocationOn, 
-  Person,
-  Logout 
-} from '@mui/icons-material';
-import { Package, Leaf, Timer } from 'lucide-react';
+  ArrowLeft,
+  MapPin,
+  Search,
+  Filter,
+  Package,
+  Clock,
+  Truck,
+  Navigation,
+  Target,
+  AlertCircle,
+  CheckCircle,
+} from 'lucide-react';
 import GoogleMapsComponent from './GoogleMapsComponent';
 import { auth } from '../config/firebase';
 import PinEntryModal from './PinEntryModal';
@@ -36,16 +40,16 @@ const VolunteerFindPickups: React.FC = () => {
   const [foodType, setFoodType] = useState('All Types');
   const [maxDistance, setMaxDistance] = useState('Any Distance');
   const [sortBy, setSortBy] = useState('Distance');
-  const [stores, setStores] = useState<any[]>([]);
+  const [packages, setPackages] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [userLocation, setUserLocation] = useState<{lat: number, lng: number} | null>(null);
   const [pinModalOpen, setPinModalOpen] = useState(false);
   const [selectedPackageId, setSelectedPackageId] = useState<number | null>(null);
   const [selectedStoreName, setSelectedStoreName] = useState<string>('');
 
-  // Function to calculate distance between two coordinates using Haversine formula
+  // Calculate distance between coordinates
   const calculateDistance = (lat1: number, lng1: number, lat2: number, lng2: number): number => {
-    const R = 3959; // Radius of the Earth in miles
+    const R = 3959; // Earth's radius in miles
     const dLat = (lat2 - lat1) * Math.PI / 180;
     const dLng = (lng2 - lng1) * Math.PI / 180;
     const a = 
@@ -53,15 +57,14 @@ const VolunteerFindPickups: React.FC = () => {
       Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
       Math.sin(dLng/2) * Math.sin(dLng/2);
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-    const distance = R * c;
-    return distance;
+    return R * c;
   };
 
-  // Function to get user's current location
+  // Get user location
   const getUserLocation = (): Promise<{lat: number, lng: number}> => {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
       if (!navigator.geolocation) {
-        reject(new Error('Geolocation is not supported by this browser.'));
+        resolve({ lat: 42.3601, lng: -71.0589 }); // Default to Cambridge, MA
         return;
       }
 
@@ -72,113 +75,77 @@ const VolunteerFindPickups: React.FC = () => {
             lng: position.coords.longitude
           });
         },
-        (error) => {
-          console.warn('Could not get location:', error);
-          // Default to Cambridge, MA if location access is denied
-          resolve({
-            lat: 42.3601,
-            lng: -71.0589
-          });
+        () => {
+          resolve({ lat: 42.3601, lng: -71.0589 }); // Fallback
         },
-        {
-          enableHighAccuracy: true,
-          timeout: 10000,
-          maximumAge: 300000 // 5 minutes
-        }
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 300000 }
       );
     });
   };
 
-  // Fetch packages from API
-  React.useEffect(() => {
+  // Fetch packages
+  useEffect(() => {
     const fetchPackages = async () => {
       try {
-        // Get user's location first
         const location = await getUserLocation();
         setUserLocation(location);
 
         const response = await fetch(`${API_BASE_URL}/api/packages/available`);
         const data = await response.json();
         
-        
         if (data.success) {
-          // Convert package data to pickup format for display with real distance calculation
-          const packagePickups = data.packages.map((pkg: any, index: number) => {
-            let distance = 0;
-            let distanceText = "Distance unknown";
-            
-            // Only calculate distance if we have store location data
+          const formattedPackages = data.packages.map((pkg: any) => {
+            let distance = "Unknown";
             if (pkg.store_lat && pkg.store_lng) {
-              distance = calculateDistance(location.lat, location.lng, pkg.store_lat, pkg.store_lng);
-              distanceText = `${distance.toFixed(1)} mi`;
+              const dist = calculateDistance(location.lat, location.lng, pkg.store_lat, pkg.store_lng);
+              distance = `${dist.toFixed(1)} mi`;
             }
-            
-            // Format time window
-            const timeWindow = `${pkg.pickup_window_start} - ${pkg.pickup_window_end}`;
-            
-            // Calculate points based on weight (heavier packages = more points)
-            const points = Math.floor(pkg.weight_lbs * 5) + 50;
-            
-            // Calculate CO2 saved (rough estimate: 1 lb food = 0.5 lbs CO2)
-            const co2Saved = (pkg.weight_lbs * 0.5).toFixed(1);
             
             return {
               id: pkg.id,
               storeName: pkg.store_name,
-              storeInitial: pkg.store_name.charAt(0).toUpperCase(),
-              points: points,
-              distance: distanceText,
-              timeWindow: timeWindow,
+              address: pkg.store_address,
+              distance,
               foodType: pkg.food_type,
-              instruction: pkg.special_instructions || "Handle with care",
-              weight: `${pkg.weight_lbs} lbs`,
-              duration: "~30 min",
-              co2Saved: `${co2Saved} lbs CO₂e saved`,
-              destination: "Cambridge Food Bank",
-              destinationAddress: "1234 Main St, Cambridge, MA",
-              expiresSoon: Math.random() > 0.7, // 30% chance of expiring soon
-              timeLeft: Math.random() > 0.7 ? "Expires soon" : "2h left",
+              weight: pkg.weight_lbs,
+              points: Math.floor(pkg.weight_lbs * 5) + 50,
+              urgency: pkg.urgency || 'medium',
+              pickupWindow: {
+                start: pkg.pickup_window_start,
+                end: pkg.pickup_window_end,
+              },
               lat: pkg.store_lat,
               lng: pkg.store_lng,
-              address: pkg.store_address,
-              distanceValue: distance, // Store raw distance value for sorting
-              packageId: pkg.id,
-              qrCodeData: pkg.qr_code_data
             };
           });
           
-          // Sort packages by distance (only those with location data first)
-          packagePickups.sort((a: any, b: any) => {
-            if (a.distanceValue === 0 && b.distanceValue > 0) return 1;
-            if (a.distanceValue > 0 && b.distanceValue === 0) return -1;
-            return a.distanceValue - b.distanceValue;
+          formattedPackages.sort((a: any, b: any) => {
+            const aDist = parseFloat(a.distance);
+            const bDist = parseFloat(b.distance);
+            if (isNaN(aDist)) return 1;
+            if (isNaN(bDist)) return -1;
+            return aDist - bDist;
           });
           
-          setStores(packagePickups);
+          setPackages(formattedPackages);
         }
       } catch (error) {
         console.error('Error fetching packages:', error);
-        // Fallback to mock data if API fails
-        setStores([
+        // Fallback data
+        setPackages([
           {
             id: 1,
-            storeName: "Flour Bakery",
-            storeInitial: "F",
-            points: 104,
-            distance: "0.9 mi",
-            timeWindow: "2:00 PM - 6:00 PM",
-            foodType: "Pastries & Bread",
-            instruction: "Handle with care - contains delicate pastries",
-            weight: "5.2 lbs",
-            duration: "~30 min",
-            co2Saved: "2.3 lbs CO₂e saved",
-            destination: "Cambridge Food Bank",
-            destinationAddress: "1234 Main St, Cambridge, MA",
-            expiresSoon: true,
-            timeLeft: "Expires soon",
+            storeName: "Whole Foods Market",
+            address: "123 Main St, Cambridge, MA",
+            distance: "0.8 mi",
+            foodType: "Mixed Produce",
+            weight: 12,
+            points: 110,
+            urgency: 'high',
+            pickupWindow: { start: new Date(), end: new Date(Date.now() + 2 * 60 * 60 * 1000) },
             lat: 42.3601,
-            lng: -71.0589
-          }
+            lng: -71.0589,
+          },
         ]);
       } finally {
         setLoading(false);
@@ -188,21 +155,49 @@ const VolunteerFindPickups: React.FC = () => {
     fetchPackages();
   }, []);
 
-  // Use stores state instead of hardcoded data
-  const availablePickups = stores;
+  // Filter packages
+  const filteredPackages = packages.filter(pkg => {
+    const matchesSearch = pkg.storeName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         pkg.address.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesFoodType = foodType === 'All Types' || pkg.foodType.includes(foodType);
+    const matchesDistance = maxDistance === 'Any Distance' || 
+                           (parseFloat(pkg.distance) <= parseFloat(maxDistance));
+    
+    return matchesSearch && matchesFoodType && matchesDistance;
+  });
 
-  // Convert pickup data for Google Maps component
-  const mapPickups = availablePickups
-    .filter(pickup => pickup.lat && pickup.lng) // Only include packages with location data
-    .map(pickup => ({
-      id: pickup.id.toString(),
-      storeName: pickup.storeName,
-      lat: pickup.lat,
-      lng: pickup.lng,
-      foodType: pickup.foodType,
-      weight: pickup.weight,
-      timeWindow: pickup.timeWindow
-    }));
+  // Sort packages
+  const sortedPackages = [...filteredPackages].sort((a, b) => {
+    switch (sortBy) {
+      case 'Distance':
+        return parseFloat(a.distance) - parseFloat(b.distance);
+      case 'Points':
+        return b.points - a.points;
+      case 'Urgency':
+        const urgencyOrder = { 'high': 3, 'medium': 2, 'low': 1 };
+        return urgencyOrder[b.urgency as keyof typeof urgencyOrder] - urgencyOrder[a.urgency as keyof typeof urgencyOrder];
+      default:
+        return 0;
+    }
+  });
+
+  const getUrgencyColor = (urgency: string) => {
+    switch (urgency) {
+      case 'high': return '#f44336';
+      case 'medium': return '#ff9800';
+      case 'low': return '#4caf50';
+      default: return '#2196f3';
+    }
+  };
+
+  const getUrgencyIcon = (urgency: string) => {
+    switch (urgency) {
+      case 'high': return <AlertCircle size={16} />;
+      case 'medium': return <Clock size={16} />;
+      case 'low': return <CheckCircle size={16} />;
+      default: return <Package size={16} />;
+    }
+  };
 
   const handleAcceptMission = (pickupId: number, storeName: string) => {
     // Get current user from Firebase Auth
@@ -245,429 +240,372 @@ const VolunteerFindPickups: React.FC = () => {
     // Navigate to detailed mission view
   };
 
-  const handleLogout = () => {
-    navigate('/');
-  };
-
   return (
-    <Box sx={{ 
-      height: '100vh', 
-      backgroundColor: '#f5f5f5',
-      display: 'flex',
-      flexDirection: 'column',
-      overflow: 'hidden'
-    }}>
-      {/* Header/Navigation */}
-      <AppBar position="static" sx={{ backgroundColor: '#4CAF50' }}>
-        <Toolbar sx={{ 
-          flexDirection: { xs: 'column', sm: 'row' },
-          gap: { xs: 1, sm: 0 },
-          py: { xs: 1, sm: 0 }
-        }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', mr: { sm: 4 } }}>
-            <img 
-              src="/LogoOutlined.png" 
-              alt="Reflourish Logo" 
-              style={{ 
-                height: '48px', 
-                width: 'auto',
-                objectFit: 'contain'
-              }} 
-            />
-          </Box>
-          
-          <Box sx={{ 
-            display: 'flex', 
-            gap: { xs: 1, sm: 2 }, 
-            flex: 1,
-            flexWrap: { xs: 'wrap', sm: 'nowrap' },
-            justifyContent: { xs: 'center', sm: 'flex-start' }
-          }}>
-            <Button 
-              color="inherit" 
-              onClick={() => navigate('/volunteer/dashboard')}
-              sx={{ 
-                '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.1)' },
-                fontSize: { xs: '0.75rem', sm: '0.875rem' },
-                px: { xs: 1, sm: 2 }
-              }}
-            >
-              Dashboard
-            </Button>
-            <Button 
-              color="inherit" 
-              sx={{ 
-                backgroundColor: 'rgba(255, 255, 255, 0.2)', 
-                '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.3)' },
-                fontSize: { xs: '0.75rem', sm: '0.875rem' },
-                px: { xs: 1, sm: 2 }
-              }}
-            >
-              Find Tasks
-            </Button>
-            <Button 
-              color="inherit" 
-              onClick={() => navigate('/volunteer/rewards')}
-              sx={{ 
-                '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.1)' },
-                fontSize: { xs: '0.75rem', sm: '0.875rem' },
-                px: { xs: 1, sm: 2 }
-              }}
-            >
-              Rewards
-            </Button>
-            <Button 
-              color="inherit" 
-              onClick={() => navigate('/volunteer/leaderboard')}
-              sx={{ 
-                '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.1)' },
-                fontSize: { xs: '0.75rem', sm: '0.875rem' },
-                px: { xs: 1, sm: 2 }
-              }}
-            >
-              Leaderboard
-            </Button>
-            <Button 
-              color="inherit" 
-              onClick={() => navigate('/volunteer/global-impact')}
-              sx={{ 
-                '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.1)' },
-                fontSize: { xs: '0.75rem', sm: '0.875rem' },
-                px: { xs: 1, sm: 2 }
-              }}
-            >
-              Global Impact
-            </Button>
-          </Box>
-
-          <Box sx={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            gap: { xs: 1, sm: 2 },
-            flexDirection: { xs: 'row', sm: 'row' }
-          }}>
-            <Typography 
-              variant="body2" 
-              sx={{ 
-                color: 'white',
-                fontSize: { xs: '0.75rem', sm: '0.875rem' },
-                display: { xs: 'none', sm: 'block' }
-              }}
-            >
-              Marcus Chen Level 3
-            </Typography>
-            <Chip 
-              label="1250 pts" 
-              sx={{ 
-                backgroundColor: '#FFF9C4', 
-                color: '#F57F17',
-                fontWeight: 'bold',
-                fontSize: { xs: '0.7rem', sm: '0.8125rem' }
-              }} 
-            />
-            <IconButton onClick={handleLogout} color="inherit" size="small">
-              <Logout />
-            </IconButton>
-          </Box>
-        </Toolbar>
-      </AppBar>
-
-      {/* Main Content */}
-      <Box sx={{ 
-        display: 'flex', 
-        flex: 1,
-        minHeight: 0,
-        flexDirection: { xs: 'column', lg: 'row' }
-      }}>
-        {/* Left Sidebar - Filters and Map */}
-        <Box sx={{ 
-          width: { xs: '100%', lg: '350px' }, 
-          backgroundColor: 'white', 
-          p: { xs: 2, sm: 3 }, 
-          borderRight: { lg: '1px solid #e0e0e0' },
-          borderBottom: { xs: '1px solid #e0e0e0', lg: 'none' },
-          maxHeight: { xs: '50vh', lg: 'auto' },
-          overflowY: { xs: 'auto', lg: 'visible' }
-        }}>
-          {/* Filters Section */}
-          <Box sx={{ mb: 3 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-              <FilterList sx={{ mr: 1, color: '#4CAF50' }} />
-              <Typography variant="h6" sx={{ fontWeight: 'bold', fontSize: { xs: '1.1rem', sm: '1.25rem' } }}>
-                Filters
-              </Typography>
-            </Box>
-
-            <TextField
-              fullWidth
-              placeholder="🔍 Store or food type..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              sx={{ mb: 2 }}
-              size="small"
-            />
-
-            <Box sx={{ 
-              display: 'grid', 
-              gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', lg: '1fr' },
-              gap: 2,
-              mb: 2
-            }}>
-              <FormControl fullWidth>
-                <InputLabel>Food Type</InputLabel>
-                <Select
-                  value={foodType}
-                  label="Food Type"
-                  onChange={(e) => setFoodType(e.target.value)}
-                  size="small"
+    <Box
+      sx={{
+        backgroundImage: 'url(/VolunteerLogin.png)',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+        minHeight: '100vh',
+        position: 'relative',
+        pb: 4,
+        '&::before': {
+          content: '""',
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.3)',
+          zIndex: 1,
+        },
+        '& > *': {
+          position: 'relative',
+          zIndex: 2,
+        },
+      }}
+    >
+      {/* Header */}
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, ease: "easeOut" }}
+      >
+        <Box
+          sx={{
+            background: 'rgba(0, 0, 0, 0.7)',
+            backdropFilter: 'blur(10px)',
+            borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+            p: 3,
+          }}
+        >
+          <Container maxWidth="xl">
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                <IconButton
+                  onClick={() => navigate('/volunteer/dashboard')}
+                  sx={{
+                    background: 'rgba(132, 141, 88, 0.1)',
+                    color: '#848D58',
+                    '&:hover': {
+                      background: 'rgba(132, 141, 88, 0.2)',
+                    },
+                  }}
                 >
-                  <MenuItem value="All Types">All Types</MenuItem>
-                  <MenuItem value="Pastries & Bread">Pastries & Bread</MenuItem>
-                  <MenuItem value="Prepared Meals">Prepared Meals</MenuItem>
-                  <MenuItem value="Produce">Produce</MenuItem>
-                  <MenuItem value="Dairy">Dairy</MenuItem>
-                </Select>
-              </FormControl>
-
-              <FormControl fullWidth>
-                <InputLabel>Max Distance</InputLabel>
-                <Select
-                  value={maxDistance}
-                  label="Max Distance"
-                  onChange={(e) => setMaxDistance(e.target.value)}
-                  size="small"
+                  <ArrowLeft size={24} />
+                </IconButton>
+                <Box
+                  sx={{
+                    width: 50,
+                    height: 50,
+                    borderRadius: '50%',
+                    background: 'linear-gradient(135deg, #848D58 0%, #6F7549 100%)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
                 >
-                  <MenuItem value="Any Distance">Any Distance</MenuItem>
-                  <MenuItem value="1 mile">1 mile</MenuItem>
-                  <MenuItem value="3 miles">3 miles</MenuItem>
-                  <MenuItem value="5 miles">5 miles</MenuItem>
-                  <MenuItem value="10 miles">10 miles</MenuItem>
-                </Select>
-              </FormControl>
+                  <MapPin size={24} color="white" />
+                </Box>
+                <Box>
+                  <Typography 
+                    variant="h4" 
+                    sx={{ 
+                      fontWeight: 700,
+                      color: 'white',
+                      fontFamily: '"Helvetica Neue", "Helvetica", "Arial", sans-serif',
+                    }}
+                  >
+                    Find Nearby Pickups
+                  </Typography>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Typography 
+                      variant="subtitle1" 
+                      sx={{ 
+                        color: 'rgba(255, 255, 255, 0.8)',
+                        fontWeight: 300,
+                        fontFamily: '"Helvetica Neue", "Helvetica", "Arial", sans-serif',
+                      }}
+                    >
+                      Discover food rescue opportunities near you
+                    </Typography>
+                    <MapPin size={20} color="rgba(255, 255, 255, 0.8)" />
+                  </Box>
+                </Box>
+              </Box>
             </Box>
+          </Container>
+        </Box>
+      </motion.div>
 
-            <FormControl fullWidth>
-              <InputLabel>Sort By</InputLabel>
-              <Select
-                value={sortBy}
-                label="Sort By"
-                onChange={(e) => setSortBy(e.target.value)}
-                size="small"
-              >
-                <MenuItem value="Distance">Distance</MenuItem>
-                <MenuItem value="Points">Points</MenuItem>
-                <MenuItem value="Time">Time</MenuItem>
-                <MenuItem value="Weight">Weight</MenuItem>
-              </Select>
-            </FormControl>
-          </Box>
-
-          {/* Location Info */}
-          {userLocation && (
-            <Box sx={{ mb: 3, p: 2, backgroundColor: '#f5f5f5', borderRadius: 1 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                <LocationOn sx={{ mr: 1, color: '#4CAF50', fontSize: '1.2rem' }} />
-                <Typography variant="subtitle2" sx={{ fontWeight: 'bold', color: '#4CAF50' }}>
-                  Your Location
+      <Container maxWidth="xl" sx={{ mt: 4 }}>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+        >
+          {/* Filters */}
+          <Card
+            sx={{
+              borderRadius: 3,
+              background: 'rgba(255, 255, 255, 0.95)',
+              backdropFilter: 'blur(10px)',
+              border: '1px solid rgba(132, 141, 88, 0.1)',
+              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
+              mb: 4,
+            }}
+          >
+            <CardContent sx={{ p: 4 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
+                <Filter size={24} color="#848D58" />
+                <Typography 
+                  variant="h5" 
+                  sx={{ 
+                    fontWeight: 700,
+                    fontFamily: '"Helvetica Neue", "Helvetica", "Arial", sans-serif',
+                  }}
+                >
+                  Filter & Search
                 </Typography>
               </Box>
-              <Typography variant="body2" sx={{ color: '#666', fontSize: '0.85rem' }}>
-                Distances calculated from your current location
-              </Typography>
-              <Typography variant="caption" sx={{ color: '#999', fontSize: '0.75rem' }}>
-                {userLocation.lat.toFixed(4)}, {userLocation.lng.toFixed(4)}
-              </Typography>
-            </Box>
-          )}
-
-          {/* Map View Section - Hidden on mobile to save space */}
-          <Box sx={{ display: { xs: 'none', md: 'block' } }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-              <LocationOn sx={{ mr: 1, color: '#4CAF50' }} />
-              <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
-                Map View
-              </Typography>
-            </Box>
-            
-            {loading ? (
-              <Box sx={{ 
-                height: '300px', 
-                display: 'flex', 
-                alignItems: 'center', 
-                justifyContent: 'center',
-                backgroundColor: '#f5f5f5',
-                borderRadius: 1
-              }}>
-                <Typography>Loading packages...</Typography>
+              
+              <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(4, 1fr)' }, gap: 3 }}>
+                <TextField
+                  label="Search location or store"
+                  variant="outlined"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  InputProps={{
+                    startAdornment: <Search size={20} style={{ marginRight: 8, color: '#848D58' }} />,
+                  }}
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      '&.Mui-focused fieldset': {
+                        borderColor: '#848D58',
+                      },
+                    },
+                    '& .MuiInputLabel-root.Mui-focused': {
+                      color: '#848D58',
+                    },
+                  }}
+                />
+                
+                <FormControl>
+                  <InputLabel>Food Type</InputLabel>
+                  <Select
+                    value={foodType}
+                    onChange={(e) => setFoodType(e.target.value)}
+                    label="Food Type"
+                  >
+                    <MenuItem value="All Types">All Types</MenuItem>
+                    <MenuItem value="Produce">Produce</MenuItem>
+                    <MenuItem value="Prepared Foods">Prepared Foods</MenuItem>
+                    <MenuItem value="Bakery">Bakery</MenuItem>
+                    <MenuItem value="Dairy">Dairy</MenuItem>
+                  </Select>
+                </FormControl>
+                
+                <FormControl>
+                  <InputLabel>Max Distance</InputLabel>
+                  <Select
+                    value={maxDistance}
+                    onChange={(e) => setMaxDistance(e.target.value)}
+                    label="Max Distance"
+                  >
+                    <MenuItem value="Any Distance">Any Distance</MenuItem>
+                    <MenuItem value="1">Within 1 mile</MenuItem>
+                    <MenuItem value="3">Within 3 miles</MenuItem>
+                    <MenuItem value="5">Within 5 miles</MenuItem>
+                    <MenuItem value="10">Within 10 miles</MenuItem>
+                  </Select>
+                </FormControl>
+                
+                <FormControl>
+                  <InputLabel>Sort By</InputLabel>
+                  <Select
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value)}
+                    label="Sort By"
+                  >
+                    <MenuItem value="Distance">Distance</MenuItem>
+                    <MenuItem value="Points">Points</MenuItem>
+                    <MenuItem value="Urgency">Urgency</MenuItem>
+                  </Select>
+                </FormControl>
               </Box>
-            ) : (
-              <GoogleMapsComponent
-                apiKey={process.env.REACT_APP_GOOGLE_MAPS_API_KEY || ''}
-                center={userLocation || { lat: 42.3601, lng: -71.0589 }}
-                zoom={13}
-                pickups={mapPickups}
-                height="300px"
-                userLocation={userLocation || undefined}
-              />
-            )}
-          </Box>
-        </Box>
+            </CardContent>
+          </Card>
 
-        {/* Right Main Content - Available Pickups */}
-        <Box sx={{ 
-          flex: 1, 
-          display: 'flex',
-          flexDirection: 'column',
-          overflow: 'hidden'
-        }}>
-          {/* Fixed Header */}
-          <Box sx={{ p: { xs: 2, sm: 3 }, pb: 0, flexShrink: 0 }}>
-            <Typography variant="h5" sx={{ 
-              fontWeight: 'bold',
-              fontSize: { xs: '1.3rem', sm: '1.5rem' }
-            }}>
-              {availablePickups.length} Packages Available
-            </Typography>
-          </Box>
-
-          {/* Scrollable Content */}
-          <Box sx={{ 
-            flex: 1,
-            p: { xs: 2, sm: 3 },
-            pt: 1,
-            overflowY: 'auto',
-            '&::-webkit-scrollbar': {
-              width: '6px',
-            },
-            '&::-webkit-scrollbar-track': {
-              backgroundColor: '#f1f1f1',
-              borderRadius: '3px',
-            },
-            '&::-webkit-scrollbar-thumb': {
-              backgroundColor: '#c1c1c1',
-              borderRadius: '3px',
-              '&:hover': {
-                backgroundColor: '#a8a8a8',
-              },
-            },
-          }}>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: { xs: 2, sm: 3 } }}>
-            {availablePickups.map((pickup) => (
-              <Card key={pickup.id} sx={{ boxShadow: 2 }}>
-                <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
-                  <Box sx={{ 
-                    display: 'flex', 
-                    alignItems: 'flex-start', 
-                    gap: 2,
-                    flexDirection: { xs: 'column', sm: 'row' }
-                  }}>
-                    {/* Store Avatar and Header Info */}
-                    <Box sx={{ 
-                      display: 'flex', 
-                      alignItems: 'center', 
-                      gap: 2,
-                      width: { xs: '100%', sm: 'auto' }
-                    }}>
-                      <Avatar sx={{ backgroundColor: '#2196F3', width: 48, height: 48 }}>
-                        {pickup.storeInitial}
-                      </Avatar>
-                      <Box sx={{ flex: { xs: 1, sm: 'none' } }}>
-                        <Typography variant="h6" sx={{ 
-                          fontWeight: 'bold',
-                          fontSize: { xs: '1.1rem', sm: '1.25rem' }
-                        }}>
-                          {pickup.storeName}
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          {pickup.distance} • {pickup.timeWindow}
-                        </Typography>
-                      </Box>
-                      <Chip 
-                        label={`+${pickup.points} points`}
+          {/* Results */}
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '1fr 400px' }, gap: 4 }}>
+            {/* Package List */}
+            <Box>
+              <Card
+                sx={{
+                  borderRadius: 3,
+                  background: 'rgba(255, 255, 255, 0.95)',
+                  backdropFilter: 'blur(10px)',
+                  border: '1px solid rgba(132, 141, 88, 0.1)',
+                  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
+                }}
+              >
+                <CardContent sx={{ p: 4 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                      <Package size={24} color="#848D58" />
+                      <Typography 
+                        variant="h5" 
                         sx={{ 
-                          backgroundColor: '#4CAF50', 
-                          color: 'white', 
-                          fontWeight: 'bold',
-                          fontSize: { xs: '0.7rem', sm: '0.8125rem' }
+                          fontWeight: 700,
+                          fontFamily: '"Helvetica Neue", "Helvetica", "Arial", sans-serif',
                         }}
-                      />
-                    </Box>
-
-                    {/* Main Content */}
-                    <Box sx={{ flex: 1, width: { xs: '100%', sm: 'auto' } }}>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                        <Chip label={pickup.foodType} size="small" variant="outlined" />
-                      </Box>
-
-                      <Typography variant="body2" sx={{ mb: 2, fontStyle: 'italic' }}>
-                        {pickup.instruction}
+                      >
+                        Available Packages
                       </Typography>
-
-                      {/* Metrics */}
-                      <Box sx={{ 
-                        display: 'flex', 
-                        gap: { xs: 2, sm: 3 }, 
-                        mb: 2,
-                        flexDirection: { xs: 'column', sm: 'row' }
-                      }}>
-                        <Typography variant="body2" color="text.secondary">
-                          <Package size={16} style={{ marginRight: '4px' }} /> {pickup.weight}
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          <Timer size={16} style={{ marginRight: '4px' }} /> {pickup.duration}
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          <Leaf size={16} style={{ marginRight: '4px' }} /> {pickup.co2Saved}
-                        </Typography>
-                      </Box>
-
-                      {/* Delivery Destination */}
-                      <Box sx={{ mb: 2 }}>
-                        <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 0.5 }}>
-                          Delivery destination
-                        </Typography>
-                        <Typography variant="body2">
-                          {pickup.destination}
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          {pickup.destinationAddress}
-                        </Typography>
-                      </Box>
-
-                      {/* Action Buttons */}
-                      <Box sx={{ 
-                        display: 'flex', 
-                        gap: 2,
-                        flexDirection: { xs: 'column', sm: 'row' }
-                      }}>
-                        <Button
-                          variant="contained"
-                          fullWidth={window.innerWidth < 600}
-                          sx={{
-                            backgroundColor: '#4CAF50',
-                            '&:hover': { backgroundColor: '#388E3C' }
-                          }}
-                          onClick={() => handleAcceptMission(pickup.id, pickup.storeName)}
-                        >
-                          Accept Mission
-                        </Button>
-                        <Button
-                          variant="outlined"
-                          fullWidth={window.innerWidth < 600}
-                          onClick={() => handleViewDetails(pickup.id)}
-                        >
-                          View Details
-                        </Button>
-                      </Box>
                     </Box>
+                    <Chip
+                      label={`${sortedPackages.length} found`}
+                      variant="outlined"
+                      sx={{ borderColor: '#848D58', color: '#848D58', fontWeight: 600 }}
+                    />
+                  </Box>
+
+                  <Box sx={{ maxHeight: 600, overflowY: 'auto', pr: 1 }}>
+                    {sortedPackages.map((pkg, index) => (
+                      <motion.div
+                        key={pkg.id}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: index * 0.1, duration: 0.5 }}
+                        whileHover={{ scale: 1.02 }}
+                      >
+                        <Card
+                          sx={{
+                            mb: 2,
+                            borderRadius: 2,
+                            border: `2px solid ${getUrgencyColor(pkg.urgency)}20`,
+                            background: 'white',
+                            transition: 'all 0.2s ease',
+                            '&:hover': {
+                              boxShadow: `0 4px 20px ${getUrgencyColor(pkg.urgency)}20`,
+                            },
+                          }}
+                        >
+                          <CardContent sx={{ p: 3 }}>
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
+                              <Box sx={{ flex: 1 }}>
+                                <Typography variant="h6" sx={{ fontWeight: 700, mb: 1 }}>
+                                  {pkg.storeName}
+                                </Typography>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                                  <MapPin size={16} color="#666" />
+                                  <Typography variant="body2" color="text.secondary">
+                                    {pkg.address} • {pkg.distance}
+                                  </Typography>
+                                </Box>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+                                  <Chip
+                                    icon={getUrgencyIcon(pkg.urgency)}
+                                    label={pkg.urgency}
+                                    size="small"
+                                    sx={{
+                                      backgroundColor: `${getUrgencyColor(pkg.urgency)}15`,
+                                      color: getUrgencyColor(pkg.urgency),
+                                      fontWeight: 600,
+                                      textTransform: 'capitalize',
+                                    }}
+                                  />
+                                  <Typography variant="body2" color="text.secondary">
+                                    {pkg.foodType} • {pkg.weight} lbs
+                                  </Typography>
+                                </Box>
+                              </Box>
+                              <Chip
+                                label={`${pkg.points} pts`}
+                                sx={{
+                                  background: 'linear-gradient(135deg, #848D58 0%, #6F7549 100%)',
+                                  color: 'white',
+                                  fontWeight: 600,
+                                }}
+                              />
+                            </Box>
+                            <Box sx={{ display: 'flex', gap: 2 }}>
+                              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                                <Button
+                                  variant="contained"
+                                  startIcon={<Target size={18} />}
+                                  onClick={() => handleAcceptMission(pkg.id, pkg.storeName)}
+                                  sx={{
+                                    background: 'linear-gradient(135deg, #848D58 0%, #6F7549 100%)',
+                                    borderRadius: 2,
+                                    textTransform: 'none',
+                                    fontWeight: 600,
+                                    '&:hover': {
+                                      background: 'linear-gradient(135deg, #6F7549 0%, #5A5F3A 100%)',
+                                    },
+                                  }}
+                                >
+                                  Accept Mission
+                                </Button>
+                              </motion.div>
+                              <Button
+                                variant="outlined"
+                                startIcon={<Navigation size={18} />}
+                                onClick={() => handleViewDetails(pkg.id)}
+                                sx={{
+                                  borderColor: '#848D58',
+                                  color: '#848D58',
+                                  borderRadius: 2,
+                                  textTransform: 'none',
+                                  fontWeight: 600,
+                                }}
+                              >
+                                View Details
+                              </Button>
+                            </Box>
+                          </CardContent>
+                        </Card>
+                      </motion.div>
+                    ))}
                   </Box>
                 </CardContent>
               </Card>
-            ))}
+            </Box>
+
+            {/* Map */}
+            <Box>
+              <Card
+                sx={{
+                  borderRadius: 3,
+                  background: 'rgba(255, 255, 255, 0.95)',
+                  backdropFilter: 'blur(10px)',
+                  border: '1px solid rgba(132, 141, 88, 0.1)',
+                  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
+                  height: 600,
+                }}
+              >
+                <CardContent sx={{ p: 0, height: '100%' }}>
+                  <GoogleMapsComponent
+                    apiKey={process.env.REACT_APP_GOOGLE_MAPS_API_KEY || ''}
+                    pickups={sortedPackages.map(pkg => ({
+                      id: pkg.id.toString(),
+                      storeName: pkg.storeName,
+                      lat: pkg.lat || 42.3601,
+                      lng: pkg.lng || -71.0589,
+                      foodType: pkg.foodType,
+                      weight: `${pkg.weight} lbs`,
+                      timeWindow: `${new Date(pkg.pickupWindow.start).toLocaleTimeString()} - ${new Date(pkg.pickupWindow.end).toLocaleTimeString()}`,
+                    }))}
+                    userLocation={userLocation || undefined}
+                    height="600px"
+                  />
+                </CardContent>
+              </Card>
             </Box>
           </Box>
-        </Box>
-      </Box>
+        </motion.div>
+      </Container>
 
       {/* PIN Entry Modal */}
       <PinEntryModal
