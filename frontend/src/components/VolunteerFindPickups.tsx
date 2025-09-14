@@ -121,8 +121,19 @@ const VolunteerFindPickups: React.FC = () => {
             // Calculate CO2 saved (rough estimate: 1 lb food = 0.5 lbs CO2)
             const co2Saved = (pkg.weight_lbs * 0.5).toFixed(1);
             
+            // Extract package_id from QR code data
+            let actualPackageId = pkg.id; // fallback to database ID
+            try {
+              if (pkg.qr_code_data) {
+                const qrData = JSON.parse(pkg.qr_code_data);
+                actualPackageId = qrData.package_id || pkg.id;
+              }
+            } catch (e) {
+              console.warn('Could not parse QR code data:', e);
+            }
+
             return {
-              id: pkg.id,
+              id: pkg.id, // Keep database ID for API calls
               storeName: pkg.store_name,
               storeInitial: pkg.store_name.charAt(0).toUpperCase(),
               points: points,
@@ -141,7 +152,7 @@ const VolunteerFindPickups: React.FC = () => {
               lng: pkg.store_lng,
               address: pkg.store_address,
               distanceValue: distance, // Store raw distance value for sorting
-              packageId: pkg.id,
+              packageId: actualPackageId, // Use actual package ID from QR code
               qrCodeData: pkg.qr_code_data
             };
           });
@@ -203,7 +214,7 @@ const VolunteerFindPickups: React.FC = () => {
       timeWindow: pickup.timeWindow
     }));
 
-  const handleAcceptMission = (pickupId: number) => {
+  const handleAcceptMission = (pickup: any) => {
     // Get current user from Firebase Auth
     const user = auth.currentUser;
     if (!user) {
@@ -211,8 +222,9 @@ const VolunteerFindPickups: React.FC = () => {
       return;
     }
 
-    // Open QR scanner with the expected package ID
-    setSelectedPackageId(pickupId);
+    // Open QR scanner with the expected package ID (from QR code, not database ID)
+    console.log('Expected package ID for QR scanner:', pickup.packageId);
+    setSelectedPackageId(pickup.packageId);
     setQrScannerOpen(true);
   };
 
@@ -229,8 +241,17 @@ const VolunteerFindPickups: React.FC = () => {
         return;
       }
 
-      // Assign the package to the volunteer
-      const response = await fetch(`${API_BASE_URL}/api/packages/${selectedPackageId}/assign`, {
+      // Find the pickup with this package ID to get the database ID
+      const matchingPickup = availablePickups.find(pickup => pickup.packageId === selectedPackageId);
+      if (!matchingPickup) {
+        alert('❌ Package not found in available pickups');
+        setQrScannerOpen(false);
+        setSelectedPackageId(null);
+        return;
+      }
+
+      // Assign the package to the volunteer using database ID
+      const response = await fetch(`${API_BASE_URL}/api/packages/${matchingPickup.id}/assign`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -670,7 +691,7 @@ const VolunteerFindPickups: React.FC = () => {
                             backgroundColor: '#4CAF50',
                             '&:hover': { backgroundColor: '#388E3C' }
                           }}
-                          onClick={() => handleAcceptMission(pickup.id)}
+                          onClick={() => handleAcceptMission(pickup)}
                         >
                           Accept Mission
                         </Button>

@@ -141,25 +141,40 @@ const QRCodeScanner: React.FC<QRCodeScannerProps> = ({
           }
           
           if (error && error.name !== 'NotFoundException') {
-            console.error('QR Scan error:', error);
+            console.error('QR Scan error details:', {
+              name: error.name,
+              message: error.message,
+              stack: error.stack
+            });
             
-            // Provide user-friendly error messages
+            // Provide user-friendly error messages with debug info
             let friendlyMessage = '';
             if (error.message.includes('No MultiFormat Readers were able to detect the code')) {
               friendlyMessage = `
-Unable to read QR code. Please try:
-• Move camera closer to QR code
-• Ensure good lighting
+🔍 Unable to detect QR code. This usually means:
+
+📱 **Camera Issues:**
+• Try different camera angles
+• Clean your camera lens
+• Ensure good lighting (not too bright/dark)
+
+📦 **QR Code Issues:**
 • Make sure QR code is clear and undamaged
-• Hold camera steady
+• Hold camera steady (2-6 inches away)
 • Only scan QR codes from this app
+• Try refreshing the QR code image
+
+🛠️ **Debug Info:**
+Error: ${error.name} - ${error.message}
+
+💡 **Quick Test:** Try scanning a simple QR code from another app first to test your camera.
               `.trim();
             } else if (error.message.includes('timeout')) {
               friendlyMessage = 'Scan timeout. Please try again with better lighting or closer positioning.';
             } else if (error.message.includes('format')) {
               friendlyMessage = 'QR code format not recognized. Make sure you\'re scanning a valid package QR code.';
             } else {
-              friendlyMessage = `Scan error: ${error.message}`;
+              friendlyMessage = `Debug: ${error.name} - ${error.message}`;
             }
             
             setError(friendlyMessage);

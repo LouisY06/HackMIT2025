@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test QR Code Generator</title>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+</head>
+<body>
+    <h2>Test QR Codes for Debugging</h2>
+    
+    <h3>Simple Package ID QR Code:</h3>
+    <canvas id="qr1"></canvas>
+    <p>Contains: "1726277765083"</p>
+    
+    <h3>JSON Package QR Code:</h3>
+    <canvas id="qr2"></canvas>
+    <p>Contains: Full JSON package data</p>
+    
+    <script>
+        // Simple package ID
+        QRCode.toCanvas(document.getElementById('qr1'), '1726277765083', function (error) {
+            if (error) console.error(error);
+            console.log('Simple QR code generated');
+        });
+        
+        // JSON package data
+        const packageData = {
+            "package_id": "1726277765083",
+            "store_name": "Test Store",
+            "store_email": "test@store.com",
+            "weight_lbs": 5.2,
+            "food_type": "Test Food"
+        };
+        
+        QRCode.toCanvas(document.getElementById('qr2'), JSON.stringify(packageData), function (error) {
+            if (error) console.error(error);
+            console.log('JSON QR code generated');
+        });
+    </script>
+</body>
+</html>
