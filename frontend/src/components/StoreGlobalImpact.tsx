@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Leaf, Package, Trophy, Home, BarChart3, TrendingUp, LogOut, Globe, Trees, Users, Store, Car, Droplets, TreePine, Building } from 'lucide-react';
+import { Leaf, Package, Trophy, Home, BarChart3, TrendingUp, LogOut, Globe, Trees, Users, Store, Car, Droplets, TreePine, Building, DollarSign, ArrowLeft, Target } from 'lucide-react';
 import {
   Box,
   Typography,
@@ -77,100 +77,139 @@ const StoreGlobalImpact: React.FC = () => {
   };
 
   return (
-    <Box sx={{ minHeight: '100vh', bgcolor: '#f8f9fa' }}>
-      {/* Top Navigation Bar */}
-      <Box
-        sx={{
-          bgcolor: 'white',
-          borderBottom: '1px solid #e0e0e0',
-          px: 3,
-          py: 2,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-        }}
-      >
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-          <img 
-            src="/LogoOutlined.png" 
-            alt="Reflourish Logo" 
-            style={{ 
-              height: '56px', 
-              width: 'auto',
-              objectFit: 'contain'
-            }} 
-          />
-          <Box sx={{ display: 'flex', gap: 3 }}>
-            <Button onClick={() => navigate('/store/dashboard')} sx={{ color: '#666' }}>
-              <Home size={16} style={{ marginRight: '4px' }} /> Dashboard
-            </Button>
-            <Button onClick={() => navigate('/store/create-package')} sx={{ color: '#666' }}>
-              + Create Package
-            </Button>
-            <Button onClick={() => navigate('/store/packages')} sx={{ color: '#666' }}>
-              <Package size={16} style={{ marginRight: '4px' }} /> Packages
-            </Button>
-            <Button onClick={() => navigate('/store/impact')} sx={{ color: '#666' }}>
-              <BarChart3 size={16} style={{ marginRight: '4px' }} /> Impact
-            </Button>
-            <Button sx={{ color: '#4CAF50', fontWeight: 'bold' }}>
-              <TrendingUp size={16} style={{ marginRight: '4px' }} /> Global Impact
-            </Button>
-          </Box>
-        </Box>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          <Typography variant="body2" sx={{ color: '#666' }}>
-            Sarah Williams
-          </Typography>
-          <Button sx={{ color: '#666' }}>
-            Partner
-          </Button>
-          <Button onClick={() => navigate('/store')} sx={{ color: '#666' }}>
-            <LogOut size={16} style={{ marginRight: '4px' }} /> Logout
-          </Button>
-        </Box>
+    <Box
+      sx={{
+        backgroundImage: 'url(/RestLogin.png)',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+        minHeight: '100vh',
+        position: 'relative',
+        pb: 4,
+        '&::before': {
+          content: '""',
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.3)',
+          zIndex: 1,
+        },
+        '& > *': {
+          position: 'relative',
+          zIndex: 2,
+        },
+      }}
+    >
+      {/* Header */}
+      <Box>
+        <Box
+          sx={{
+            background: 'rgba(0, 0, 0, 0.7)',
+            backdropFilter: 'blur(10px)',
+            borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+            p: { xs: 2, md: 3 },
+          }}
+        >
+          <Container maxWidth="xl">
+            <Box sx={{ 
+              display: 'flex', 
+              justifyContent: 'space-between', 
+              alignItems: 'center',
+              flexDirection: { xs: 'column', sm: 'row' },
+              gap: { xs: 2, sm: 0 }
+            }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1.5, sm: 2 } }}>
+                <IconButton 
+                  onClick={() => navigate('/store/dashboard')}
+                  sx={{ 
+                    color: 'rgba(255, 255, 255, 0.9)',
+                    '&:hover': { 
+                      color: 'white',
+                      backgroundColor: 'rgba(255, 255, 255, 0.1)'
+                    }
+                  }}
+                >
+                  <ArrowLeft size={24} />
+                </IconButton>
+                <Box
+                  sx={{
+                    width: { xs: 40, sm: 60 },
+                    height: { xs: 40, sm: 60 },
+                    borderRadius: '50%',
+                    background: 'linear-gradient(135deg, #4CAF50 0%, #45a049 100%)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <Store size={28} color="white" />
+                </Box>
+                <Box>
+                  <Typography 
+                    variant="h4"
+                    sx={{ 
+                      fontWeight: 700,
+                      color: 'white',
+                      fontFamily: '"Helvetica Neue", "Helvetica", "Arial", sans-serif',
+                      fontSize: { xs: '1.5rem', sm: '2rem' }
+                    }}
+                  >
+                    Global Impact Dashboard
+                  </Typography>
+                  <Typography 
+                    variant="subtitle2" 
+                    sx={{ 
+                      color: 'rgba(255, 255, 255, 0.8)',
+                      fontWeight: 300,
+                      fontFamily: '"Helvetica Neue", "Helvetica", "Arial", sans-serif',
+                    }}
+                  >
+                    Making a difference through food waste reduction
+                  </Typography>
+                </Box>
+              </Box>
+
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                <Chip 
+                  icon={<Package size={16} />}
+                  label="1 active" 
+                  sx={{ 
+                    backgroundColor: 'rgba(76, 175, 80, 0.2)', 
+                    color: '#4CAF50',
+                    border: '1px solid rgba(76, 175, 80, 0.3)',
+                    fontWeight: 'bold'
+                  }} 
+                />
+                <Chip 
+                  icon={<DollarSign size={16} />}
+                  label="$3.9 saved" 
+                  sx={{ 
+                    backgroundColor: 'rgba(156, 39, 176, 0.2)', 
+                    color: '#9C27B0',
+                    border: '1px solid rgba(156, 39, 176, 0.3)',
+                    fontWeight: 'bold'
+                  }} 
+                />
+                <IconButton 
+                  onClick={() => navigate('/store')}
+                  sx={{ 
+                    color: 'rgba(255, 255, 255, 0.8)',
+                    '&:hover': { 
+                      color: 'white',
+                      backgroundColor: 'rgba(255, 255, 255, 0.1)'
+                    }
+                  }}
+                >
+                  <LogOut size={20} />
+                </IconButton>
+              </Box>
+            </Box>
+          </Container>
       </Box>
 
-      {/* Page Header */}
-      <Container maxWidth="xl" sx={{ mt: 4, mb: 2 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
-          <Box
-            sx={{
-              width: 60,
-              height: 60,
-              borderRadius: '50%',
-              background: 'linear-gradient(135deg, #4CAF50 0%, #45a049 100%)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            <Globe size={28} color="white" />
-          </Box>
-          <Box>
-            <Typography 
-              variant="h4"
-              sx={{ 
-                fontWeight: 700,
-                color: '#333',
-                fontFamily: '"Helvetica Neue", "Helvetica", "Arial", sans-serif',
-              }}
-            >
-              Global Impact Dashboard
-            </Typography>
-            <Typography 
-              variant="subtitle1" 
-              sx={{ 
-                color: '#666',
-                fontWeight: 300,
-                fontFamily: '"Helvetica Neue", "Helvetica", "Arial", sans-serif',
-              }}
-            >
-              See how our Waste→Worth community is transforming food waste
-            </Typography>
-          </Box>
-        </Box>
-      </Container>
+      </Box>
 
       <Container maxWidth="xl" sx={{ mt: { xs: 2, md: 4 }, px: { xs: 2, md: 3 } }}>
         <motion.div
@@ -184,12 +223,30 @@ const StoreGlobalImpact: React.FC = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
           >
-            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: 'repeat(2, 1fr)', md: 'repeat(4, 1fr)' }, gap: { xs: 2, md: 3 }, mb: 4 }}>
-              <motion.div whileHover={{ y: -4, scale: 1.02 }} transition={{ duration: 0.2 }}>
-                <Card sx={{ borderRadius: 4, background: 'linear-gradient(135deg, #4ECDC4 0%, #44B7B8 100%)' }}>
-                  <CardContent sx={{ textAlign: 'center', py: 4, color: 'white' }}>
+            <Box sx={{ 
+              display: 'grid', 
+              gridTemplateColumns: { xs: 'repeat(2, 1fr)', md: 'repeat(4, 1fr)' }, 
+              gap: { xs: 2, md: 3 }, 
+              mb: 4 
+            }}>
+              <motion.div 
+                whileHover={{ y: -4, scale: 1.02 }} 
+                transition={{ duration: 0.2 }}
+                variants={{
+                  hidden: { opacity: 0, y: 20 },
+                  visible: { opacity: 1, y: 0 }
+                }}
+              >
+                <Card sx={{ 
+                  borderRadius: 4, 
+                  background: 'linear-gradient(135deg, #4CAF50 0%, #45a049 100%)',
+                  backdropFilter: 'blur(10px)',
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
+                }}>
+                  <CardContent sx={{ textAlign: 'center', py: { xs: 3, sm: 4 }, color: 'white' }}>
                     <Package size={32} style={{ marginBottom: '16px' }} />
-                    <Typography variant="h3" sx={{ fontWeight: 'bold', mb: 1 }}>
+                    <Typography variant="h3" sx={{ fontWeight: 'bold', mb: 1, fontSize: { xs: '1.8rem', sm: '3rem' } }}>
                       {globalData.foodSaved}M
                     </Typography>
                     <Typography variant="body1" sx={{ opacity: 0.9 }}>
@@ -199,11 +256,24 @@ const StoreGlobalImpact: React.FC = () => {
                 </Card>
               </motion.div>
               
-              <motion.div whileHover={{ y: -4, scale: 1.02 }} transition={{ duration: 0.2 }}>
-                <Card sx={{ borderRadius: 4, background: 'linear-gradient(135deg, #4F46E5 0%, #3B82F6 100%)' }}>
-                  <CardContent sx={{ textAlign: 'center', py: 4, color: 'white' }}>
+              <motion.div 
+                whileHover={{ y: -4, scale: 1.02 }} 
+                transition={{ duration: 0.2 }}
+                variants={{
+                  hidden: { opacity: 0, y: 20 },
+                  visible: { opacity: 1, y: 0 }
+                }}
+              >
+                <Card sx={{ 
+                  borderRadius: 4, 
+                  background: 'linear-gradient(135deg, #2196F3 0%, #1976D2 100%)',
+                  backdropFilter: 'blur(10px)',
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
+                }}>
+                  <CardContent sx={{ textAlign: 'center', py: { xs: 3, sm: 4 }, color: 'white' }}>
                     <Leaf size={32} style={{ marginBottom: '16px' }} />
-                    <Typography variant="h3" sx={{ fontWeight: 'bold', mb: 1 }}>
+                    <Typography variant="h3" sx={{ fontWeight: 'bold', mb: 1, fontSize: { xs: '1.8rem', sm: '3rem' } }}>
                       {globalData.co2Prevented}M
                     </Typography>
                     <Typography variant="body1" sx={{ opacity: 0.9 }}>
@@ -213,11 +283,24 @@ const StoreGlobalImpact: React.FC = () => {
                 </Card>
               </motion.div>
               
-              <motion.div whileHover={{ y: -4, scale: 1.02 }} transition={{ duration: 0.2 }}>
-                <Card sx={{ borderRadius: 4, background: 'linear-gradient(135deg, #8B5CF6 0%, #A855F7 100%)' }}>
-                  <CardContent sx={{ textAlign: 'center', py: 4, color: 'white' }}>
+              <motion.div 
+                whileHover={{ y: -4, scale: 1.02 }} 
+                transition={{ duration: 0.2 }}
+                variants={{
+                  hidden: { opacity: 0, y: 20 },
+                  visible: { opacity: 1, y: 0 }
+                }}
+              >
+                <Card sx={{ 
+                  borderRadius: 4, 
+                  background: 'linear-gradient(135deg, #FF9800 0%, #F57C00 100%)',
+                  backdropFilter: 'blur(10px)',
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
+                }}>
+                  <CardContent sx={{ textAlign: 'center', py: { xs: 3, sm: 4 }, color: 'white' }}>
                     <Users size={32} style={{ marginBottom: '16px' }} />
-                    <Typography variant="h3" sx={{ fontWeight: 'bold', mb: 1 }}>
+                    <Typography variant="h3" sx={{ fontWeight: 'bold', mb: 1, fontSize: { xs: '1.8rem', sm: '3rem' } }}>
                       {globalData.mealsProvided}M
                     </Typography>
                     <Typography variant="body1" sx={{ opacity: 0.9 }}>
@@ -227,11 +310,24 @@ const StoreGlobalImpact: React.FC = () => {
                 </Card>
               </motion.div>
               
-              <motion.div whileHover={{ y: -4, scale: 1.02 }} transition={{ duration: 0.2 }}>
-                <Card sx={{ borderRadius: 4, background: 'linear-gradient(135deg, #F59E0B 0%, #D97706 100%)' }}>
-                  <CardContent sx={{ textAlign: 'center', py: 4, color: 'white' }}>
+              <motion.div 
+                whileHover={{ y: -4, scale: 1.02 }} 
+                transition={{ duration: 0.2 }}
+                variants={{
+                  hidden: { opacity: 0, y: 20 },
+                  visible: { opacity: 1, y: 0 }
+                }}
+              >
+                <Card sx={{ 
+                  borderRadius: 4, 
+                  background: 'linear-gradient(135deg, #9C27B0 0%, #7B1FA2 100%)',
+                  backdropFilter: 'blur(10px)',
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
+                }}>
+                  <CardContent sx={{ textAlign: 'center', py: { xs: 3, sm: 4 }, color: 'white' }}>
                     <Trophy size={32} style={{ marginBottom: '16px' }} />
-                    <Typography variant="h3" sx={{ fontWeight: 'bold', mb: 1 }}>
+                    <Typography variant="h3" sx={{ fontWeight: 'bold', mb: 1, fontSize: { xs: '1.8rem', sm: '3rem' } }}>
                       ${globalData.costSaved}M
                     </Typography>
                     <Typography variant="body1" sx={{ opacity: 0.9 }}>
@@ -252,10 +348,11 @@ const StoreGlobalImpact: React.FC = () => {
                 gap: 1,
                 p: 1,
                 borderRadius: 3,
-                background: 'rgba(0, 0, 0, 0.3)',
+                background: 'rgba(0, 0, 0, 0.4)',
                 backdropFilter: 'blur(10px)',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
+                border: '1px solid rgba(255, 255, 255, 0.2)',
                 width: '100%',
+                boxShadow: '0 4px 16px rgba(0, 0, 0, 0.2)',
               }}
             >
               {['Overview', 'Leaderboard', 'Trends'].map((label, index) => (
@@ -310,8 +407,8 @@ const StoreGlobalImpact: React.FC = () => {
                   borderRadius: 4, 
                   background: 'rgba(255, 255, 255, 0.95)',
                   backdropFilter: 'blur(10px)',
-                  border: '1px solid rgba(132, 141, 88, 0.1)',
-                  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
+                  border: '1px solid rgba(255, 255, 255, 0.2)',
+                  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
                 }}>
                   <CardContent sx={{ p: 4 }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
@@ -369,8 +466,8 @@ const StoreGlobalImpact: React.FC = () => {
                   borderRadius: 4, 
                   background: 'rgba(255, 255, 255, 0.95)',
                   backdropFilter: 'blur(10px)',
-                  border: '1px solid rgba(132, 141, 88, 0.1)',
-                  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
+                  border: '1px solid rgba(255, 255, 255, 0.2)',
+                  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
                 }}>
                   <CardContent sx={{ p: 4 }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
