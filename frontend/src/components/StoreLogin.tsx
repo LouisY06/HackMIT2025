@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup } from 'firebase/auth';
 import { auth, googleProvider } from '../config/firebase';
+import { API_BASE_URL } from '../config/api';
 import { motion } from 'framer-motion';
 import {
   Box,
@@ -32,7 +33,7 @@ const StoreLogin: React.FC = () => {
       // Check if user has completed profile for store user type
       const user = auth.currentUser;
       if (user) {
-        const profileResponse = await fetch(`http://localhost:5001/api/users/check-profile/store/${user.uid}`);
+        const profileResponse = await fetch(`http://${API_BASE_URL}/api/users/check-profile/store/${user.uid}`);
         const profileData = await profileResponse.json();
         
         if (profileData.success && profileData.profile_completed) {
@@ -65,7 +66,7 @@ const StoreLogin: React.FC = () => {
         // Check if user has completed profile for store user type
         const user = auth.currentUser;
         if (user) {
-          const profileResponse = await fetch(`http://localhost:5001/api/users/check-profile/store/${user.uid}`);
+          const profileResponse = await fetch(`http://${API_BASE_URL}/api/users/check-profile/store/${user.uid}`);
           const profileData = await profileResponse.json();
           
           if (profileData.success && profileData.profile_completed) {
@@ -79,7 +80,7 @@ const StoreLogin: React.FC = () => {
       } else {
         // Check if email already exists in store table
         try {
-          const emailCheckResponse = await fetch(`http://localhost:5001/api/users/check-email/store/${email}`);
+          const emailCheckResponse = await fetch(`http://${API_BASE_URL}/api/users/check-email/store/${email}`);
           
           if (!emailCheckResponse.ok) {
             throw new Error(`HTTP error! status: ${emailCheckResponse.status}`);

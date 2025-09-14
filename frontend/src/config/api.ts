@@ -17,8 +17,8 @@ const getApiBaseUrl = (): string => {
   }
   
   // Fallback - this will be updated when you deploy to Railway
-  console.warn('REACT_APP_API_URL not set, using localhost fallback');
-  return 'http://localhost:5001';
+  console.warn('REACT_APP_API_URL not set, using Railway production fallback');
+  return 'https://hackmit2025-production.up.railway.app';
 };
 
 export const API_BASE_URL = getApiBaseUrl();

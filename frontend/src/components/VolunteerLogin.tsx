@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup } from 'firebase/auth';
 import { auth, googleProvider } from '../config/firebase';
+import { API_BASE_URL } from '../config/api';
 import { motion } from 'framer-motion';
 import {
   Box,
@@ -32,7 +33,7 @@ const VolunteerLogin: React.FC = () => {
       // Check if user has completed profile for volunteer user type
       const user = auth.currentUser;
       if (user) {
-        const profileResponse = await fetch(`http://localhost:5001/api/users/check-profile/volunteer/${user.uid}`);
+        const profileResponse = await fetch(`${API_BASE_URL}/api/users/check-profile/volunteer/${user.uid}`);
         const profileData = await profileResponse.json();
         
         if (profileData.success && profileData.profile_completed) {
@@ -65,7 +66,7 @@ const VolunteerLogin: React.FC = () => {
         // Check if user has completed profile for volunteer user type
         const user = auth.currentUser;
         if (user) {
-          const profileResponse = await fetch(`http://localhost:5001/api/users/check-profile/volunteer/${user.uid}`);
+          const profileResponse = await fetch(`${API_BASE_URL}/api/users/check-profile/volunteer/${user.uid}`);
           const profileData = await profileResponse.json();
           
           if (profileData.success && profileData.profile_completed) {
@@ -79,7 +80,7 @@ const VolunteerLogin: React.FC = () => {
       } else {
         // Check if email already exists in volunteer table
         try {
-          const emailCheckResponse = await fetch(`http://localhost:5001/api/users/check-email/volunteer/${email}`);
+          const emailCheckResponse = await fetch(`${API_BASE_URL}/api/users/check-email/volunteer/${email}`);
           
           if (!emailCheckResponse.ok) {
             throw new Error(`HTTP error! status: ${emailCheckResponse.status}`);

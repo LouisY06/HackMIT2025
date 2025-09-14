@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Leaf, Package, Home, BarChart3, TrendingUp, LogOut } from 'lucide-react';
+import { API_BASE_URL } from '../config/api';
 import {
   Box,
   Typography,
@@ -71,7 +72,7 @@ const StoreCreatePackage: React.FC = () => {
       }
 
       // Submit to backend
-      const response = await fetch('http://localhost:5001/api/packages', {
+      const response = await fetch(`${API_BASE_URL}/api/packages`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -191,7 +192,7 @@ const StoreCreatePackage: React.FC = () => {
               <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
                 <Box
                   component="img"
-                  src={`http://localhost:5001/uploads/${qrCodePath.split('/').pop()}`}
+                  src={`${API_BASE_URL}/uploads/${qrCodePath.split('/').pop()}`}
                   alt="Package QR Code"
                   sx={{
                     maxWidth: 300,
