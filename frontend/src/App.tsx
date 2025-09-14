@@ -7,6 +7,8 @@ import VolunteerLogin from './components/VolunteerLogin';
 import VolunteerDashboard from './components/VolunteerDashboard';
 import VolunteerFindPickups from './components/VolunteerFindPickups';
 import VolunteerRewards from './components/VolunteerRewards';
+import VolunteerLeaderboard from './components/VolunteerLeaderboard';
+import VolunteerGlobalImpact from './components/VolunteerGlobalImpact';
 import StoreLogin from './components/StoreLogin';
 import StoreDashboard from './components/StoreDashboard';
 import StoreCreatePackage from './components/StoreCreatePackage';
@@ -37,6 +39,8 @@ function App() {
           <Route path="/volunteer/dashboard" element={<VolunteerDashboard />} />
           <Route path="/volunteer/find-pickups" element={<VolunteerFindPickups />} />
           <Route path="/volunteer/rewards" element={<VolunteerRewards />} />
+          <Route path="/volunteer/leaderboard" element={<VolunteerLeaderboard />} />
+          <Route path="/volunteer/global-impact" element={<VolunteerGlobalImpact />} />
           <Route path="/store" element={<StoreLogin />} />
           <Route path="/store/dashboard" element={<StoreDashboard />} />
           <Route path="/store/create-package" element={<StoreCreatePackage />} />

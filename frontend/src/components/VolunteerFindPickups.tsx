@@ -103,32 +103,68 @@ const VolunteerFindPickups: React.FC = () => {
   return (
     <Box sx={{ minHeight: '100vh', backgroundColor: '#f5f5f5' }}>
       {/* Header/Navigation */}
-      <AppBar position="static" sx={{ backgroundColor: 'white', boxShadow: 1 }}>
+      <AppBar position="static" sx={{ backgroundColor: '#4CAF50' }}>
         <Toolbar>
           <Box sx={{ display: 'flex', alignItems: 'center', mr: 4 }}>
-            <Typography variant="h6" sx={{ color: '#4CAF50', fontWeight: 'bold', mr: 1 }}>
+            <Typography variant="h6" sx={{ color: 'white', fontWeight: 'bold', mr: 1 }}>
               Waste→Worth
             </Typography>
-            <Typography sx={{ color: '#4CAF50' }}>🌿</Typography>
+            <Typography sx={{ color: 'white' }}>🌿</Typography>
           </Box>
           
           <Box sx={{ display: 'flex', gap: 2, flex: 1 }}>
-            <Button color="inherit" onClick={() => navigate('/volunteer/dashboard')}>
+            <Button 
+              color="inherit" 
+              onClick={() => navigate('/volunteer/dashboard')}
+              sx={{ '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.1)' } }}
+            >
               Dashboard
             </Button>
-            <Button color="inherit" sx={{ color: '#4CAF50', fontWeight: 'bold' }}>
+            <Button 
+              color="inherit" 
+              sx={{ 
+                backgroundColor: 'rgba(255, 255, 255, 0.2)', 
+                '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.3)' }
+              }}
+            >
               📱 Find Tasks
             </Button>
-            <Button color="inherit">Rewards</Button>
-            <Button color="inherit">Leaderboard</Button>
-            <Button color="inherit">Global Impact</Button>
+            <Button 
+              color="inherit" 
+              onClick={() => navigate('/volunteer/rewards')}
+              sx={{ '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.1)' } }}
+            >
+              Rewards
+            </Button>
+            <Button 
+              color="inherit" 
+              onClick={() => navigate('/volunteer/leaderboard')}
+              sx={{ '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.1)' } }}
+            >
+              Leaderboard
+            </Button>
+            <Button 
+              color="inherit" 
+              onClick={() => navigate('/volunteer/global-impact')}
+              sx={{ '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.1)' } }}
+            >
+              Global Impact
+            </Button>
           </Box>
 
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <Typography variant="body2" sx={{ color: '#666' }}>
-              Marcus Chen Level 3 1250 pts
+            <Typography variant="body2" sx={{ color: 'white' }}>
+              Marcus Chen Level 3
             </Typography>
-            <IconButton onClick={handleLogout} color="primary">
+            <Chip 
+              label="1250 pts" 
+              sx={{ 
+                backgroundColor: '#FFF9C4', 
+                color: '#F57F17',
+                fontWeight: 'bold'
+              }} 
+            />
+            <IconButton onClick={handleLogout} color="inherit">
               <Logout />
             </IconButton>
           </Box>
