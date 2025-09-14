@@ -9,6 +9,7 @@ interface Pickup {
   foodType?: string;
   weight?: string;
   timeWindow?: string;
+  onAcceptMission?: (id: string, storeName: string) => void;
 }
 
 interface GoogleMapsComponentProps {
@@ -18,6 +19,7 @@ interface GoogleMapsComponentProps {
   pickups?: Pickup[];
   height?: string;
   userLocation?: { lat: number; lng: number };
+  onAcceptMission?: (id: string, storeName: string) => void;
 }
 
 const GoogleMapsComponent: React.FC<GoogleMapsComponentProps> = ({
@@ -26,7 +28,8 @@ const GoogleMapsComponent: React.FC<GoogleMapsComponentProps> = ({
   zoom = 13,
   pickups = [],
   height = '300px',
-  userLocation
+  userLocation,
+  onAcceptMission
 }) => {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
@@ -110,17 +113,50 @@ const GoogleMapsComponent: React.FC<GoogleMapsComponentProps> = ({
 
         const infoWindow = new (window as any).google.maps.InfoWindow({
           content: `
-            <div style="padding: 8px; max-width: 200px;">
-              <h3 style="margin: 0 0 4px 0; color: #333;">${pickup.storeName}</h3>
+            <div style="padding: 8px; max-width: 220px;">
+              <h3 style="margin: 0 0 8px 0; color: #333; font-size: 16px;">${pickup.storeName}</h3>
               ${pickup.foodType ? `<p style="margin: 2px 0; color: #666; font-size: 14px;">${pickup.foodType}</p>` : ''}
               ${pickup.weight ? `<p style="margin: 2px 0; color: #666; font-size: 14px; display: flex; align-items: center;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px;"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>${pickup.weight}</p>` : ''}
-              ${pickup.timeWindow ? `<p style="margin: 2px 0; color: #666; font-size: 14px; display: flex; align-items: center;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px;"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg>${pickup.timeWindow}</p>` : ''}
+              ${pickup.timeWindow ? `<p style="margin: 2px 0 8px 0; color: #666; font-size: 14px; display: flex; align-items: center;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px;"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg>${pickup.timeWindow}</p>` : ''}
+              ${onAcceptMission ? `<button 
+                id="accept-mission-${pickup.id}" 
+                style="
+                  background: linear-gradient(135deg, #848D58 0%, #6F7549 100%);
+                  color: white;
+                  border: none;
+                  padding: 8px 16px;
+                  border-radius: 6px;
+                  font-size: 14px;
+                  font-weight: 600;
+                  cursor: pointer;
+                  width: 100%;
+                  margin-top: 4px;
+                "
+                onmouseover="this.style.background='linear-gradient(135deg, #6F7549 0%, #5A5F3A 100%)'"
+                onmouseout="this.style.background='linear-gradient(135deg, #848D58 0%, #6F7549 100%)'"
+              >
+                🎯 Accept Mission
+              </button>` : ''}
             </div>
           `
         });
 
         marker.addListener('click', () => {
           infoWindow.open(map, marker);
+          
+          // Add event listener for the Accept Mission button after a short delay
+          // to ensure the DOM element exists
+          if (onAcceptMission) {
+            setTimeout(() => {
+              const button = document.getElementById(`accept-mission-${pickup.id}`);
+              if (button) {
+                button.addEventListener('click', () => {
+                  onAcceptMission(pickup.id, pickup.storeName);
+                  infoWindow.close();
+                });
+              }
+            }, 100);
+          }
         });
       });
 
