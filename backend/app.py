@@ -17,9 +17,7 @@ load_dotenv()
 app = Flask(__name__)
 CORS(app)
 
-# Set OpenAI API key if not already set
-if not os.getenv('OPENAI_API_KEY'):
-    # OpenAI API key should be set via environment variable OPENAI_API_KEY
+# OpenAI API key should be set via environment variable OPENAI_API_KEY
 # For development, you can create a .env file with: OPENAI_API_KEY=your_key_here
 
 # Initialize Anthropic client
