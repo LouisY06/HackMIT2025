@@ -1062,7 +1062,7 @@ def confirm_delivery(package_id):
         
         return jsonify({
             'success': True,
-            'message': 'Package delivery confirmed! Mission completed.',
+            'message': 'Order completed! Volunteer has received their points and the mission is now complete.',
             'package_id': package_id,
             'status': 'completed'
         })
