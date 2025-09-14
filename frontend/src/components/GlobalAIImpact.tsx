@@ -1,4 +1,22 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import { 
+  Globe, 
+  Package, 
+  Trees, 
+  Users, 
+  Store, 
+  Car, 
+  Droplets, 
+  TreePine, 
+  Building,
+  Home,
+  BarChart3,
+  TrendingUp as TrendingUpIcon,
+  LogOut,
+  Leaf
+} from 'lucide-react';
 import {
   Box,
   Typography,
@@ -27,8 +45,8 @@ import {
 } from '@mui/material';
 import {
   TrendingUp,
-  Store,
-  People,
+  Store as StoreIcon,
+  People as PeopleIcon,
   Psychology,
   Assessment,
   Timeline,
@@ -68,6 +86,7 @@ interface HeatmapData {
 }
 
 const GlobalAIImpact: React.FC = () => {
+  const navigate = useNavigate();
   const [metrics, setMetrics] = useState<GlobalMetrics | null>(null);
   const [heatmapData, setHeatmapData] = useState<HeatmapData[]>([]);
   const [loading, setLoading] = useState(true);
@@ -127,107 +146,207 @@ const GlobalAIImpact: React.FC = () => {
 
   if (loading) {
     return (
-      <Container maxWidth="lg" sx={{ py: 4 }}>
-        <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
-          <CircularProgress />
-        </Box>
-      </Container>
+      <Box sx={{ minHeight: '100vh', bgcolor: '#f8f9fa' }}>
+        <Container maxWidth="xl" sx={{ py: 4 }}>
+          <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
+            <CircularProgress />
+          </Box>
+        </Container>
+      </Box>
     );
   }
 
   if (error) {
     return (
-      <Container maxWidth="lg" sx={{ py: 4 }}>
-        <Alert severity="error" sx={{ mb: 3 }}>
-          {error}
-        </Alert>
-      </Container>
+      <Box sx={{ minHeight: '100vh', bgcolor: '#f8f9fa' }}>
+        <Container maxWidth="xl" sx={{ py: 4 }}>
+          <Alert severity="error" sx={{ mb: 3 }}>
+            {error}
+          </Alert>
+        </Container>
+      </Box>
     );
   }
 
   if (!metrics) {
     return (
-      <Container maxWidth="lg" sx={{ py: 4 }}>
-        <Alert severity="info">
-          No global metrics available. Data will appear as stores and volunteers join the platform.
-        </Alert>
-      </Container>
+      <Box sx={{ minHeight: '100vh', bgcolor: '#f8f9fa' }}>
+        <Container maxWidth="xl" sx={{ py: 4 }}>
+          <Alert severity="info">
+            No global metrics available. Data will appear as stores and volunteers join the platform.
+          </Alert>
+        </Container>
+      </Box>
     );
   }
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
-      {/* Header */}
-      <Box sx={{ mb: 4 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
-          <Public sx={{ fontSize: 32, color: '#9C27B0' }} />
-          <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
-            Global AI Impact Dashboard
-          </Typography>
+    <Box sx={{ minHeight: '100vh', bgcolor: '#f8f9fa' }}>
+      {/* Top Navigation Bar */}
+      <Box
+        sx={{
+          bgcolor: 'white',
+          borderBottom: '1px solid #e0e0e0',
+          px: 3,
+          py: 2,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+        }}
+      >
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+          <img 
+            src="/LogoOutlined.png" 
+            alt="Reflourish Logo" 
+            style={{ 
+              height: '56px', 
+              width: 'auto',
+              objectFit: 'contain'
+            }} 
+          />
+          <Box sx={{ display: 'flex', gap: 3 }}>
+            <Button onClick={() => navigate('/store/dashboard')} sx={{ color: '#666' }}>
+              <Home size={16} style={{ marginRight: '4px' }} /> Dashboard
+            </Button>
+            <Button onClick={() => navigate('/store/create-package')} sx={{ color: '#666' }}>
+              + Create Package
+            </Button>
+            <Button onClick={() => navigate('/store/packages')} sx={{ color: '#666' }}>
+              <Package size={16} style={{ marginRight: '4px' }} /> Packages
+            </Button>
+            <Button onClick={() => navigate('/store/impact')} sx={{ color: '#666' }}>
+              <BarChart3 size={16} style={{ marginRight: '4px' }} /> Impact
+            </Button>
+            <Button sx={{ color: '#4CAF50', fontWeight: 'bold' }}>
+              <TrendingUpIcon size={16} style={{ marginRight: '4px' }} /> Global Impact
+            </Button>
+          </Box>
         </Box>
-        <Typography variant="body1" color="text.secondary">
-          Platform-wide analytics and AI insights across all stores, volunteers, and food banks
-        </Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          <Typography variant="body2" sx={{ color: '#666' }}>
+            Sarah Williams
+          </Typography>
+          <Button sx={{ color: '#666' }}>
+            Partner
+          </Button>
+          <Button onClick={() => navigate('/store')} sx={{ color: '#666' }}>
+            <LogOut size={16} style={{ marginRight: '4px' }} /> Logout
+          </Button>
+        </Box>
       </Box>
 
-      {/* Key Metrics Overview */}
-      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr 1fr 1fr' }, gap: 3, mb: 4 }}>
-        <Box>
-          <Card>
-            <CardContent sx={{ textAlign: 'center' }}>
-              <Nature sx={{ color: '#4CAF50', fontSize: 40, mb: 1 }} />
-              <Typography variant="h4" sx={{ fontWeight: 'bold', color: '#4CAF50' }}>
-                {metrics.total_waste_diverted_lbs.toFixed(0)}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                lbs Waste Diverted
-              </Typography>
-            </CardContent>
-          </Card>
+      {/* Page Header */}
+      <Container maxWidth="xl" sx={{ mt: 4, mb: 2 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
+          <Box
+            sx={{
+              width: 60,
+              height: 60,
+              borderRadius: '50%',
+              background: 'linear-gradient(135deg, #4CAF50 0%, #45a049 100%)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <Globe size={28} color="white" />
+          </Box>
+          <Box>
+            <Typography 
+              variant="h4"
+              sx={{ 
+                fontWeight: 700,
+                color: '#333',
+                fontFamily: '"Helvetica Neue", "Helvetica", "Arial", sans-serif',
+              }}
+            >
+              Global AI Impact Dashboard
+            </Typography>
+            <Typography 
+              variant="subtitle1" 
+              sx={{ 
+                color: '#666',
+                fontWeight: 300,
+                fontFamily: '"Helvetica Neue", "Helvetica", "Arial", sans-serif',
+              }}
+            >
+              Platform-wide analytics and AI insights across all stores, volunteers, and food banks
+            </Typography>
+          </Box>
         </Box>
-        
-        <Box>
-          <Card>
-            <CardContent sx={{ textAlign: 'center' }}>
-              <LocalShipping sx={{ fontSize: 40, color: '#2196F3', mb: 1 }} />
-              <Typography variant="h4" sx={{ fontWeight: 'bold', color: '#2196F3' }}>
-                {metrics.total_packages}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Total Packages
-              </Typography>
-            </CardContent>
-          </Card>
-        </Box>
-        
-        <Box>
-          <Card>
-            <CardContent sx={{ textAlign: 'center' }}>
-              <Store sx={{ fontSize: 40, color: '#FF9800', mb: 1 }} />
-              <Typography variant="h4" sx={{ fontWeight: 'bold', color: '#FF9800' }}>
-                {metrics.active_stores}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Active Stores
-              </Typography>
-            </CardContent>
-          </Card>
-        </Box>
-        
-        <Box>
-          <Card>
-            <CardContent sx={{ textAlign: 'center' }}>
-              <People sx={{ fontSize: 40, color: '#9C27B0', mb: 1 }} />
-              <Typography variant="h4" sx={{ fontWeight: 'bold', color: '#9C27B0' }}>
-                {metrics.active_volunteers}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Active Volunteers
-              </Typography>
-            </CardContent>
-          </Card>
-        </Box>
+      </Container>
+
+      <Container maxWidth="xl" sx={{ mt: { xs: 2, md: 4 }, px: { xs: 2, md: 3 } }}>
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5 }}
+        >
+
+          {/* Global Stats Cards */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+          >
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: 'repeat(2, 1fr)', md: 'repeat(4, 1fr)' }, gap: { xs: 2, md: 3 }, mb: 4 }}>
+              <motion.div whileHover={{ y: -4, scale: 1.02 }} transition={{ duration: 0.2 }}>
+                <Card sx={{ borderRadius: 4, background: 'linear-gradient(135deg, #4ECDC4 0%, #44B7B8 100%)' }}>
+                  <CardContent sx={{ textAlign: 'center', py: 4, color: 'white' }}>
+                    <Package size={32} style={{ marginBottom: '16px' }} />
+                    <Typography variant="h3" sx={{ fontWeight: 'bold', mb: 1 }}>
+                      {(metrics.total_waste_diverted_lbs / 1000000).toFixed(1)}M
+                    </Typography>
+                    <Typography variant="body1" sx={{ opacity: 0.9 }}>
+                      lbs Food Saved
+                    </Typography>
+                  </CardContent>
+                </Card>
+              </motion.div>
+
+              <motion.div whileHover={{ y: -4, scale: 1.02 }} transition={{ duration: 0.2 }}>
+                <Card sx={{ borderRadius: 4, background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}>
+                  <CardContent sx={{ textAlign: 'center', py: 4, color: 'white' }}>
+                    <Trees size={32} style={{ marginBottom: '16px' }} />
+                    <Typography variant="h3" sx={{ fontWeight: 'bold', mb: 1 }}>
+                      {(metrics.environmental_impact.co2e_prevented_lbs / 1000000).toFixed(1)}M
+                    </Typography>
+                    <Typography variant="body1" sx={{ opacity: 0.9 }}>
+                      lbs CO₂ Prevented
+                    </Typography>
+                  </CardContent>
+                </Card>
+              </motion.div>
+
+              <motion.div whileHover={{ y: -4, scale: 1.02 }} transition={{ duration: 0.2 }}>
+                <Card sx={{ borderRadius: 4, background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)' }}>
+                  <CardContent sx={{ textAlign: 'center', py: 4, color: 'white' }}>
+                    <Users size={32} style={{ marginBottom: '16px' }} />
+                    <Typography variant="h3" sx={{ fontWeight: 'bold', mb: 1 }}>
+                      {(metrics.environmental_impact.meals_provided / 1000000).toFixed(1)}M
+                    </Typography>
+                    <Typography variant="body1" sx={{ opacity: 0.9 }}>
+                      Meals Provided
+                    </Typography>
+                  </CardContent>
+                </Card>
+              </motion.div>
+
+              <motion.div whileHover={{ y: -4, scale: 1.02 }} transition={{ duration: 0.2 }}>
+                <Card sx={{ borderRadius: 4, background: 'linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)' }}>
+                  <CardContent sx={{ textAlign: 'center', py: 4, color: '#333' }}>
+                    <Building size={32} style={{ marginBottom: '16px' }} />
+                    <Typography variant="h3" sx={{ fontWeight: 'bold', mb: 1 }}>
+                      ${(metrics.total_waste_diverted_lbs * 0.02 / 1000000).toFixed(1)}M
+                    </Typography>
+                    <Typography variant="body1" sx={{ opacity: 0.8 }}>
+                      Cost Saved
+                    </Typography>
+                  </CardContent>
+                </Card>
+              </motion.div>
             </Box>
+          </motion.div>
 
       {/* Platform Performance */}
       <Card sx={{ mb: 4 }}>
@@ -316,7 +435,7 @@ const GlobalAIImpact: React.FC = () => {
                 </ListItem>
                 <ListItem>
                   <ListItemIcon>
-                    <People sx={{ color: '#2196F3' }} />
+                    <PeopleIcon sx={{ color: '#2196F3' }} />
                   </ListItemIcon>
                   <ListItemText 
                     primary="Families Helped"
@@ -483,7 +602,9 @@ const GlobalAIImpact: React.FC = () => {
           </Box>
         </CardContent>
       </Card>
-    </Container>
+        </motion.div>
+      </Container>
+    </Box>
   );
 };
 
