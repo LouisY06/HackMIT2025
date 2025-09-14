@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Leaf, Package, Printer, Home, BarChart3, TrendingUp, LogOut, Search, Calendar, Smartphone, Users, Download } from 'lucide-react';
-import { API_BASE_URL } from '../config/api';
+import { Leaf, Package, Home, BarChart3, TrendingUp, LogOut, Search, Calendar, Smartphone, Users } from 'lucide-react';
+import { API_BASE_URL, API_ENDPOINTS, apiCall } from '../config/api';
 import { auth } from '../config/firebase';
 import {
   Box,
@@ -38,8 +38,7 @@ interface PackageData {
   pickup_window_start: string;
   pickup_window_end: string;
   special_instructions: string;
-  qr_code_data: string;
-  qr_code_image_path: string;
+  pickup_pin: string;
   status: string;
   created_at: string;
   volunteer_id: string | null;
@@ -55,7 +54,7 @@ const StorePackages: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [selectedPackage, setSelectedPackage] = useState<PackageData | null>(null);
-  const [showQrModal, setShowQrModal] = useState(false);
+  const [showPinModal, setShowPinModal] = useState(false);
 
   const statusOptions = [
     { value: 'all', label: 'All Status' },
@@ -156,60 +155,47 @@ const StorePackages: React.FC = () => {
 
   const summary = calculateSummary();
 
-  const handleViewQrCode = (pkg: PackageData) => {
+  const handleViewPin = (pkg: PackageData) => {
     setSelectedPackage(pkg);
-    setShowQrModal(true);
+    setShowPinModal(true);
   };
 
-  const handleCloseQrModal = () => {
-    setShowQrModal(false);
+  const handleClosePinModal = () => {
+    setShowPinModal(false);
     setSelectedPackage(null);
   };
 
-  const handleDownloadQrCode = () => {
-    if (selectedPackage?.qr_code_image_path) {
-      const link = document.createElement('a');
-      link.href = `${API_BASE_URL}/uploads/${selectedPackage.qr_code_image_path.split('/').pop()}`;
-      link.download = `qr-code-pkg-${selectedPackage.id}.png`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+  const handleDeletePackage = async (pkg: PackageData) => {
+    if (pkg.status !== 'pending') {
+      alert('Cannot delete packages that are assigned or completed.');
+      return;
     }
-  };
 
-  const handlePrintQrCode = () => {
-    if (selectedPackage?.qr_code_image_path) {
-      const printWindow = window.open('', '_blank');
-      if (printWindow) {
-        printWindow.document.write(`
-          <html>
-            <head>
-              <title>Package QR Code - pkg-${selectedPackage.id}</title>
-              <style>
-                body { font-family: Arial, sans-serif; text-align: center; padding: 20px; }
-                .package-info { margin: 20px 0; }
-                .qr-code { margin: 20px 0; }
-                .qr-code img { max-width: 300px; border: 2px solid #e0e0e0; padding: 10px; }
-              </style>
-            </head>
-            <body>
-              <h2>Package QR Code</h2>
-              <div class="package-info">
-                <p><strong>Package ID:</strong> pkg-${selectedPackage.id}</p>
-                <p><strong>Food Type:</strong> ${selectedPackage.food_type}</p>
-                <p><strong>Weight:</strong> ${selectedPackage.weight_lbs} lbs</p>
-                <p><strong>Pickup Window:</strong> ${selectedPackage.pickup_window_start} - ${selectedPackage.pickup_window_end}</p>
-              </div>
-              <div class="qr-code">
-                <img src="${API_BASE_URL}/uploads/${selectedPackage.qr_code_image_path.split('/').pop()}" alt="QR Code" />
-              </div>
-              <p><em>Show this QR code to volunteers for pickup verification</em></p>
-            </body>
-          </html>
-        `);
-        printWindow.document.close();
-        printWindow.print();
+    const confirmDelete = window.confirm(
+      `Are you sure you want to delete this package?\n\n` +
+      `Package ID: ${pkg.id}\n` +
+      `Food Type: ${pkg.food_type}\n` +
+      `Weight: ${pkg.weight_lbs} lbs\n\n` +
+      `This action cannot be undone.`
+    );
+
+    if (!confirmDelete) return;
+
+    try {
+      const result = await apiCall(API_ENDPOINTS.DELETE_PACKAGE(pkg.id), {
+        method: 'DELETE'
+      });
+
+      if (result.success) {
+        alert('Package deleted successfully!');
+        // Refresh the packages list
+        fetchPackages();
+      } else {
+        alert(`Failed to delete package: ${result.error}`);
       }
+    } catch (error) {
+      console.error('Error deleting package:', error);
+      alert('Network error. Please try again.');
     }
   };
 
@@ -395,13 +381,13 @@ const StorePackages: React.FC = () => {
                           <Box sx={{ display: 'flex', gap: 1 }}>
                             <IconButton
                               size="small"
-                              onClick={() => handleViewQrCode(pkg)}
+                              onClick={() => handleViewPin(pkg)}
                               sx={{
                                 bgcolor: '#e8f5e8',
                                 borderRadius: 2,
                                 '&:hover': { bgcolor: '#c8e6c9' }
                               }}
-                              title="View QR Code"
+                              title="View Pickup PIN"
                             >
                               <Smartphone size={16} />
                             </IconButton>
@@ -418,12 +404,15 @@ const StorePackages: React.FC = () => {
                             </IconButton>
                             <IconButton
                               size="small"
+                              onClick={() => handleDeletePackage(pkg)}
+                              disabled={pkg.status !== 'pending'}
                               sx={{
-                                bgcolor: '#ffebee',
+                                bgcolor: pkg.status === 'pending' ? '#ffebee' : '#f5f5f5',
                                 borderRadius: 2,
-                                '&:hover': { bgcolor: '#ffcdd2' }
+                                '&:hover': { bgcolor: pkg.status === 'pending' ? '#ffcdd2' : '#f5f5f5' },
+                                opacity: pkg.status === 'pending' ? 1 : 0.5
                               }}
-                              title="Delete Package"
+                              title={pkg.status === 'pending' ? "Delete Package" : "Cannot delete assigned/completed packages"}
                             >
                               ❌
                             </IconButton>
@@ -495,8 +484,8 @@ const StorePackages: React.FC = () => {
         </Box>
       </Container>
 
-      {/* QR Code Modal */}
-      {showQrModal && selectedPackage && (
+      {/* PIN Display Modal */}
+      {showPinModal && selectedPackage && (
         <Box
           sx={{
             position: 'fixed',
@@ -510,7 +499,7 @@ const StorePackages: React.FC = () => {
             justifyContent: 'center',
             zIndex: 1000,
           }}
-          onClick={handleCloseQrModal}
+          onClick={handleClosePinModal}
         >
           <Card
             sx={{
@@ -529,15 +518,15 @@ const StorePackages: React.FC = () => {
                   <Smartphone size={24} />
                   <Box>
                     <Typography variant="h5" sx={{ fontWeight: 'bold', color: '#333', mb: 0.5 }}>
-                      Package QR Code
+                      Pickup PIN
                     </Typography>
                     <Typography variant="body2" sx={{ color: '#666' }}>
-                      Show this QR code to volunteers for pickup verification
+                      Give this PIN to volunteers for pickup verification
                     </Typography>
                   </Box>
                 </Box>
                 <IconButton 
-                  onClick={handleCloseQrModal} 
+                  onClick={handleClosePinModal} 
                   sx={{ 
                     color: '#666',
                     bgcolor: '#f0f0f0',
@@ -565,65 +554,73 @@ const StorePackages: React.FC = () => {
                 </Typography>
               </Box>
 
-              {/* QR Code */}
+              {/* PIN Display */}
               <Box sx={{ display: 'flex', justifyContent: 'center', mb: 4 }}>
                 <Card
                   sx={{
                     bgcolor: 'white',
                     borderRadius: 3,
-                    p: 3,
+                    p: 4,
                     boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+                    border: '2px solid #4CAF50',
                   }}
                 >
-                  <Box
-                    component="img"
-                    src={`${API_BASE_URL}/uploads/${selectedPackage.qr_code_image_path.split('/').pop()}`}
-                    alt={`QR Code for Package ${selectedPackage.id}`}
-                    sx={{
-                      width: 250,
-                      height: 250,
-                      display: 'block',
-                    }}
-                  />
+                  <Box sx={{ textAlign: 'center' }}>
+                    <Typography variant="body1" sx={{ color: '#666', mb: 2, fontWeight: 'bold' }}>
+                      Give this PIN to the volunteer:
+                    </Typography>
+                    <Typography 
+                      variant="h1" 
+                      sx={{ 
+                        fontFamily: 'monospace',
+                        fontWeight: 'bold',
+                        color: '#4CAF50',
+                        letterSpacing: '0.3em',
+                        fontSize: '4rem',
+                        lineHeight: 1
+                      }}
+                    >
+                      {selectedPackage.pickup_pin}
+                    </Typography>
+                    <Typography variant="body2" sx={{ color: '#666', mt: 2, fontStyle: 'italic' }}>
+                      Volunteer enters this 4-digit PIN to confirm pickup
+                    </Typography>
+                  </Box>
                 </Card>
               </Box>
 
-              {/* Action Buttons */}
-              <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center' }}>
+              {/* Instructions */}
+              <Box sx={{ textAlign: 'center', mb: 3 }}>
+                <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2, color: '#4CAF50' }}>
+                  📋 Instructions:
+                </Typography>
+                <Typography variant="body1" sx={{ mb: 1 }}>
+                  1. <strong>Tell the volunteer this PIN</strong> when they arrive
+                </Typography>
+                <Typography variant="body1" sx={{ mb: 1 }}>
+                  2. <strong>Volunteer enters PIN</strong> in their app
+                </Typography>
+                <Typography variant="body1" sx={{ color: '#4CAF50', fontWeight: 'bold' }}>
+                  3. <strong>Package confirmed</strong> - pickup complete! ✅
+                </Typography>
+              </Box>
+
+              {/* Close Button */}
+              <Box sx={{ display: 'flex', justifyContent: 'center' }}>
                 <Button
                   variant="contained"
-                  onClick={handlePrintQrCode}
-                  startIcon={<Printer size={16} />}
+                  onClick={handleClosePinModal}
                   sx={{
                     borderRadius: 3,
-                    bgcolor: '#333',
+                    bgcolor: '#4CAF50',
                     color: 'white',
-                    '&:hover': { bgcolor: '#555' },
+                    '&:hover': { bgcolor: '#45a049' },
                     px: 4,
                     py: 1.5,
                     fontWeight: 'bold',
                   }}
                 >
-                  Print
-                </Button>
-                <Button
-                  variant="outlined"
-                  onClick={handleDownloadQrCode}
-                  startIcon={<Download size={16} />}
-                  sx={{
-                    borderRadius: 3,
-                    borderColor: '#333',
-                    color: '#333',
-                    '&:hover': { 
-                      borderColor: '#555',
-                      bgcolor: '#f5f5f5'
-                    },
-                    px: 4,
-                    py: 1.5,
-                    fontWeight: 'bold',
-                  }}
-                >
-                  Download
+                  Got it!
                 </Button>
               </Box>
             </CardContent>
