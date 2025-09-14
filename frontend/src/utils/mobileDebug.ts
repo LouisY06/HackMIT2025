@@ -34,8 +34,8 @@ export const logMobileError = (context: string, error: any) => {
   console.error('Mobile Debug Error:', errorInfo);
   
   // Send to a simple error collection (you can check browser dev tools)
-  if (window.mobileErrors) {
-    window.mobileErrors.push(errorInfo);
+  if ((window as any).mobileErrors) {
+    (window as any).mobileErrors.push(errorInfo);
   } else {
     window.mobileErrors = [errorInfo];
   }
