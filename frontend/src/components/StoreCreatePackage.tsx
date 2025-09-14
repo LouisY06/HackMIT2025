@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Leaf, Package, Home, BarChart3, TrendingUp, LogOut, Store, ArrowRight, CheckCircle, ArrowBack } from 'lucide-react';
+import { Leaf, Package, Home, BarChart3, TrendingUp, LogOut, Store, ArrowRight, CheckCircle, ArrowLeft } from 'lucide-react';
 import { API_BASE_URL, API_ENDPOINTS, apiCall } from '../config/api';
 import { auth } from '../config/firebase';
 import {
@@ -279,7 +279,7 @@ const StoreCreatePackage: React.FC = () => {
           >
             <Button
               variant="outlined"
-              startIcon={<ArrowBack />}
+              startIcon={<ArrowLeft />}
               onClick={() => navigate('/store/dashboard')}
               sx={{
                 borderColor: '#7A8B5C',
