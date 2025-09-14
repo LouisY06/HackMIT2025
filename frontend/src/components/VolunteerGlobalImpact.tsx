@@ -33,10 +33,15 @@ const VolunteerGlobalImpact: React.FC = () => {
       <AppBar position="static" sx={{ backgroundColor: '#4CAF50' }}>
         <Toolbar>
           <Box sx={{ display: 'flex', alignItems: 'center', mr: 4 }}>
-            <Typography variant="h6" sx={{ color: 'white', fontWeight: 'bold', mr: 1 }}>
-              Waste→Worth
-            </Typography>
-            <Leaf size={20} style={{ color: 'white' }} />
+            <img 
+              src="/LogoOutlined.png" 
+              alt="Reflourish Logo" 
+              style={{ 
+                height: '48px', 
+                width: 'auto',
+                objectFit: 'contain'
+              }} 
+            />
           </Box>
           
           <Box sx={{ display: 'flex', gap: 2, flex: 1 }}>
@@ -106,7 +111,7 @@ const VolunteerGlobalImpact: React.FC = () => {
             Global Impact Dashboard
           </Typography>
           <Typography variant="h6" color="text.secondary" sx={{ maxWidth: 600, mx: 'auto' }}>
-            See how the Waste→Worth community is transforming food waste into community impact across the world
+            See how the Reflourish community is transforming food waste into community impact across the world
           </Typography>
         </Box>
 
