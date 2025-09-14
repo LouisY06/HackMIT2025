@@ -27,7 +27,7 @@ import {
   CircularProgress,
 } from '@mui/material';
 
-interface Package {
+interface PackageData {
   id: number;
   store_name: string;
   store_email: string;
@@ -46,13 +46,13 @@ interface Package {
 
 const StorePackages: React.FC = () => {
   const navigate = useNavigate();
-  const [packages, setPackages] = useState<Package[]>([]);
-  const [filteredPackages, setFilteredPackages] = useState<Package[]>([]);
+  const [packages, setPackages] = useState<PackageData[]>([]);
+  const [filteredPackages, setFilteredPackages] = useState<PackageData[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [selectedPackage, setSelectedPackage] = useState<Package | null>(null);
+  const [selectedPackage, setSelectedPackage] = useState<PackageData | null>(null);
   const [showQrModal, setShowQrModal] = useState(false);
 
   const statusOptions = [
@@ -149,7 +149,7 @@ const StorePackages: React.FC = () => {
 
   const summary = calculateSummary();
 
-  const handleViewQrCode = (pkg: Package) => {
+  const handleViewQrCode = (pkg: PackageData) => {
     setSelectedPackage(pkg);
     setShowQrModal(true);
   };

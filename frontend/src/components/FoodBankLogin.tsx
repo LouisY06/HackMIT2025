@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup, UserCredential } from 'firebase/auth';
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup } from 'firebase/auth';
 import { auth, googleProvider } from '../config/firebase';
 import {
   Box,
@@ -27,7 +27,7 @@ const FoodBankLogin: React.FC = () => {
     setError('');
 
     try {
-      const result = await signInWithPopup(auth, googleProvider);
+      await signInWithPopup(auth, googleProvider);
       // Check if user has completed profile for foodbank user type
       const user = auth.currentUser;
       if (user) {
@@ -77,11 +77,22 @@ const FoodBankLogin: React.FC = () => {
         }
       } else {
         // Check if email already exists in foodbank table
-        const emailCheckResponse = await fetch(`http://localhost:5001/api/users/check-email/foodbank/${email}`);
-        const emailCheckData = await emailCheckResponse.json();
-        
-        if (emailCheckData.success && emailCheckData.email_exists) {
-          setError('An account with this email already exists. Please sign in instead.');
+        try {
+          const emailCheckResponse = await fetch(`http://localhost:5001/api/users/check-email/foodbank/${email}`);
+          
+          if (!emailCheckResponse.ok) {
+            throw new Error(`HTTP error! status: ${emailCheckResponse.status}`);
+          }
+          
+          const emailCheckData = await emailCheckResponse.json();
+          
+          if (emailCheckData.success && emailCheckData.email_exists) {
+            setError('An account with this email already exists. Please sign in instead.');
+            return;
+          }
+        } catch (emailCheckError) {
+          console.error('Email check failed:', emailCheckError);
+          setError('Failed to check email availability. Please try again.');
           return;
         }
         

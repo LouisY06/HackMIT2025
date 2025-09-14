@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { Package, Clock } from 'lucide-react';
+// import { Package, Clock } from 'lucide-react'; // Unused imports
 
 interface Pickup {
   id: string;
@@ -203,7 +203,7 @@ const GoogleMapsComponent: React.FC<GoogleMapsComponentProps> = ({
       setHasError(true);
       setIsLoading(false);
     }
-  }, [apiKey, center, zoom, pickups]);
+  }, [apiKey, center, zoom, pickups, userLocation]);
 
   return (
     <div style={{ width: '100%', height: height, position: 'relative' }}>
