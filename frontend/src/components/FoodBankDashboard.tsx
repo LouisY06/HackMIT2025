@@ -67,6 +67,10 @@ const FoodBankDashboard: React.FC = () => {
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
   const [selectedPackage, setSelectedPackage] = useState<any>(null);
   const [pinValue, setPinValue] = useState('');
+  
+  // State for manual package confirmation
+  const [manualPackageId, setManualPackageId] = useState('');
+  const [manualPin, setManualPin] = useState('');
 
   // Fetch data on component mount
   useEffect(() => {
@@ -130,7 +134,7 @@ const FoodBankDashboard: React.FC = () => {
       const result = await response.json();
 
       if (result.success) {
-        alert('✅ Package delivery confirmed! Mission completed.');
+        alert('✅ Order completed! The volunteer has received their points and the mission is now complete.');
         setConfirmDialogOpen(false);
         setPinValue('');
         setSelectedPackage(null);
@@ -150,6 +154,42 @@ const FoodBankDashboard: React.FC = () => {
     setConfirmDialogOpen(false);
     setPinValue('');
     setSelectedPackage(null);
+  };
+
+  // Handle manual package confirmation
+  const handleManualConfirmDelivery = async () => {
+    if (!manualPackageId || !manualPin) {
+      alert('Please enter both Package ID and PIN');
+      return;
+    }
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/packages/${manualPackageId}/deliver`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          pin: manualPin,
+          foodbank_id: 'foodbank_1' // TODO: Get actual food bank ID
+        })
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        alert('✅ Order completed! The volunteer has received their points and the mission is now complete.');
+        // Clear the form
+        setManualPackageId('');
+        setManualPin('');
+        // Refresh data
+        fetchFoodBankData();
+        fetchPendingDeliveries();
+      } else {
+        alert(`❌ ${result.error}`);
+      }
+    } catch (error) {
+      console.error('Error confirming delivery:', error);
+      alert('Network error. Please try again.');
+    }
   };
 
   // Animation variants
@@ -461,6 +501,8 @@ const FoodBankDashboard: React.FC = () => {
                           fullWidth
                           label="Package ID"
                           placeholder="Enter package ID"
+                          value={manualPackageId}
+                          onChange={(e) => setManualPackageId(e.target.value)}
                           variant="outlined"
                           sx={{
                             '& .MuiOutlinedInput-root': {
@@ -477,6 +519,8 @@ const FoodBankDashboard: React.FC = () => {
                           fullWidth
                           label="4-Digit PIN"
                           placeholder="Enter 4-digit PIN"
+                          value={manualPin}
+                          onChange={(e) => setManualPin(e.target.value)}
                           variant="outlined"
                           inputProps={{ maxLength: 4, pattern: '[0-9]*' }}
                           sx={{
@@ -496,6 +540,7 @@ const FoodBankDashboard: React.FC = () => {
                             size="large"
                             startIcon={<CheckCircle size={20} />}
                             fullWidth
+                            onClick={handleManualConfirmDelivery}
                             sx={{
                               background: 'linear-gradient(135deg, #4CAF50 0%, #45a049 100%)',
                               borderRadius: 2,
@@ -690,42 +735,80 @@ const FoodBankDashboard: React.FC = () => {
                         Recent Deliveries
                       </Typography>
                     </Box>
-                    <Box sx={{ 
-                      textAlign: 'center', 
-                      display: 'flex', 
-                      flexDirection: 'column', 
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                      py: 4,
-                      minHeight: '200px'
-                    }}>
-                      <Package size={48} style={{ color: '#ccc', marginBottom: '12px' }} />
-                      <Typography variant="h6" sx={{ color: '#666', mb: 1, opacity: 0.7 }}>
-                        No recent deliveries
-                      </Typography>
-                      <Typography variant="body2" sx={{ color: '#666', mb: 2 }}>
-                        Deliveries will appear here once confirmed
-                      </Typography>
-                      <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                        <Button
-                          variant="outlined"
-                          onClick={handleDeliveryLog}
-                          startIcon={<Truck size={16} />}
-                          sx={{ 
-                            borderColor: '#4CAF50', 
-                            color: '#4CAF50',
-                            borderRadius: 2,
-                            textTransform: 'none',
-                            '&:hover': {
-                              borderColor: '#45a049',
-                              background: 'rgba(76, 175, 80, 0.1)',
-                            },
-                          }}
-                        >
-                          View All Deliveries
-                        </Button>
-                      </motion.div>
-                    </Box>
+                    {recentDeliveries.length === 0 ? (
+                      <Box sx={{ 
+                        textAlign: 'center', 
+                        display: 'flex', 
+                        flexDirection: 'column', 
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        py: 4,
+                        minHeight: '200px'
+                      }}>
+                        <Package size={48} style={{ color: '#ccc', marginBottom: '12px' }} />
+                        <Typography variant="h6" sx={{ color: '#666', mb: 1, opacity: 0.7 }}>
+                          No recent deliveries
+                        </Typography>
+                        <Typography variant="body2" sx={{ color: '#666', mb: 2 }}>
+                          Deliveries will appear here once confirmed
+                        </Typography>
+                        <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                          <Button
+                            variant="outlined"
+                            onClick={handleDeliveryLog}
+                            startIcon={<Truck size={16} />}
+                            sx={{ 
+                              borderColor: '#4CAF50', 
+                              color: '#4CAF50',
+                              borderRadius: 2,
+                              textTransform: 'none',
+                              '&:hover': {
+                                borderColor: '#45a049',
+                                background: 'rgba(76, 175, 80, 0.1)',
+                              },
+                            }}
+                          >
+                            View All Deliveries
+                          </Button>
+                        </motion.div>
+                      </Box>
+                    ) : (
+                      <Box sx={{ maxHeight: '300px', overflowY: 'auto' }}>
+                        {recentDeliveries.map((delivery) => (
+                          <motion.div
+                            key={delivery.id}
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.3 }}
+                          >
+                            <Card sx={{ 
+                              mb: 2, 
+                              border: '1px solid #e0e0e0',
+                              '&:hover': { boxShadow: 2 }
+                            }}>
+                              <CardContent sx={{ p: 2 }}>
+                                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                                  <Box sx={{ flex: 1 }}>
+                                    <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mb: 0.5 }}>
+                                      {delivery.store_name}
+                                    </Typography>
+                                    <Typography variant="body2" sx={{ color: '#666', mb: 1 }}>
+                                      {delivery.food_type} • {delivery.weight_lbs} lbs
+                                    </Typography>
+                                    <Typography variant="body2" sx={{ color: '#666', fontSize: '0.75rem' }}>
+                                      Confirmed: {new Date(delivery.delivered_at).toLocaleDateString()}
+                                    </Typography>
+                                  </Box>
+                                  <Box sx={{ ml: 2 }}>
+                                    <CheckCircle size={20} color="#4CAF50" />
+                                  </Box>
+                                </Box>
+                              </CardContent>
+                            </Card>
+                          </motion.div>
+                        ))}
+                      </Box>
+                    )}
                   </CardContent>
                 </Card>
               </motion.div>
