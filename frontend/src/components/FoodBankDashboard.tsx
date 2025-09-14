@@ -271,21 +271,21 @@ const FoodBankDashboard: React.FC = () => {
         </Box>
 
         {/* KPI Cards */}
-        <Box sx={{ display: 'flex', gap: 3, mb: 4, flexWrap: 'wrap' }}>
-          <Card sx={{ flex: '1 1 300px', minWidth: '250px', borderRadius: 3, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
-            <CardContent sx={{ textAlign: 'center', py: 3 }}>
+        <Box sx={{ display: 'flex', gap: 3, mb: 4, flexWrap: 'wrap', justifyContent: 'center' }}>
+          <Card sx={{ flex: '1 1 200px', minWidth: '200px', maxWidth: '250px', borderRadius: 3, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
+            <CardContent sx={{ textAlign: 'center', py: 3, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
               <CheckCircle sx={{ fontSize: 40, color: '#4CAF50', mb: 2 }} />
-              <Typography variant="h4" sx={{ fontWeight: 'bold', mb: 1 }}>
-                {kpiData.todayDeliveries}
+              <Typography variant="h4" sx={{ fontWeight: 'bold', mb: 1, textAlign: 'center' }}>
+                {kpiData.todayDeliveries || 0}
               </Typography>
-              <Typography variant="body1" sx={{ color: '#666' }}>
+              <Typography variant="body1" sx={{ color: '#666', textAlign: 'center' }}>
                 Today's Deliveries
               </Typography>
             </CardContent>
           </Card>
 
-          <Card sx={{ flex: '1 1 300px', minWidth: '250px', borderRadius: 3, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
-            <CardContent sx={{ textAlign: 'center', py: 3 }}>
+          <Card sx={{ flex: '1 1 200px', minWidth: '200px', maxWidth: '250px', borderRadius: 3, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
+            <CardContent sx={{ textAlign: 'center', py: 3, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
               <Box sx={{ 
                 width: 40, 
                 height: 40, 
@@ -299,17 +299,17 @@ const FoodBankDashboard: React.FC = () => {
               }}>
                 <Typography sx={{ color: 'white', fontWeight: 'bold' }}>F</Typography>
               </Box>
-              <Typography variant="h4" sx={{ fontWeight: 'bold', mb: 1 }}>
-                {kpiData.foodReceived}
+              <Typography variant="h4" sx={{ fontWeight: 'bold', mb: 1, textAlign: 'center' }}>
+                {kpiData.foodReceived || '0 lbs today'}
               </Typography>
-              <Typography variant="body1" sx={{ color: '#666' }}>
+              <Typography variant="body1" sx={{ color: '#666', textAlign: 'center' }}>
                 Food Received
               </Typography>
             </CardContent>
           </Card>
 
-          <Card sx={{ flex: '1 1 300px', minWidth: '250px', borderRadius: 3, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
-            <CardContent sx={{ textAlign: 'center', py: 3 }}>
+          <Card sx={{ flex: '1 1 200px', minWidth: '200px', maxWidth: '250px', borderRadius: 3, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
+            <CardContent sx={{ textAlign: 'center', py: 3, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
               <Box sx={{ 
                 width: 40, 
                 height: 40, 
@@ -323,11 +323,23 @@ const FoodBankDashboard: React.FC = () => {
               }}>
                 <Person sx={{ color: 'white' }} />
               </Box>
-              <Typography variant="h4" sx={{ fontWeight: 'bold', mb: 1 }}>
-                {kpiData.activeVolunteers}
+              <Typography variant="h4" sx={{ fontWeight: 'bold', mb: 1, textAlign: 'center' }}>
+                {kpiData.activeVolunteers || 0}
               </Typography>
-              <Typography variant="body1" sx={{ color: '#666' }}>
+              <Typography variant="body1" sx={{ color: '#666', textAlign: 'center' }}>
                 Active Volunteers
+              </Typography>
+            </CardContent>
+          </Card>
+
+          <Card sx={{ flex: '1 1 200px', minWidth: '200px', maxWidth: '250px', borderRadius: 3, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
+            <CardContent sx={{ textAlign: 'center', py: 3, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+              <Leaf size={40} style={{ color: '#4CAF50', marginBottom: '16px' }} />
+              <Typography variant="h4" sx={{ fontWeight: 'bold', mb: 1, textAlign: 'center' }}>
+                {kpiData.co2Prevented ? kpiData.co2Prevented.split(' ')[0] : '0'} lbs
+              </Typography>
+              <Typography variant="body1" sx={{ color: '#666', textAlign: 'center' }}>
+                CO₂ Prevented
               </Typography>
             </CardContent>
           </Card>
@@ -559,51 +571,6 @@ const FoodBankDashboard: React.FC = () => {
                 </CardContent>
               </Card>
 
-              {/* Today's Impact */}
-              <Card sx={{ borderRadius: 3, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
-                <CardContent sx={{ p: 3 }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
-                    <Leaf size={20} style={{ color: '#4CAF50', marginRight: '8px' }} />
-                    <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
-                      Today's Impact
-                    </Typography>
-                  </Box>
-                  
-                  <Box sx={{ 
-                    bgcolor: '#4CAF50', 
-                    color: 'white', 
-                    borderRadius: 3, 
-                    p: 3, 
-                    mb: 2,
-                    textAlign: 'center'
-                  }}>
-                    <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
-                      {kpiData.co2Prevented}
-                    </Typography>
-                  </Box>
-
-                  <Box sx={{ display: 'flex', gap: 2 }}>
-                    <Chip 
-                      label={kpiData.mealsProvided} 
-                      sx={{ 
-                        bgcolor: '#e3f2fd', 
-                        color: '#1976d2',
-                        fontWeight: 'bold',
-                        flex: 1
-                      }} 
-                    />
-                    <Chip 
-                      label={kpiData.familiesHelped} 
-                      sx={{ 
-                        bgcolor: '#f3e5f5', 
-                        color: '#9c27b0',
-                        fontWeight: 'bold',
-                        flex: 1
-                      }} 
-                    />
-                  </Box>
-                </CardContent>
-              </Card>
 
               {/* How to Verify */}
               <Card sx={{ borderRadius: 3, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
