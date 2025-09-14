@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Gift, PartyPopper, Utensils, Coffee, Sandwich, Book, Coffee as DrinkIcon, ShoppingCart, Bus, Leaf, Leaf as LeafIcon, ClipboardList } from 'lucide-react';
+import { Gift, PartyPopper, Utensils, Coffee, Sandwich, Book, Coffee as DrinkIcon, ShoppingCart, Bus, Leaf, Leaf as LeafIcon, ClipboardList, CreditCard, ShoppingBag, Ticket, Percent, Receipt, DollarSign } from 'lucide-react';
 import {
   Box,
   Typography,
@@ -52,7 +52,7 @@ const VolunteerRewards: React.FC = () => {
     },
     {
       id: 3,
-      icon: "sandwich",
+      icon: "dollar-sign",
       title: "$5 Off Order",
       provider: "Chipotle",
       description: "$5 off your next Chipotle order",
@@ -60,7 +60,7 @@ const VolunteerRewards: React.FC = () => {
     },
     {
       id: 4,
-      icon: "movie",
+      icon: "ticket",
       title: "Free Movie Ticket",
       provider: "AMC Theatres",
       description: "One free standard movie ticket",
@@ -68,7 +68,7 @@ const VolunteerRewards: React.FC = () => {
     },
     {
       id: 5,
-      icon: "📚",
+      icon: "book",
       title: "15% Off Books",
       provider: "Harvard Book Store",
       description: "15% off any book purchase",
@@ -76,7 +76,7 @@ const VolunteerRewards: React.FC = () => {
     },
     {
       id: 6,
-      icon: "🥤",
+      icon: "coffee",
       title: "Free Smoothie",
       provider: "Jamba Juice",
       description: "One free 16oz smoothie",
@@ -84,7 +84,7 @@ const VolunteerRewards: React.FC = () => {
     },
     {
       id: 7,
-      icon: "🛒",
+      icon: "receipt",
       title: "$10 Off Grocery",
       provider: "Whole Foods",
       description: "$10 off your grocery purchase",
@@ -92,7 +92,7 @@ const VolunteerRewards: React.FC = () => {
     },
     {
       id: 8,
-      icon: "🚌",
+      icon: "bus",
       title: "Free Transit Day Pass",
       provider: "MBTA",
       description: "One day unlimited MBTA pass",
@@ -218,7 +218,7 @@ const VolunteerRewards: React.FC = () => {
       {/* Available Points Banner */}
       <Box
         sx={{
-          background: 'linear-gradient(135deg, #9C27B0 0%, #E91E63 100%)',
+          background: 'linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%)',
           p: 4,
           color: 'white'
         }}
@@ -266,15 +266,35 @@ const VolunteerRewards: React.FC = () => {
             <Card key={reward.id} sx={{ boxShadow: 2, borderRadius: 2 }}>
               <CardContent sx={{ p: 3 }}>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
-                  <Typography variant="h4" sx={{ fontSize: '2rem' }}>
-                    {reward.icon}
-                  </Typography>
+                  <Box sx={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center',
+                    width: 48,
+                    height: 48,
+                    backgroundColor: '#e8f5e8',
+                    borderRadius: 2,
+                    color: '#4CAF50'
+                  }}>
+                    {reward.icon === 'utensils' && <Utensils size={24} />}
+                    {reward.icon === 'coffee' && <Coffee size={24} />}
+                    {reward.icon === 'gift' && <Gift size={24} />}
+                    {reward.icon === 'book' && <Book size={24} />}
+                    {reward.icon === 'shopping-cart' && <ShoppingCart size={24} />}
+                    {reward.icon === 'bus' && <Bus size={24} />}
+                    {reward.icon === 'leaf' && <Leaf size={24} />}
+                    {reward.icon === 'credit-card' && <CreditCard size={24} />}
+                    {reward.icon === 'shopping-bag' && <ShoppingBag size={24} />}
+                    {reward.icon === 'ticket' && <Ticket size={24} />}
+                    {reward.icon === 'receipt' && <Receipt size={24} />}
+                    {reward.icon === 'dollar-sign' && <DollarSign size={24} />}
+                  </Box>
                   <Chip 
                     label={`${reward.points} points`}
                     size="small"
                     sx={{ 
-                      backgroundColor: '#E1BEE7', 
-                      color: '#4A148C',
+                      backgroundColor: '#4CAF50', 
+                      color: 'white',
                       fontWeight: 'bold'
                     }}
                   />
@@ -298,8 +318,8 @@ const VolunteerRewards: React.FC = () => {
                     onClick={() => handleRedeem(reward)}
                     disabled={points < reward.points}
                     sx={{
-                      backgroundColor: '#9C27B0',
-                      '&:hover': { backgroundColor: '#7B1FA2' },
+                      backgroundColor: '#4CAF50',
+                      '&:hover': { backgroundColor: '#45a049' },
                       '&:disabled': { backgroundColor: '#E0E0E0' }
                     }}
                   >
@@ -338,7 +358,7 @@ const VolunteerRewards: React.FC = () => {
               </Typography>
               <Chip 
                 label={`${selectedReward.points} points`}
-                sx={{ backgroundColor: '#E1BEE7', color: '#4A148C' }}
+                sx={{ backgroundColor: '#4CAF50', color: 'white' }}
               />
             </Box>
           )}
@@ -354,7 +374,7 @@ const VolunteerRewards: React.FC = () => {
           <Button 
             onClick={handleConfirmRedemption} 
             variant="contained"
-            sx={{ backgroundColor: '#9C27B0', '&:hover': { backgroundColor: '#7B1FA2' } }}
+            sx={{ backgroundColor: '#4CAF50', '&:hover': { backgroundColor: '#45a049' } }}
           >
             Confirm Redemption
           </Button>
