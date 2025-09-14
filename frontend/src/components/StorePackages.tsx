@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Leaf, Package, Home, BarChart3, TrendingUp, LogOut, Search, Calendar, Smartphone, Users } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Leaf, Package, Home, BarChart3, TrendingUp, LogOut, Search, Calendar, Smartphone, Users, Store, ArrowRight, RefreshCw } from 'lucide-react';
 import { API_BASE_URL, API_ENDPOINTS, apiCall } from '../config/api';
 import { auth } from '../config/firebase';
 import {
@@ -13,8 +14,6 @@ import {
   TextField,
   Select,
   MenuItem,
-  FormControl,
-  InputLabel,
   Table,
   TableBody,
   TableCell,
@@ -204,89 +203,167 @@ const StorePackages: React.FC = () => {
     }
   };
 
+  // Animation variants
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+    },
+  };
+
   return (
-    <Box sx={{ minHeight: '100vh', bgcolor: '#f8f9fa' }}>
-      {/* Top Navigation Bar */}
-      <Box
-        sx={{
-          bgcolor: 'white',
-          borderBottom: '1px solid #e0e0e0',
-          px: 3,
-          py: 2,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-        }}
-      >
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-          <img 
-            src="/LogoOutlined.png" 
-            alt="Reflourish Logo" 
-            style={{ 
-              height: '56px', 
-              width: 'auto',
-              objectFit: 'contain'
-            }} 
-          />
-          <Box sx={{ display: 'flex', gap: 3 }}>
-            <Button onClick={() => navigate('/store/dashboard')} sx={{ color: '#666' }}>
-              <Home size={16} style={{ marginRight: '4px' }} /> Dashboard
-            </Button>
-            <Button onClick={() => navigate('/store/create-package')} sx={{ color: '#666' }}>
-              + Create Package
-            </Button>
-            <Button sx={{ color: '#4CAF50', fontWeight: 'bold' }}>
-              <Package size={16} style={{ marginRight: '4px' }} /> Packages
-            </Button>
-            <Button onClick={() => navigate('/store/impact')} sx={{ color: '#666' }}>
-              <BarChart3 size={16} style={{ marginRight: '4px' }} /> Impact
-            </Button>
-            <Button onClick={() => navigate('/store/global-impact')} sx={{ color: '#666' }}>
-              <TrendingUp size={16} style={{ marginRight: '4px' }} /> Global Impact
-            </Button>
-          </Box>
-        </Box>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          <Typography variant="body2" sx={{ color: '#666' }}>
-            Sarah Williams
-          </Typography>
-          <Typography variant="body2" sx={{ color: '#666' }}>
-            Partner
-          </Typography>
-          <Button onClick={() => navigate('/store')} sx={{ color: '#666' }}>
-            <LogOut size={16} style={{ marginRight: '4px' }} /> Logout
-          </Button>
+    <Box
+      sx={{
+        backgroundImage: 'url(/RestLogin.png)',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+        minHeight: '100vh',
+        position: 'relative',
+        pb: 4,
+        '&::before': {
+          content: '""',
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.3)',
+          zIndex: 1,
+        },
+        '& > *': {
+          position: 'relative',
+          zIndex: 2,
+        },
+      }}
+    >
+      {/* Header */}
+      <Box>
+        <Box
+          sx={{
+            background: 'rgba(0, 0, 0, 0.7)',
+            backdropFilter: 'blur(10px)',
+            borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+            p: { xs: 2, md: 3 },
+          }}
+        >
+          <Container maxWidth="xl">
+            <Box sx={{ 
+              display: 'flex', 
+              justifyContent: 'space-between', 
+              alignItems: 'center',
+              flexDirection: { xs: 'column', sm: 'row' },
+              gap: { xs: 2, sm: 0 }
+            }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1.5, sm: 2 } }}>
+                <Box
+                  sx={{
+                    width: { xs: 40, sm: 60 },
+                    height: { xs: 40, sm: 60 },
+                    borderRadius: '50%',
+                    background: 'linear-gradient(135deg, #848D58 0%, #6F7549 100%)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <Store size={28} color="white" />
+                </Box>
+                <Box>
+                  <Typography 
+                    variant="h4"
+                    sx={{ 
+                      fontWeight: 700,
+                      color: 'white',
+                      fontFamily: '"Helvetica Neue", "Helvetica", "Arial", sans-serif',
+                      fontSize: { xs: '1.5rem', sm: '2.125rem' },
+                    }}
+                  >
+                    Package Management
+                  </Typography>
+                  <Box sx={{ 
+                    display: { xs: 'none', sm: 'flex' }, 
+                    alignItems: 'center', 
+                    gap: 1 
+                  }}>
+                    <Typography 
+                      variant="subtitle1" 
+                      sx={{ 
+                        color: 'rgba(255, 255, 255, 0.8)',
+                        fontWeight: 300,
+                        fontFamily: '"Helvetica Neue", "Helvetica", "Arial", sans-serif',
+                      }}
+                    >
+                      Manage all your food packages
+                    </Typography>
+                    <Package size={20} color="rgba(255, 255, 255, 0.8)" />
+                  </Box>
+                </Box>
+              </Box>
+
+              <Box sx={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: { xs: 1, sm: 2 },
+                flexWrap: 'wrap',
+                justifyContent: 'center'
+              }}>
+                <Chip
+                  icon={<Package size={16} />}
+                  label={`${filteredPackages.length} packages`}
+                  sx={{
+                    background: 'linear-gradient(135deg, #848D58 0%, #6F7549 100%)',
+                    color: 'white',
+                    fontWeight: 600,
+                    fontSize: { xs: '0.8rem', sm: '1rem' },
+                    px: 1,
+                    '& .MuiChip-icon': { color: 'white' },
+                  }}
+                />
+                <IconButton
+                  onClick={() => navigate('/')}
+                  size="small"
+                  sx={{
+                    background: 'rgba(132, 141, 88, 0.1)',
+                    color: '#848D58',
+                    '&:hover': {
+                      background: 'rgba(132, 141, 88, 0.2)',
+                    },
+                  }}
+                >
+                  <LogOut size={18} />
+                </IconButton>
+              </Box>
+            </Box>
+          </Container>
         </Box>
       </Box>
 
-      <Container maxWidth="xl" sx={{ py: 4 }}>
-        {/* Header */}
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 4 }}>
-          <Box>
-            <Typography variant="h4" sx={{ fontWeight: 'bold', mb: 1 }}>
-              Package Management
-            </Typography>
-            <Typography variant="body1" sx={{ color: '#666' }}>
-              View and manage all your food packages
-            </Typography>
-          </Box>
-          <Button
-            variant="contained"
-            onClick={() => navigate('/store/create-package')}
-            sx={{
-              borderRadius: 3,
-              bgcolor: '#4CAF50',
-              '&:hover': { bgcolor: '#45a049' },
-              px: 3,
-              py: 1.5,
-            }}
-          >
-            + Create Package
-          </Button>
-        </Box>
+      <Container maxWidth="xl" sx={{ mt: { xs: 2, md: 4 }, px: { xs: 2, md: 3 } }}>
+        <motion.div
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+        >
 
-        {/* Search and Filter Bar */}
-        <Box sx={{ display: 'flex', gap: 2, mb: 4 }}>
+          {/* Search and Filter Bar */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+          >
+            <Box sx={{ display: 'flex', gap: 2, mb: 4 }}>
           <TextField
             fullWidth
             placeholder="Search packages..."
@@ -300,55 +377,115 @@ const StorePackages: React.FC = () => {
               ),
             }}
             sx={{
-              '& .MuiOutlinedInput-root': { borderRadius: 3 }
+              '& .MuiOutlinedInput-root': { 
+                borderRadius: 3,
+                backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                '&:hover': {
+                  backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                },
+              }
             }}
           />
-          <FormControl sx={{ minWidth: 150 }}>
-            <InputLabel>Status</InputLabel>
-            <Select
-              value={statusFilter}
-              label="Status"
-              onChange={(e) => setStatusFilter(e.target.value)}
-              sx={{ borderRadius: 3 }}
-            >
+          <Select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            displayEmpty
+            renderValue={(selected) => {
+              if (!selected || selected === '') {
+                return <span style={{ color: '#666', fontSize: '14px' }}>All Status</span>;
+              }
+              const option = statusOptions.find(opt => opt.value === selected);
+              return option ? option.label : selected;
+            }}
+            sx={{ 
+              minWidth: 150,
+              borderRadius: 3,
+              backgroundColor: 'rgba(255, 255, 255, 0.9)',
+              '&:hover': {
+                backgroundColor: 'rgba(255, 255, 255, 0.95)',
+              },
+              '& .MuiOutlinedInput-notchedOutline': {
+                borderColor: 'rgba(255, 255, 255, 0.3)',
+              },
+              '&:hover .MuiOutlinedInput-notchedOutline': {
+                borderColor: 'rgba(255, 255, 255, 0.5)',
+              },
+              '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                borderColor: 'rgba(255, 255, 255, 0.7)',
+              },
+            }}
+          >
               {statusOptions.map((option) => (
                 <MenuItem key={option.value} value={option.value}>
                   {option.label}
                 </MenuItem>
               ))}
             </Select>
-          </FormControl>
-        </Box>
-
-        {error && (
-          <Alert severity="error" sx={{ mb: 3, borderRadius: 3 }}>
-            {error}
-          </Alert>
-        )}
-
-        {/* Your Packages Section */}
-        <Card sx={{ borderRadius: 3, mb: 4 }}>
-          <CardContent sx={{ p: 3 }}>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-              <Box>
-                <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
-                  Your Packages ({filteredPackages.length})
-                </Typography>
-                <Typography variant="body2" sx={{ color: '#666' }}>
-                  All packages from your store
-                </Typography>
-              </Box>
             </Box>
+          </motion.div>
 
-            {loading ? (
-              <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-                <CircularProgress />
-              </Box>
-            ) : (
-              <TableContainer component={Paper} sx={{ borderRadius: 3, boxShadow: 'none', border: '1px solid #e0e0e0' }}>
+          {error && (
+            <Alert severity="error" sx={{ mb: 3, borderRadius: 3, backgroundColor: 'rgba(255, 255, 255, 0.9)' }}>
+              {error}
+            </Alert>
+          )}
+
+          {/* Your Packages Section */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.3 }}
+          >
+            <Card
+              sx={{
+                borderRadius: 3,
+                background: 'rgba(255, 255, 255, 0.95)',
+                backdropFilter: 'blur(10px)',
+                border: '1px solid rgba(132, 141, 88, 0.1)',
+                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
+                mb: 4,
+              }}
+            >
+              <CardContent sx={{ p: 4 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
+                  <Package size={24} color="#848D58" />
+                  <Typography 
+                    variant="h5" 
+                    sx={{ 
+                      fontWeight: 700,
+                      fontFamily: '"Helvetica Neue", "Helvetica", "Arial", sans-serif',
+                    }}
+                  >
+                    Your Packages ({filteredPackages.length})
+                  </Typography>
+                  <Chip 
+                    label="Active"
+                    size="small"
+                    sx={{
+                      backgroundColor: '#848D5820',
+                      color: '#848D58',
+                      fontWeight: 600,
+                    }}
+                  />
+                </Box>
+
+                {loading ? (
+                  <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+                    <CircularProgress sx={{ color: '#848D58' }} />
+                  </Box>
+                ) : (
+                  <TableContainer 
+                    component={Paper} 
+                    sx={{ 
+                      borderRadius: 3, 
+                      boxShadow: 'none', 
+                      border: '1px solid rgba(132, 141, 88, 0.2)',
+                      backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                    }}
+                  >
                 <Table>
                   <TableHead>
-                    <TableRow sx={{ bgcolor: '#f8f9fa' }}>
+                      <TableRow sx={{ bgcolor: 'rgba(132, 141, 88, 0.1)' }}>
                       <TableCell sx={{ fontWeight: 'bold' }}>Package ID</TableCell>
                       <TableCell sx={{ fontWeight: 'bold' }}>Food Type</TableCell>
                       <TableCell sx={{ fontWeight: 'bold' }}>Weight</TableCell>
@@ -435,58 +572,98 @@ const StorePackages: React.FC = () => {
                       </TableRow>
                     )}
                   </TableBody>
-                </Table>
-              </TableContainer>
-            )}
-          </CardContent>
-        </Card>
+                  </Table>
+                  </TableContainer>
+                )}
+              </CardContent>
+            </Card>
+          </motion.div>
 
-        {/* Summary Cards */}
-        <Box sx={{ display: 'flex', gap: 3, flexWrap: 'wrap' }}>
-          <Card sx={{ flex: '1 1 200px', minWidth: '200px', borderRadius: 3 }}>
-            <CardContent sx={{ textAlign: 'center', py: 3 }}>
-              <Typography variant="h4" sx={{ fontWeight: 'bold', color: '#2196F3', mb: 1 }}>
-                {summary.available}
-              </Typography>
-              <Typography variant="body2" sx={{ color: '#666' }}>
-                Available
-              </Typography>
-            </CardContent>
-          </Card>
-          
-          <Card sx={{ flex: '1 1 200px', minWidth: '200px', borderRadius: 3 }}>
-            <CardContent sx={{ textAlign: 'center', py: 3 }}>
-              <Typography variant="h4" sx={{ fontWeight: 'bold', color: '#FF9800', mb: 1 }}>
-                {summary.inProgress}
-              </Typography>
-              <Typography variant="body2" sx={{ color: '#666' }}>
-                In Progress
-              </Typography>
-            </CardContent>
-          </Card>
-          
-          <Card sx={{ flex: '1 1 200px', minWidth: '200px', borderRadius: 3 }}>
-            <CardContent sx={{ textAlign: 'center', py: 3 }}>
-              <Typography variant="h4" sx={{ fontWeight: 'bold', color: '#4CAF50', mb: 1 }}>
-                {summary.completed}
-              </Typography>
-              <Typography variant="body2" sx={{ color: '#666' }}>
-                Completed
-              </Typography>
-            </CardContent>
-          </Card>
-          
-          <Card sx={{ flex: '1 1 200px', minWidth: '200px', borderRadius: 3 }}>
-            <CardContent sx={{ textAlign: 'center', py: 3 }}>
-              <Typography variant="h4" sx={{ fontWeight: 'bold', color: '#9C27B0', mb: 1 }}>
-                {summary.totalWeight.toFixed(1)}
-              </Typography>
-              <Typography variant="body2" sx={{ color: '#666' }}>
-                Lbs Total
-              </Typography>
-            </CardContent>
-          </Card>
-        </Box>
+          {/* Summary Cards */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.4 }}
+          >
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: 'repeat(2, 1fr)', md: 'repeat(4, 1fr)' }, gap: { xs: 2, md: 3 }, mb: 4 }}>
+              <motion.div whileHover={{ y: -4, scale: 1.02 }} transition={{ duration: 0.2 }}>
+                <Card
+                  sx={{
+                    borderRadius: 3,
+                    background: 'linear-gradient(135deg, #2196F3 0%, #1976D2 100%)',
+                    color: 'white',
+                  }}
+                >
+                  <CardContent sx={{ textAlign: 'center', py: 3 }}>
+                    <Typography variant="h4" sx={{ fontWeight: 'bold', mb: 1, fontSize: { xs: '2rem', md: '2.5rem' } }}>
+                      {summary.available}
+                    </Typography>
+                    <Typography variant="body2" sx={{ opacity: 0.9, fontSize: { xs: '0.75rem', md: '0.875rem' } }}>
+                      Available
+                    </Typography>
+                  </CardContent>
+                </Card>
+              </motion.div>
+              
+              <motion.div whileHover={{ y: -4, scale: 1.02 }} transition={{ duration: 0.2 }}>
+                <Card
+                  sx={{
+                    borderRadius: 3,
+                    background: 'linear-gradient(135deg, #FF9800 0%, #F57C00 100%)',
+                    color: 'white',
+                  }}
+                >
+                  <CardContent sx={{ textAlign: 'center', py: 3 }}>
+                    <Typography variant="h4" sx={{ fontWeight: 'bold', mb: 1, fontSize: { xs: '2rem', md: '2.5rem' } }}>
+                      {summary.inProgress}
+                    </Typography>
+                    <Typography variant="body2" sx={{ opacity: 0.9, fontSize: { xs: '0.75rem', md: '0.875rem' } }}>
+                      In Progress
+                    </Typography>
+                  </CardContent>
+                </Card>
+              </motion.div>
+              
+              <motion.div whileHover={{ y: -4, scale: 1.02 }} transition={{ duration: 0.2 }}>
+                <Card
+                  sx={{
+                    borderRadius: 3,
+                    background: 'linear-gradient(135deg, #4CAF50 0%, #45a049 100%)',
+                    color: 'white',
+                  }}
+                >
+                  <CardContent sx={{ textAlign: 'center', py: 3 }}>
+                    <Typography variant="h4" sx={{ fontWeight: 'bold', mb: 1, fontSize: { xs: '2rem', md: '2.5rem' } }}>
+                      {summary.completed}
+                    </Typography>
+                    <Typography variant="body2" sx={{ opacity: 0.9, fontSize: { xs: '0.75rem', md: '0.875rem' } }}>
+                      Completed
+                    </Typography>
+                  </CardContent>
+                </Card>
+              </motion.div>
+              
+              <motion.div whileHover={{ y: -4, scale: 1.02 }} transition={{ duration: 0.2 }}>
+                <Card
+                  sx={{
+                    borderRadius: 3,
+                    background: 'linear-gradient(135deg, #9C27B0 0%, #7B1FA2 100%)',
+                    color: 'white',
+                  }}
+                >
+                  <CardContent sx={{ textAlign: 'center', py: 3 }}>
+                    <Typography variant="h4" sx={{ fontWeight: 'bold', mb: 1, fontSize: { xs: '2rem', md: '2.5rem' } }}>
+                      {summary.totalWeight.toFixed(1)}
+                    </Typography>
+                    <Typography variant="body2" sx={{ opacity: 0.9, fontSize: { xs: '0.75rem', md: '0.875rem' } }}>
+                      Lbs Total
+                    </Typography>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            </Box>
+          </motion.div>
+        </motion.div>
       </Container>
 
       {/* PIN Display Modal */}

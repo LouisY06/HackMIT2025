@@ -581,6 +581,45 @@ SCHEMA (return exactly one JSON object)
                 financial_impact, meals_lost, co2e_kg
             )
 
+    def _call_openai_api(self, prompt: str) -> Optional[str]:
+        """Call OpenAI API with the given prompt"""
+        try:
+            if not self.openai_key or self.openai_key in ["your-openai-key-here", "sk-proj-your-openai-key-here"]:
+                return None
+            
+            headers = {
+                "Authorization": f"Bearer {self.openai_key}",
+                "Content-Type": "application/json"
+            }
+            
+            data = {
+                "model": "gpt-4o-mini",
+                "messages": [
+                    {"role": "system", "content": "You are a Waste→Worth Weekly Analyst. Generate concise, decision-focused reports with strict JSON output."},
+                    {"role": "user", "content": prompt}
+                ],
+                "max_tokens": 2000,
+                "temperature": 0.2
+            }
+            
+            response = requests.post(
+                "https://api.openai.com/v1/chat/completions",
+                headers=headers,
+                json=data,
+                timeout=30
+            )
+            
+            if response.status_code == 200:
+                result = response.json()
+                return result['choices'][0]['message']['content'].strip()
+            else:
+                print(f"OpenAI API error: {response.status_code} - {response.text}")
+                return None
+                
+        except Exception as e:
+            print(f"OpenAI API call error: {str(e)}")
+            return None
+
     def _create_fallback_structured_report(self, store_name: str, period_start: str, period_end: str,
                                          core_metrics: Dict, category_breakdown: List, 
                                          total_packages: int, completed_packages: int,

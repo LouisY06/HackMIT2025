@@ -112,7 +112,7 @@ const VolunteerLogin: React.FC = () => {
   return (
     <Box
       sx={{
-        backgroundImage: 'url(/VolunteerLogin.png)',
+        backgroundImage: 'url(/CourierLogin.png)',
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundRepeat: 'no-repeat',
