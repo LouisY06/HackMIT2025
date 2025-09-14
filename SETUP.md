@@ -15,6 +15,11 @@
    ```bash
    npm install
    ```
+   
+   **Note:** If you get errors about missing `@zxing/browser`, install it manually:
+   ```bash
+   npm install @zxing/browser @zxing/library
+   ```
 
 3. **Create environment file:**
    ```bash
