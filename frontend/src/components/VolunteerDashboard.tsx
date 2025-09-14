@@ -72,6 +72,10 @@ const VolunteerDashboard: React.FC = () => {
   const [selectedPackageId, setSelectedPackageId] = useState<number | null>(null);
   const [pinValue, setPinValue] = useState('');
   const [userLocation, setUserLocation] = useState<{lat: number, lng: number} | null>(null);
+  
+  // Delivery info modal states
+  const [deliveryInfoOpen, setDeliveryInfoOpen] = useState(false);
+  const [selectedTask, setSelectedTask] = useState<any>(null);
 
   // Animation variants
   const containerVariants = {
@@ -275,6 +279,16 @@ const VolunteerDashboard: React.FC = () => {
     setPinEntryOpen(false);
     setPinValue('');
     setSelectedPackageId(null);
+  };
+
+  const handleShowDeliveryInfo = (task: any) => {
+    setSelectedTask(task);
+    setDeliveryInfoOpen(true);
+  };
+
+  const handleCloseDeliveryInfo = () => {
+    setDeliveryInfoOpen(false);
+    setSelectedTask(null);
   };
 
   const getUrgencyColor = (urgency: string) => {
@@ -831,6 +845,7 @@ const VolunteerDashboard: React.FC = () => {
                                             backgroundColor: '#F57C00'
                                           }
                                         }}
+                                        onClick={() => handleShowDeliveryInfo(task)}
                                       >
                                         Deliver to Food Bank
                                       </Button>
@@ -996,6 +1011,119 @@ const VolunteerDashboard: React.FC = () => {
             disabled={!pinValue || pinValue.length !== 4}
           >
             Confirm Pickup
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Delivery Information Modal */}
+      <Dialog open={deliveryInfoOpen} onClose={handleCloseDeliveryInfo} maxWidth="sm" fullWidth>
+        <DialogTitle sx={{ textAlign: 'center', fontWeight: 'bold', backgroundColor: '#FF9800', color: 'white' }}>
+          📦 Delivery Information
+        </DialogTitle>
+        <DialogContent sx={{ p: 4 }}>
+          {selectedTask && (
+            <>
+              <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 3, textAlign: 'center' }}>
+                Package ready for delivery!
+              </Typography>
+              
+              <Card sx={{ mb: 3, backgroundColor: '#FFF8E1', border: '2px solid #FF9800' }}>
+                <CardContent sx={{ p: 3 }}>
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                    <Box sx={{ textAlign: 'center' }}>
+                      <Typography variant="body1" sx={{ fontWeight: 'bold', color: '#F57C00', mb: 1 }}>
+                        📋 Order Number:
+                      </Typography>
+                      <Typography 
+                        variant="h4" 
+                        sx={{ 
+                          fontFamily: 'monospace',
+                          fontWeight: 'bold',
+                          color: '#F57C00',
+                          backgroundColor: 'white',
+                          padding: '8px 16px',
+                          borderRadius: 2,
+                          border: '2px solid #FF9800'
+                        }}
+                      >
+                        #{selectedTask.id}
+                      </Typography>
+                    </Box>
+
+                    <Divider sx={{ my: 1 }} />
+
+                    <Box sx={{ textAlign: 'center' }}>
+                      <Typography variant="body1" sx={{ fontWeight: 'bold', color: '#F57C00', mb: 1 }}>
+                        🔢 Delivery PIN:
+                      </Typography>
+                      <Typography 
+                        variant="h3" 
+                        sx={{ 
+                          fontFamily: 'monospace',
+                          fontWeight: 'bold',
+                          color: '#F57C00',
+                          letterSpacing: '0.3em',
+                          backgroundColor: 'white',
+                          padding: '12px 20px',
+                          borderRadius: 2,
+                          border: '2px solid #FF9800'
+                        }}
+                      >
+                        {selectedTask.pickup_pin}
+                      </Typography>
+                    </Box>
+                  </Box>
+                </CardContent>
+              </Card>
+
+              <Box sx={{ backgroundColor: '#E3F2FD', borderRadius: 2, p: 3, mb: 3 }}>
+                <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2, color: '#1976D2', textAlign: 'center' }}>
+                  📋 Delivery Instructions:
+                </Typography>
+                <Typography variant="body1" sx={{ mb: 1, textAlign: 'center' }}>
+                  1. **Go to the food bank** with the package
+                </Typography>
+                <Typography variant="body1" sx={{ mb: 1, textAlign: 'center' }}>
+                  2. **Give them the Order Number**: #{selectedTask.id}
+                </Typography>
+                <Typography variant="body1" sx={{ mb: 1, textAlign: 'center' }}>
+                  3. **Give them the PIN**: {selectedTask.pickup_pin}
+                </Typography>
+                <Typography variant="body1" sx={{ color: '#4CAF50', fontWeight: 'bold', textAlign: 'center' }}>
+                  4. **Food bank confirms** → Mission completed! ✅
+                </Typography>
+              </Box>
+
+              <Card sx={{ backgroundColor: '#F5F5F5', border: '1px solid #E0E0E0' }}>
+                <CardContent sx={{ p: 2 }}>
+                  <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 1 }}>
+                    Package Details:
+                  </Typography>
+                  <Typography variant="body2" sx={{ mb: 0.5 }}>
+                    <strong>Store:</strong> {selectedTask.store_name}
+                  </Typography>
+                  <Typography variant="body2" sx={{ mb: 0.5 }}>
+                    <strong>Food Type:</strong> {selectedTask.food_type}
+                  </Typography>
+                  <Typography variant="body2">
+                    <strong>Weight:</strong> {selectedTask.weight_lbs} lbs
+                  </Typography>
+                </CardContent>
+              </Card>
+            </>
+          )}
+        </DialogContent>
+        <DialogActions sx={{ justifyContent: 'center', gap: 2, pb: 3 }}>
+          <Button 
+            onClick={handleCloseDeliveryInfo}
+            variant="contained"
+            sx={{ 
+              minWidth: 120,
+              backgroundColor: '#FF9800',
+              '&:hover': { backgroundColor: '#F57C00' }
+            }}
+          >
+            Got it!
           </Button>
         </DialogActions>
       </Dialog>
