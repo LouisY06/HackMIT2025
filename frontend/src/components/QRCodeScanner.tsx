@@ -90,29 +90,79 @@ const QRCodeScanner: React.FC<QRCodeScannerProps> = ({
         videoRef.current!,
         (result, error) => {
           if (result) {
-            const scannedId = result.getText();
-            console.log('QR Code scanned:', scannedId);
+            const scannedText = result.getText();
+            console.log('QR Code scanned:', scannedText);
             
-            // Verify the scanned ID matches expected package ID
-            if (expectedPackageId && parseInt(scannedId) !== expectedPackageId) {
-              setError(`QR Code mismatch! Expected package ${expectedPackageId}, but scanned ${scannedId}`);
-              return;
+            try {
+              // Try to parse as JSON (full package data)
+              const qrData = JSON.parse(scannedText);
+              const scannedPackageId = qrData.package_id;
+              
+              console.log('Parsed package ID:', scannedPackageId);
+              
+              // Verify the scanned ID matches expected package ID
+              if (expectedPackageId && parseInt(scannedPackageId) !== expectedPackageId) {
+                setError(`QR Code mismatch! Expected package ${expectedPackageId}, but scanned ${scannedPackageId}`);
+                return;
+              }
+              
+              setScannedResult(scannedPackageId);
+              setIsVerifying(true);
+              
+              // Simulate verification delay
+              setTimeout(() => {
+                setIsVerifying(false);
+                onScanSuccess(scannedPackageId);
+                stopScanner();
+              }, 1000);
+              
+            } catch (parseError) {
+              // If JSON parsing fails, try as plain text package ID
+              console.log('Not JSON, trying as plain package ID:', scannedText);
+              
+              const scannedId = scannedText.trim();
+              
+              // Verify the scanned ID matches expected package ID
+              if (expectedPackageId && parseInt(scannedId) !== expectedPackageId) {
+                setError(`QR Code mismatch! Expected package ${expectedPackageId}, but scanned ${scannedId}`);
+                return;
+              }
+              
+              setScannedResult(scannedId);
+              setIsVerifying(true);
+              
+              // Simulate verification delay
+              setTimeout(() => {
+                setIsVerifying(false);
+                onScanSuccess(scannedId);
+                stopScanner();
+              }, 1000);
             }
-            
-            setScannedResult(scannedId);
-            setIsVerifying(true);
-            
-            // Simulate verification delay
-            setTimeout(() => {
-              setIsVerifying(false);
-              onScanSuccess(scannedId);
-              stopScanner();
-            }, 1000);
           }
           
           if (error && error.name !== 'NotFoundException') {
             console.error('QR Scan error:', error);
-            setError(`Scan error: ${error.message}`);
+            
+            // Provide user-friendly error messages
+            let friendlyMessage = '';
+            if (error.message.includes('No MultiFormat Readers were able to detect the code')) {
+              friendlyMessage = `
+Unable to read QR code. Please try:
+• Move camera closer to QR code
+• Ensure good lighting
+• Make sure QR code is clear and undamaged
+• Hold camera steady
+• Only scan QR codes from this app
+              `.trim();
+            } else if (error.message.includes('timeout')) {
+              friendlyMessage = 'Scan timeout. Please try again with better lighting or closer positioning.';
+            } else if (error.message.includes('format')) {
+              friendlyMessage = 'QR code format not recognized. Make sure you\'re scanning a valid package QR code.';
+            } else {
+              friendlyMessage = `Scan error: ${error.message}`;
+            }
+            
+            setError(friendlyMessage);
           }
         }
       );
