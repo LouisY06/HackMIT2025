@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Leaf, Package, Home, BarChart3, TrendingUp, LogOut, Store, ArrowRight, CheckCircle, ArrowLeft } from 'lucide-react';
@@ -43,6 +43,7 @@ const StoreCreatePackage: React.FC = () => {
   const [success, setSuccess] = useState('');
   // Removed qrCodePath state - using PIN system instead
   const [pickupPin, setPickupPin] = useState('');
+  const [storeName, setStoreName] = useState('Store');
 
   const foodTypes = [
     'Bakery Items',
@@ -54,6 +55,27 @@ const StoreCreatePackage: React.FC = () => {
     'Mixed Items',
     'Other'
   ];
+
+  // Fetch store name from profile
+  useEffect(() => {
+    const fetchStoreName = async () => {
+      const user = auth.currentUser;
+      if (user) {
+        try {
+          const response = await fetch(`${API_BASE_URL}/api/users/profile/${user.uid}`);
+          const data = await response.json();
+          
+          if (data.success && data.profile.profile_data.name) {
+            setStoreName(data.profile.profile_data.name);
+          }
+        } catch (error) {
+          console.error('Error fetching store name:', error);
+        }
+      }
+    };
+
+    fetchStoreName();
+  }, []);
 
   const handleInputChange = (field: keyof PackageFormData, value: string) => {
     setFormData(prev => ({
@@ -79,7 +101,7 @@ const StoreCreatePackage: React.FC = () => {
       const result = await apiCall(API_ENDPOINTS.CREATE_PACKAGE, {
         method: 'POST',
         body: JSON.stringify({
-          store_name: 'Flour Bakery', // This would come from user profile
+          store_name: storeName, // Use actual store name from profile
           store_email: auth.currentUser?.email || 'sarah@flourbakery.com', // Get from Firebase auth
           ...formData,
           weight_lbs: parseFloat(formData.weight_lbs),
@@ -150,6 +172,26 @@ const StoreCreatePackage: React.FC = () => {
               gap: { xs: 2, sm: 0 }
             }}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1.5, sm: 2 } }}>
+                {/* Back Button */}
+                <Button
+                  variant="contained"
+                  startIcon={<ArrowLeft />}
+                  onClick={() => navigate('/store/dashboard')}
+                  sx={{
+                    bgcolor: '#7A8B5C',
+                    color: 'white',
+                    borderRadius: 2,
+                    textTransform: 'none',
+                    fontWeight: 600,
+                    px: 3,
+                    py: 1,
+                    '&:hover': {
+                      bgcolor: '#6B7A4F',
+                    },
+                  }}
+                >
+                  Back
+                </Button>
                 <Box
                   sx={{
                     width: { xs: 40, sm: 60 },
@@ -269,36 +311,6 @@ const StoreCreatePackage: React.FC = () => {
           </Card>
         )}
 
-        {/* Back Button - only show after package creation */}
-        {pickupPin && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.3 }}
-            style={{ marginBottom: '24px' }}
-          >
-            <Button
-              variant="outlined"
-              startIcon={<ArrowLeft />}
-              onClick={() => navigate('/store/dashboard')}
-              sx={{
-                borderColor: '#7A8B5C',
-                color: '#7A8B5C',
-                borderRadius: 2,
-                textTransform: 'none',
-                fontWeight: 600,
-                px: 4,
-                py: 1.5,
-                '&:hover': {
-                  borderColor: '#6B7A4F',
-                  backgroundColor: 'rgba(122, 139, 92, 0.1)',
-                },
-              }}
-            >
-              Back to Dashboard
-            </Button>
-          </motion.div>
-        )}
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}

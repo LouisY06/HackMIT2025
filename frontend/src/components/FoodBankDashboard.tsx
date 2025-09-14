@@ -71,12 +71,31 @@ const FoodBankDashboard: React.FC = () => {
   // State for manual package confirmation
   const [manualPackageId, setManualPackageId] = useState('');
   const [manualPin, setManualPin] = useState('');
+  const [foodBankName, setFoodBankName] = useState('Food Bank');
 
   // Fetch data on component mount
   useEffect(() => {
     fetchFoodBankData();
     fetchPendingDeliveries();
+    fetchFoodBankName();
   }, []);
+
+  // Fetch food bank name from profile
+  const fetchFoodBankName = async () => {
+    const user = auth.currentUser;
+    if (user) {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/users/profile/${user.uid}`);
+        const data = await response.json();
+        
+        if (data.success && data.profile.profile_data.organizationName) {
+          setFoodBankName(data.profile.profile_data.organizationName);
+        }
+      } catch (error) {
+        console.error('Error fetching food bank name:', error);
+      }
+    }
+  };
 
   // Fetch real data from API
   const fetchFoodBankData = async () => {
@@ -291,7 +310,7 @@ const FoodBankDashboard: React.FC = () => {
                       fontSize: { xs: '1.5rem', sm: '2rem' }
                     }}
                   >
-                    Cambridge Food Bank
+                    {foodBankName}
                   </Typography>
                   <Box sx={{ 
                     display: { xs: 'none', sm: 'flex' }, 
