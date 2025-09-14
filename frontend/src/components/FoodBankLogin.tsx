@@ -77,11 +77,22 @@ const FoodBankLogin: React.FC = () => {
         }
       } else {
         // Check if email already exists in foodbank table
-        const emailCheckResponse = await fetch(`http://localhost:5001/api/users/check-email/foodbank/${email}`);
-        const emailCheckData = await emailCheckResponse.json();
-        
-        if (emailCheckData.success && emailCheckData.email_exists) {
-          setError('An account with this email already exists. Please sign in instead.');
+        try {
+          const emailCheckResponse = await fetch(`http://localhost:5001/api/users/check-email/foodbank/${email}`);
+          
+          if (!emailCheckResponse.ok) {
+            throw new Error(`HTTP error! status: ${emailCheckResponse.status}`);
+          }
+          
+          const emailCheckData = await emailCheckResponse.json();
+          
+          if (emailCheckData.success && emailCheckData.email_exists) {
+            setError('An account with this email already exists. Please sign in instead.');
+            return;
+          }
+        } catch (emailCheckError) {
+          console.error('Email check failed:', emailCheckError);
+          setError('Failed to check email availability. Please try again.');
           return;
         }
         

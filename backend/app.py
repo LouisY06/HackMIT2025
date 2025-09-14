@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, send_file
+from flask import Flask, request, jsonify, send_file, send_from_directory
 from flask_cors import CORS
 import sqlite3
 import qrcode
@@ -680,6 +680,86 @@ def serve_qr_code(filename):
         return send_file(f'uploads/{filename}')
     except FileNotFoundError:
         return jsonify({'error': 'QR code not found'}), 404
+
+@app.route('/api/packages/<int:package_id>/complete', methods=['POST'])
+def complete_package(package_id):
+    """Mark a package as completed after QR code verification"""
+    try:
+        data = request.get_json()
+        volunteer_id = data.get('volunteer_id')
+        
+        if not volunteer_id:
+            return jsonify({'success': False, 'error': 'Volunteer ID is required'}), 400
+        
+        conn = sqlite3.connect(DATABASE)
+        cursor = conn.cursor()
+        
+        # Check if package exists and is assigned to this volunteer
+        cursor.execute('SELECT id, status, volunteer_id FROM packages WHERE id = ?', (package_id,))
+        package = cursor.fetchone()
+        
+        if not package:
+            conn.close()
+            return jsonify({'success': False, 'error': 'Package not found'}), 404
+        
+        if package[1] != 'assigned':
+            conn.close()
+            return jsonify({'success': False, 'error': 'Package is not assigned'}), 400
+        
+        if package[2] != volunteer_id:
+            conn.close()
+            return jsonify({'success': False, 'error': 'Package is not assigned to this volunteer'}), 403
+        
+        # Update package status to completed
+        cursor.execute('''
+            UPDATE packages 
+            SET status = 'completed', pickup_completed_at = datetime('now')
+            WHERE id = ?
+        ''', (package_id,))
+        
+        conn.commit()
+        conn.close()
+        
+        return jsonify({
+            'success': True, 
+            'message': 'Package completed successfully',
+            'package_id': package_id
+        })
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/health')
+def health_check():
+    """Health check endpoint for AWS deployment"""
+    try:
+        # Test database connection
+        conn = sqlite3.connect(DATABASE)
+        cursor = conn.cursor()
+        cursor.execute('SELECT 1')
+        conn.close()
+        
+        return jsonify({
+            'status': 'healthy',
+            'timestamp': datetime.now().isoformat(),
+            'database': 'connected'
+        }), 200
+    except Exception as e:
+        return jsonify({
+            'status': 'unhealthy',
+            'timestamp': datetime.now().isoformat(),
+            'error': str(e)
+        }), 500
+
+# Serve React App
+@app.route('/', defaults={'path': ''})
+@app.route('/<path:path>')
+def serve_react_app(path):
+    """Serve the React application"""
+    if path != "" and os.path.exists(os.path.join('frontend/build', path)):
+        return send_from_directory('frontend/build', path)
+    else:
+        return send_from_directory('frontend/build', 'index.html')
 
 if __name__ == '__main__':
     init_db()

@@ -19,6 +19,7 @@ import {
 import { LocalShipping } from '@mui/icons-material';
 import { Gift, Trophy, Utensils, ShoppingBag, Coffee, CreditCard, MapPin, Smartphone, RotateCcw } from 'lucide-react';
 import { auth } from '../config/firebase';
+import QRCodeScanner from './QRCodeScanner';
 
 const VolunteerDashboard: React.FC = () => {
   const navigate = useNavigate();
@@ -30,6 +31,8 @@ const VolunteerDashboard: React.FC = () => {
   const [currentTasks, setCurrentTasks] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [userLocation, setUserLocation] = useState<{lat: number, lng: number} | null>(null);
+  const [qrScannerOpen, setQrScannerOpen] = useState(false);
+  const [selectedPackageId, setSelectedPackageId] = useState<number | null>(null);
 
   // Distance calculation function using Haversine formula
   const calculateDistance = (lat1: number, lng1: number, lat2: number, lng2: number): number => {
@@ -87,7 +90,9 @@ const VolunteerDashboard: React.FC = () => {
       const data = await response.json();
       
       if (data.success) {
-        setCurrentTasks(data.packages);
+        // Only show assigned tasks, not completed ones
+        const assignedTasks = data.packages.filter((task: any) => task.status === 'assigned');
+        setCurrentTasks(assignedTasks);
       }
     } catch (error) {
       console.error('Error fetching current tasks:', error);
@@ -201,39 +206,100 @@ const VolunteerDashboard: React.FC = () => {
     { id: 4, name: "Eco-friendly Tote", cost: 300, icon: "shopping-bag" }
   ];
 
-  const handleQRScan = async (locationId: number) => {
+  const handleQRScan = (packageId: number) => {
+    // Get current user from Firebase Auth
+    const user = auth.currentUser;
+    if (!user) {
+      alert('Please log in to scan QR codes');
+      return;
+    }
+
+    // Open QR scanner with the expected package ID
+    setSelectedPackageId(packageId);
+    setQrScannerOpen(true);
+  };
+
+  const handleQRScanSuccess = async (scannedId: string) => {
     try {
-      // Get current user from Firebase Auth
       const user = auth.currentUser;
-      if (!user) {
-        alert('Please log in to accept missions');
+      if (!user || !selectedPackageId) return;
+
+      // Verify the scanned ID matches the expected package ID
+      if (parseInt(scannedId) !== selectedPackageId) {
+        alert(`❌ QR Code mismatch! Expected package ${selectedPackageId}, but scanned ${scannedId}`);
+        setQrScannerOpen(false);
+        setSelectedPackageId(null);
         return;
       }
 
-      const response = await fetch(`http://localhost:5001/api/packages/${locationId}/assign`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          volunteer_id: user.uid
-        })
-      });
+      // Check if this is for accepting a new mission or completing an existing one
+      const isAssignedTask = currentTasks.some(task => task.id === selectedPackageId);
+      
+      if (isAssignedTask) {
+        // This is completing an assigned task
+        const response = await fetch(`http://localhost:5001/api/packages/${selectedPackageId}/complete`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            volunteer_id: user.uid
+          })
+        });
 
-      const data = await response.json();
+        const data = await response.json();
 
-      if (data.success) {
-        alert(`Mission accepted! Package ${locationId} has been assigned to you.`);
-        // Refresh both available packages and current tasks
-        fetchCurrentTasks();
-        window.location.reload();
+        if (data.success) {
+          alert(`✅ Task completed successfully! Package ${selectedPackageId} has been delivered.`);
+          // Refresh current tasks to remove the completed task
+          fetchCurrentTasks();
+          // Update points (mock implementation)
+          setPoints(prev => prev + 50);
+          setCompletedPickups(prev => prev + 1);
+          setFoodSaved(prev => prev + 10); // Mock food saved
+        } else {
+          alert(`Error: ${data.error}`);
+        }
       } else {
-        alert(`Error: ${data.error}`);
+        // This is accepting a new mission
+        const response = await fetch(`http://localhost:5001/api/packages/${selectedPackageId}/assign`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            volunteer_id: user.uid
+          })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          alert(`🎯 Mission accepted! Package ${selectedPackageId} has been assigned to you.`);
+          // Refresh both available packages and current tasks
+          fetchCurrentTasks();
+          window.location.reload();
+        } else {
+          alert(`Error: ${data.error}`);
+        }
       }
     } catch (error) {
-      console.error('Error accepting mission:', error);
-      alert('Failed to accept mission. Please try again.');
+      console.error('Error processing QR scan:', error);
+      alert('Failed to process QR scan. Please try again.');
+    } finally {
+      setQrScannerOpen(false);
+      setSelectedPackageId(null);
     }
+  };
+
+  const handleQRScanError = (error: string) => {
+    console.error('QR Scan error:', error);
+    alert(`QR Scan failed: ${error}`);
+  };
+
+  const handleQRScannerClose = () => {
+    setQrScannerOpen(false);
+    setSelectedPackageId(null);
   };
 
   const handleRedeemReward = (rewardId: number, cost: number) => {
@@ -533,12 +599,9 @@ const VolunteerDashboard: React.FC = () => {
                               backgroundColor: '#45a049'
                             }
                           }}
-                          onClick={() => {
-                            // TODO: Implement task completion
-                            alert('Task completion feature coming soon!');
-                          }}
+                          onClick={() => handleQRScan(task.id)}
                         >
-                          Complete
+                          Scan QR Code
                         </Button>
                       </Box>
                     </ListItem>
@@ -709,6 +772,16 @@ const VolunteerDashboard: React.FC = () => {
           </Box>
         </Box>
       </Box>
+
+      {/* QR Code Scanner Modal */}
+      <QRCodeScanner
+        open={qrScannerOpen}
+        onClose={handleQRScannerClose}
+        onScanSuccess={handleQRScanSuccess}
+        onScanError={handleQRScanError}
+        expectedPackageId={selectedPackageId || undefined}
+        title={selectedPackageId ? `Scan QR Code for Package #${selectedPackageId}` : "Scan QR Code"}
+      />
     </Box>
   );
 };
