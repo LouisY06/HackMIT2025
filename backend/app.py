@@ -747,10 +747,10 @@ def delete_package(package_id):
             conn.close()
             return jsonify({'success': False, 'error': 'Package not found'}), 404
         
-        # Don't allow deletion of packages that are assigned or completed
-        if package[1] in ['assigned', 'completed']:
+        # Don't allow deletion of packages that are assigned, picked up, or completed
+        if package[1] in ['assigned', 'picked_up', 'completed']:
             conn.close()
-            return jsonify({'success': False, 'error': 'Cannot delete package that is assigned or completed'}), 400
+            return jsonify({'success': False, 'error': 'Cannot delete package that is assigned, picked up, or completed'}), 400
         
         # Delete the package
         cursor.execute('DELETE FROM packages WHERE id = ?', (package_id,))
@@ -766,6 +766,115 @@ def delete_package(package_id):
             'success': True,
             'message': 'Package deleted successfully',
             'package_id': package_id
+        })
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/packages/<int:package_id>/pickup', methods=['POST'])
+def confirm_pickup(package_id):
+    """Confirm package pickup at store using PIN (volunteer -> picked_up status)"""
+    try:
+        data = request.get_json()
+        entered_pin = data.get('pin')
+        volunteer_id = data.get('volunteer_id')
+        
+        if not entered_pin or not volunteer_id:
+            return jsonify({'success': False, 'error': 'PIN and volunteer_id are required'}), 400
+        
+        conn = sqlite3.connect(DATABASE)
+        cursor = conn.cursor()
+        
+        # Get package details and verify assignment
+        cursor.execute('SELECT id, pickup_pin, status, volunteer_id FROM packages WHERE id = ?', (package_id,))
+        package = cursor.fetchone()
+        
+        if not package:
+            conn.close()
+            return jsonify({'success': False, 'error': 'Package not found'}), 404
+        
+        # Verify package is assigned to this volunteer
+        if package[3] != volunteer_id:
+            conn.close()
+            return jsonify({'success': False, 'error': 'Package not assigned to this volunteer'}), 403
+        
+        # Verify package status
+        if package[2] != 'assigned':
+            conn.close()
+            return jsonify({'success': False, 'error': f'Package status is {package[2]}, expected assigned'}), 400
+        
+        # Verify PIN
+        if str(entered_pin) != str(package[1]):
+            conn.close()
+            return jsonify({'success': False, 'error': 'Invalid PIN. Please check with the store.'}), 400
+        
+        # Update status to picked_up
+        cursor.execute('''
+            UPDATE packages 
+            SET status = 'picked_up', pickup_completed_at = ?
+            WHERE id = ?
+        ''', (datetime.now().isoformat(), package_id))
+        
+        conn.commit()
+        conn.close()
+        
+        return jsonify({
+            'success': True,
+            'message': 'Package pickup confirmed! Now deliver to food bank.',
+            'package_id': package_id,
+            'status': 'picked_up'
+        })
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/packages/<int:package_id>/deliver', methods=['POST'])
+def confirm_delivery(package_id):
+    """Confirm package delivery at food bank using PIN (food bank -> completed status)"""
+    try:
+        data = request.get_json()
+        entered_pin = data.get('pin')
+        foodbank_id = data.get('foodbank_id')
+        
+        if not entered_pin:
+            return jsonify({'success': False, 'error': 'PIN is required'}), 400
+        
+        conn = sqlite3.connect(DATABASE)
+        cursor = conn.cursor()
+        
+        # Get package details
+        cursor.execute('SELECT id, pickup_pin, status FROM packages WHERE id = ?', (package_id,))
+        package = cursor.fetchone()
+        
+        if not package:
+            conn.close()
+            return jsonify({'success': False, 'error': 'Package not found'}), 404
+        
+        # Verify package status
+        if package[2] != 'picked_up':
+            conn.close()
+            return jsonify({'success': False, 'error': f'Package status is {package[2]}, expected picked_up'}), 400
+        
+        # Verify PIN
+        if str(entered_pin) != str(package[1]):
+            conn.close()
+            return jsonify({'success': False, 'error': 'Invalid PIN. Please check with the volunteer.'}), 400
+        
+        # Update status to completed
+        cursor.execute('''
+            UPDATE packages 
+            SET status = 'completed'
+            WHERE id = ?
+        ''', (package_id,))
+        
+        conn.commit()
+        conn.close()
+        
+        return jsonify({
+            'success': True,
+            'message': 'Package delivery confirmed! Mission completed.',
+            'package_id': package_id,
+            'status': 'completed'
         })
         
     except Exception as e:

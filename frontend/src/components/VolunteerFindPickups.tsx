@@ -27,7 +27,7 @@ import {
 import { Package, Leaf, Timer } from 'lucide-react';
 import GoogleMapsComponent from './GoogleMapsComponent';
 import { auth } from '../config/firebase';
-import PinEntryModal from './PinEntryModal';
+// Removed PinEntryModal import - now using direct assignment
 import { API_BASE_URL, API_ENDPOINTS, apiCall } from '../config/api';
 
 const VolunteerFindPickups: React.FC = () => {
@@ -39,9 +39,7 @@ const VolunteerFindPickups: React.FC = () => {
   const [stores, setStores] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [userLocation, setUserLocation] = useState<{lat: number, lng: number} | null>(null);
-  const [pinModalOpen, setPinModalOpen] = useState(false);
-  const [selectedPackageId, setSelectedPackageId] = useState<number | null>(null);
-  const [selectedStoreName, setSelectedStoreName] = useState<string>('');
+  // Removed PIN modal states - now using direct assignment for accepting missions
 
   // Function to calculate distance between two coordinates using Haversine formula
   const calculateDistance = (lat1: number, lng1: number, lat2: number, lng2: number): number => {
@@ -204,7 +202,7 @@ const VolunteerFindPickups: React.FC = () => {
       timeWindow: pickup.timeWindow
     }));
 
-  const handleAcceptMission = (pickupId: number, storeName: string) => {
+  const handleAcceptMission = async (pickupId: number, storeName?: string) => {
     // Get current user from Firebase Auth
     const user = auth.currentUser;
     if (!user) {
@@ -212,33 +210,27 @@ const VolunteerFindPickups: React.FC = () => {
       return;
     }
 
-    // Open PIN entry modal
-    setSelectedPackageId(pickupId);
-    setSelectedStoreName(storeName);
-    setPinModalOpen(true);
-  };
-
-  const handlePinVerified = async (packageId: number) => {
     try {
-      alert(`🎯 Mission accepted! Package ${packageId} has been assigned to you.`);
-      // Refresh the packages list to update the UI
-      window.location.reload();
+      // Directly assign the package to the volunteer
+      const result = await apiCall(API_ENDPOINTS.ASSIGN_PACKAGE(pickupId), {
+        method: 'POST',
+        body: JSON.stringify({ volunteer_id: user.uid })
+      });
+
+      if (result.success) {
+        alert(`🎯 Mission accepted! Package ${pickupId} has been added to your tasks.`);
+        // Refresh the packages list to remove this package from available list
+        window.location.reload();
+      } else {
+        alert(`Failed to accept mission: ${result.error}`);
+      }
     } catch (error) {
-      console.error('Error after PIN verification:', error);
-      alert('Package assigned but failed to refresh. Please check your dashboard.');
+      console.error('Error accepting mission:', error);
+      alert('Network error. Please try again.');
     }
   };
 
-  const handlePinError = (error: string) => {
-    console.error('PIN verification error:', error);
-    alert(`PIN verification failed: ${error}`);
-  };
-
-  const handlePinModalClose = () => {
-    setPinModalOpen(false);
-    setSelectedPackageId(null);
-    setSelectedStoreName('');
-  };
+  // Removed PIN verification handlers - now using direct assignment
 
   const handleViewDetails = (pickupId: number) => {
     console.log(`Viewing details for mission ${pickupId}`);
@@ -669,16 +661,7 @@ const VolunteerFindPickups: React.FC = () => {
         </Box>
       </Box>
 
-      {/* PIN Entry Modal */}
-      <PinEntryModal
-        open={pinModalOpen}
-        onClose={handlePinModalClose}
-        onPinVerified={handlePinVerified}
-        onPinError={handlePinError}
-        packageId={selectedPackageId || undefined}
-        storeName={selectedStoreName}
-        title={selectedPackageId ? `Enter PIN for Package #${selectedPackageId}` : "Enter Pickup PIN"}
-      />
+      {/* PIN Entry Modal removed - now using direct assignment */}
     </Box>
   );
 };

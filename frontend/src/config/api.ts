@@ -41,6 +41,8 @@ export const API_ENDPOINTS = {
   AVAILABLE_PACKAGES: '/api/packages/available',
   VERIFY_PICKUP_PIN: (id: number) => `/api/packages/${id}/verify-pin`,
   ASSIGN_PACKAGE: (id: number) => `/api/packages/${id}/assign`,
+  PICKUP_PACKAGE: (id: number) => `/api/packages/${id}/pickup`,
+  DELIVER_PACKAGE: (id: number) => `/api/packages/${id}/deliver`,
   COMPLETE_PACKAGE: (id: number) => `/api/packages/${id}/complete`,
   DELETE_PACKAGE: (id: number) => `/api/packages/${id}`,
   VOLUNTEER_PACKAGES: (volunteerId: string) => `/api/packages/volunteer/${volunteerId}`,
