@@ -45,13 +45,16 @@ const LandingPage: React.FC = () => {
           variant="h2"
           component="h1"
           sx={{
-            fontWeight: 'bold',
-            fontSize: { xs: '2.5rem', md: '4rem' },
+            fontFamily: '"Dancing Script", cursive',
+            fontWeight: 700,
+            fontSize: { xs: '3rem', md: '5rem' },
             textAlign: 'center',
             mb: 2,
+            textShadow: '2px 2px 4px rgba(0,0,0,0.3)',
+            letterSpacing: '2px',
           }}
         >
-          Waste→Worth
+          reflourish
         </Typography>
 
         {/* Tagline */}
