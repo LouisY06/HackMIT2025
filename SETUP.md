@@ -1,8 +1,11 @@
 # 🚀 Setup Instructions
 
 ## Prerequisites
-- Node.js and npm installed
-- Python 3.x installed
+- Node.js 16+ and npm 8+ installed
+- Python 3.8+ installed
+
+## Quick Start
+See `requirements.txt` for complete dependency list and setup instructions.
 
 ## Frontend Setup
 
