@@ -77,120 +77,100 @@ const StoreGlobalImpact: React.FC = () => {
   };
 
   return (
-    <Box
-      sx={{
-        backgroundImage: 'url(/RestLogin.png)',
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat',
-        minHeight: '100vh',
-        position: 'relative',
-        pb: 4,
-        '&::before': {
-          content: '""',
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundColor: 'rgba(0, 0, 0, 0.3)',
-          zIndex: 1,
-        },
-        '& > *': {
-          position: 'relative',
-          zIndex: 2,
-        },
-      }}
-    >
-      {/* Header */}
-      <Box>
-        <Box
-          sx={{
-            background: 'rgba(0, 0, 0, 0.7)',
-            backdropFilter: 'blur(10px)',
-            borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
-            p: { xs: 2, md: 3 },
-          }}
-        >
-          <Container maxWidth="xl">
-            <Box sx={{ 
-              display: 'flex', 
-              justifyContent: 'space-between', 
-              alignItems: 'center',
-              flexDirection: { xs: 'column', sm: 'row' },
-              gap: { xs: 2, sm: 0 }
-            }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1.5, sm: 2 } }}>
-                <Box
-                  sx={{
-                    width: { xs: 40, sm: 60 },
-                    height: { xs: 40, sm: 60 },
-                    borderRadius: '50%',
-                    background: 'linear-gradient(135deg, #848D58 0%, #6F7549 100%)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}
-                >
-                  <Globe size={28} color="white" />
-                </Box>
-                <Box>
-                  <Typography 
-                    variant="h4"
-                    sx={{ 
-                      fontWeight: 700,
-                      color: 'white',
-                      fontFamily: '"Helvetica Neue", "Helvetica", "Arial", sans-serif',
-                      fontSize: { xs: '1.5rem', sm: '2.125rem' },
-                    }}
-                  >
-                    Global Impact Dashboard
-                  </Typography>
-                  <Box sx={{ 
-                    display: { xs: 'none', sm: 'flex' }, 
-                    alignItems: 'center', 
-                    gap: 1 
-                  }}>
-                    <Typography 
-                      variant="subtitle1" 
-                      sx={{ 
-                        color: 'rgba(255, 255, 255, 0.8)',
-                        fontWeight: 300,
-                        fontFamily: '"Helvetica Neue", "Helvetica", "Arial", sans-serif',
-                      }}
-                    >
-                      See how our Waste→Worth community is transforming food waste
-                    </Typography>
-                    <Globe size={20} color="rgba(255, 255, 255, 0.8)" />
-                  </Box>
-                </Box>
-              </Box>
-
-              <Box sx={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                gap: { xs: 1, sm: 2 },
-                flexWrap: 'wrap',
-                justifyContent: 'center'
-              }}>
-                <IconButton
-                  onClick={() => navigate('/')}
-                  size="small"
-                  sx={{
-                    background: 'rgba(132, 141, 88, 0.1)',
-                    color: '#848D58',
-                    '&:hover': {
-                      background: 'rgba(132, 141, 88, 0.2)',
-                    },
-                  }}
-                >
-                  <LogOut size={18} />
-                </IconButton>
-              </Box>
-            </Box>
-          </Container>
+    <Box sx={{ minHeight: '100vh', bgcolor: '#f8f9fa' }}>
+      {/* Top Navigation Bar */}
+      <Box
+        sx={{
+          bgcolor: 'white',
+          borderBottom: '1px solid #e0e0e0',
+          px: 3,
+          py: 2,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+        }}
+      >
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+          <img 
+            src="/LogoOutlined.png" 
+            alt="Reflourish Logo" 
+            style={{ 
+              height: '56px', 
+              width: 'auto',
+              objectFit: 'contain'
+            }} 
+          />
+          <Box sx={{ display: 'flex', gap: 3 }}>
+            <Button onClick={() => navigate('/store/dashboard')} sx={{ color: '#666' }}>
+              <Home size={16} style={{ marginRight: '4px' }} /> Dashboard
+            </Button>
+            <Button onClick={() => navigate('/store/create-package')} sx={{ color: '#666' }}>
+              + Create Package
+            </Button>
+            <Button onClick={() => navigate('/store/packages')} sx={{ color: '#666' }}>
+              <Package size={16} style={{ marginRight: '4px' }} /> Packages
+            </Button>
+            <Button onClick={() => navigate('/store/impact')} sx={{ color: '#666' }}>
+              <BarChart3 size={16} style={{ marginRight: '4px' }} /> Impact
+            </Button>
+            <Button sx={{ color: '#4CAF50', fontWeight: 'bold' }}>
+              <TrendingUp size={16} style={{ marginRight: '4px' }} /> Global Impact
+            </Button>
+          </Box>
+        </Box>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          <Typography variant="body2" sx={{ color: '#666' }}>
+            Sarah Williams
+          </Typography>
+          <Button sx={{ color: '#666' }}>
+            Partner
+          </Button>
+          <Button onClick={() => navigate('/store')} sx={{ color: '#666' }}>
+            <LogOut size={16} style={{ marginRight: '4px' }} /> Logout
+          </Button>
         </Box>
       </Box>
+
+      {/* Page Header */}
+      <Container maxWidth="xl" sx={{ mt: 4, mb: 2 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
+          <Box
+            sx={{
+              width: 60,
+              height: 60,
+              borderRadius: '50%',
+              background: 'linear-gradient(135deg, #4CAF50 0%, #45a049 100%)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <Globe size={28} color="white" />
+          </Box>
+          <Box>
+            <Typography 
+              variant="h4"
+              sx={{ 
+                fontWeight: 700,
+                color: '#333',
+                fontFamily: '"Helvetica Neue", "Helvetica", "Arial", sans-serif',
+              }}
+            >
+              Global Impact Dashboard
+            </Typography>
+            <Typography 
+              variant="subtitle1" 
+              sx={{ 
+                color: '#666',
+                fontWeight: 300,
+                fontFamily: '"Helvetica Neue", "Helvetica", "Arial", sans-serif',
+              }}
+            >
+              See how our Waste→Worth community is transforming food waste
+            </Typography>
+          </Box>
+        </Box>
+      </Container>
 
       <Container maxWidth="xl" sx={{ mt: { xs: 2, md: 4 }, px: { xs: 2, md: 3 } }}>
         <motion.div

@@ -5,13 +5,25 @@ import qrcode
 import os
 import json
 import random
+<<<<<<< HEAD
+=======
+import base64
+>>>>>>> aa69dfee09213b75afcd3830235c17f1c0c86a5b
 from datetime import datetime
 from dotenv import load_dotenv
+import anthropic
+from PIL import Image
+import io
 
 load_dotenv()
 
 app = Flask(__name__)
 CORS(app)
+
+# Initialize Anthropic client
+anthropic_client = anthropic.Anthropic(
+    api_key=os.getenv('ANTHROPIC_API_KEY')
+)
 
 # Database setup
 DATABASE = 'packages.db'
@@ -958,6 +970,157 @@ def health_check():
             'error': str(e)
         }), 500
 
+<<<<<<< HEAD
+=======
+@app.route('/api/analyze-food-image', methods=['POST'])
+def analyze_food_image():
+    """Analyze food image using Anthropic Claude to determine food type and estimate weight"""
+    try:
+        data = request.get_json()
+        
+        if 'image' not in data:
+            return jsonify({'success': False, 'error': 'No image data provided'}), 400
+        
+        # Extract base64 image data (remove data:image/jpeg;base64, prefix if present)
+        image_data = data['image']
+        if image_data.startswith('data:image'):
+            image_data = image_data.split(',')[1]
+        
+        # Validate the image
+        try:
+            image_bytes = base64.b64decode(image_data)
+            image = Image.open(io.BytesIO(image_bytes))
+            
+            # Convert to RGB if necessary and resize if too large
+            if image.mode != 'RGB':
+                image = image.convert('RGB')
+            
+            # Resize if image is too large (max 1024x1024)
+            if image.width > 1024 or image.height > 1024:
+                image.thumbnail((1024, 1024), Image.Resampling.LANCZOS)
+            
+            # Convert back to base64
+            output_buffer = io.BytesIO()
+            image.save(output_buffer, format='JPEG', quality=85)
+            processed_image_data = base64.b64encode(output_buffer.getvalue()).decode()
+            
+        except Exception as e:
+            return jsonify({'success': False, 'error': f'Invalid image data: {str(e)}'}), 400
+        
+        # Check if Anthropic API key is configured
+        if not os.getenv('ANTHROPIC_API_KEY'):
+            return jsonify({
+                'success': False, 
+                'error': 'Anthropic API key not configured on server'
+            }), 500
+        
+        # Analyze image with Claude
+        try:
+            message = anthropic_client.messages.create(
+                model="claude-3-5-sonnet-20241022",
+                max_tokens=500,
+                messages=[{
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "image",
+                            "source": {
+                                "type": "base64",
+                                "media_type": "image/jpeg",
+                                "data": processed_image_data
+                            }
+                        },
+                        {
+                            "type": "text",
+                            "text": """You are an expert food analyst helping stores estimate food waste for donation. Analyze this food image and provide accurate weight estimates.
+
+WEIGHT ESTIMATION GUIDELINES:
+- Use common food references: 1 slice bread = ~1oz, 1 apple = ~6oz, 1 sandwich = ~8oz
+- Consider container weight: plastic containers +0.1-0.3 lbs, paper bags +0.05-0.1 lbs
+- Look for size references: hands, utensils, plates, or packaging for scale
+- Account for food density: bread is light, soup/sauces are heavy, fresh produce varies
+- Be conservative but realistic: round to nearest 0.1 lbs
+
+COMMON ESTIMATES:
+- Single bagel/donut: 0.2-0.4 lbs
+- Loaf of bread: 1.5-2.5 lbs  
+- Large pizza: 2-4 lbs
+- Prepared sandwich: 0.4-0.8 lbs
+- Bunch of bananas (5-6): 2-3 lbs
+- Large prepared meal: 1-2 lbs
+
+Provide a JSON response with:
+1. food_type: Specific, descriptive name (e.g., "Fresh Baked Bread Loaves", "Prepared Deli Sandwiches", "Mixed Produce - Apples & Bananas")
+2. estimated_weight_lbs: Your best weight estimate in pounds (be realistic, consider all visible items + containers)
+3. confidence: Your confidence level (high/medium/low)
+4. description: Brief description including what you see and why you estimated this weight
+5. reasoning: Explain your weight calculation approach
+
+Respond ONLY with valid JSON in this exact format:
+{
+  "food_type": "string",
+  "estimated_weight_lbs": number,
+  "confidence": "high|medium|low", 
+  "description": "string",
+  "reasoning": "string"
+}"""
+                        }
+                    ]
+                }]
+            )
+            
+            # Parse Claude's response
+            claude_response = message.content[0].text.strip()
+            
+            # Try to extract JSON from the response
+            try:
+                # Find JSON in the response (in case Claude adds extra text)
+                start_idx = claude_response.find('{')
+                end_idx = claude_response.rfind('}') + 1
+                
+                if start_idx >= 0 and end_idx > start_idx:
+                    json_str = claude_response[start_idx:end_idx]
+                    analysis_result = json.loads(json_str)
+                else:
+                    raise ValueError("No valid JSON found in response")
+                
+                # Validate the response structure
+                required_keys = ['food_type', 'estimated_weight_lbs', 'confidence', 'description']
+                if not all(key in analysis_result for key in required_keys):
+                    raise ValueError("Missing required keys in response")
+                
+                # Reasoning is optional but helpful
+                if 'reasoning' not in analysis_result:
+                    analysis_result['reasoning'] = "Weight estimated based on visual analysis"
+                
+                # Ensure weight is a number and reasonable
+                weight = float(analysis_result['estimated_weight_lbs'])
+                if weight < 0.1 or weight > 100:  # Reasonable bounds
+                    weight = max(0.5, min(weight, 50))  # Clamp to reasonable range
+                analysis_result['estimated_weight_lbs'] = round(weight, 1)
+                
+                return jsonify({
+                    'success': True,
+                    'analysis': analysis_result
+                })
+                
+            except (json.JSONDecodeError, ValueError) as e:
+                return jsonify({
+                    'success': False,
+                    'error': f'Failed to parse AI response: {str(e)}',
+                    'raw_response': claude_response
+                }), 500
+                
+        except Exception as e:
+            return jsonify({
+                'success': False,
+                'error': f'AI analysis failed: {str(e)}'
+            }), 500
+            
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+>>>>>>> aa69dfee09213b75afcd3830235c17f1c0c86a5b
 # Serve React App
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')

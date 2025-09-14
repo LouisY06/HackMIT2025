@@ -113,6 +113,7 @@ const GoogleMapsComponent: React.FC<GoogleMapsComponentProps> = ({
 
         const infoWindow = new (window as any).google.maps.InfoWindow({
           content: `
+<<<<<<< HEAD
             <div style="padding: 12px; max-width: 280px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
               <h3 style="margin: 0 0 8px 0; color: #1a1a1a; font-size: 18px; font-weight: 600;">${pickup.storeName}</h3>
               
@@ -178,18 +179,31 @@ const GoogleMapsComponent: React.FC<GoogleMapsComponentProps> = ({
                 </div>
               </div>
               
+=======
+            <div style="padding: 8px; max-width: 220px;">
+              <h3 style="margin: 0 0 8px 0; color: #333; font-size: 16px;">${pickup.storeName}</h3>
+              ${pickup.foodType ? `<p style="margin: 2px 0; color: #666; font-size: 14px;">${pickup.foodType}</p>` : ''}
+              ${pickup.weight ? `<p style="margin: 2px 0; color: #666; font-size: 14px; display: flex; align-items: center;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px;"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>${pickup.weight}</p>` : ''}
+              ${pickup.timeWindow ? `<p style="margin: 2px 0 8px 0; color: #666; font-size: 14px; display: flex; align-items: center;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px;"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg>${pickup.timeWindow}</p>` : ''}
+>>>>>>> aa69dfee09213b75afcd3830235c17f1c0c86a5b
               ${onAcceptMission ? `<button 
                 id="accept-mission-${pickup.id}" 
                 style="
                   background: linear-gradient(135deg, #848D58 0%, #6F7549 100%);
                   color: white;
                   border: none;
+<<<<<<< HEAD
                   padding: 12px 16px;
                   border-radius: 8px;
+=======
+                  padding: 8px 16px;
+                  border-radius: 6px;
+>>>>>>> aa69dfee09213b75afcd3830235c17f1c0c86a5b
                   font-size: 14px;
                   font-weight: 600;
                   cursor: pointer;
                   width: 100%;
+<<<<<<< HEAD
                   margin-top: 8px;
                   box-shadow: 0 2px 8px rgba(132, 141, 88, 0.3);
                   transition: all 0.2s ease;
@@ -203,6 +217,14 @@ const GoogleMapsComponent: React.FC<GoogleMapsComponentProps> = ({
                   <circle cx="12" cy="12" r="2"/>
                 </svg>
                 Accept Mission
+=======
+                  margin-top: 4px;
+                "
+                onmouseover="this.style.background='linear-gradient(135deg, #6F7549 0%, #5A5F3A 100%)'"
+                onmouseout="this.style.background='linear-gradient(135deg, #848D58 0%, #6F7549 100%)'"
+              >
+                🎯 Accept Mission
+>>>>>>> aa69dfee09213b75afcd3830235c17f1c0c86a5b
               </button>` : ''}
             </div>
           `
