@@ -5,13 +5,14 @@ const getApiBaseUrl = (): string => {
     return 'http://localhost:5001';
   }
   
-  // Check for custom API URL in environment
+  // Check for custom API URL in environment (set by Vercel)
   if (process.env.REACT_APP_API_URL) {
     return process.env.REACT_APP_API_URL;
   }
   
-  // Default production API URL (update this with your actual backend URL)
-  return 'https://your-backend-api-domain.com';
+  // Fallback - this will be updated when you deploy to Railway
+  console.warn('REACT_APP_API_URL not set, using localhost');
+  return 'http://localhost:5001';
 };
 
 export const API_BASE_URL = getApiBaseUrl();

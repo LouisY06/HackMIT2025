@@ -764,5 +764,9 @@ def serve_react_app(path):
 if __name__ == '__main__':
     init_db()
     print("Database initialized successfully")
-    print("Starting Flask server on http://localhost:5001")
-    app.run(debug=True, host='0.0.0.0', port=5001)
+    
+    # Get port from environment variable (Railway/Vercel requirement)
+    port = int(os.environ.get('PORT', 5001))
+    
+    print(f"Starting Flask server on http://0.0.0.0:{port}")
+    app.run(host='0.0.0.0', port=port, debug=False)

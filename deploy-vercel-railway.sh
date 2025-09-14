@@ -1,0 +1,58 @@
+#!/bin/bash
+
+# Vercel + Railway Deployment Script
+set -e
+
+echo "🚀 Deploying ReFlourish with Vercel + Railway..."
+
+echo "📋 Prerequisites:"
+echo "1. GitHub repository pushed"
+echo "2. Railway account (railway.app)"
+echo "3. Vercel account (vercel.com)"
+
+echo ""
+echo "🎯 Step 1: Deploy Backend to Railway"
+echo "1. Go to https://railway.app"
+echo "2. Sign up with GitHub"
+echo "3. Click 'New Project' → 'Deploy from GitHub repo'"
+echo "4. Select your repository"
+echo "5. Add environment variables:"
+echo "   - FLASK_ENV=production"
+echo "   - DATABASE_URL=sqlite:///app/packages.db"
+echo "6. Railway will auto-deploy your backend"
+echo "7. Copy the Railway URL (e.g., https://your-app.railway.app)"
+
+echo ""
+echo "🎯 Step 2: Deploy Frontend to Vercel"
+echo "1. Go to https://vercel.com"
+echo "2. Sign up with GitHub"
+echo "3. Click 'New Project' → 'Import Git Repository'"
+echo "4. Select your repository"
+echo "5. Configure:"
+echo "   - Framework: Create React App"
+echo "   - Root Directory: frontend"
+echo "   - Build Command: npm run build"
+echo "   - Output Directory: build"
+echo "6. Add environment variables:"
+echo "   - REACT_APP_API_URL=https://your-railway-url.railway.app"
+echo "   - REACT_APP_GOOGLE_MAPS_API_KEY=your-key"
+echo "   - REACT_APP_FIREBASE_API_KEY=your-key"
+echo "   - REACT_APP_FIREBASE_AUTH_DOMAIN=your-domain"
+echo "   - REACT_APP_FIREBASE_PROJECT_ID=your-project-id"
+echo "   - REACT_APP_FIREBASE_STORAGE_BUCKET=your-bucket"
+echo "   - REACT_APP_FIREBASE_MESSAGING_SENDER_ID=your-sender-id"
+echo "   - REACT_APP_FIREBASE_APP_ID=your-app-id"
+echo "7. Deploy!"
+
+echo ""
+echo "✅ Benefits of this approach:"
+echo "- Automatic deployments on git push"
+echo "- Free tiers available"
+echo "- Much simpler than Amplify"
+echo "- Better error messages"
+echo "- Global CDN for fast loading"
+
+echo ""
+echo "📖 For detailed instructions, see: VERCEL-RAILWAY-DEPLOYMENT.md"
+echo ""
+echo "🎉 This approach is much more reliable than Amplify!"
