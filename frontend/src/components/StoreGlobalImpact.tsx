@@ -168,7 +168,7 @@ const StoreGlobalImpact: React.FC = () => {
                   mb: 2,
                 }}
               >
-                <Typography sx={{ fontSize: 24 }}>🌳</Typography>
+                <Trees size={24} />
               </Box>
               <Typography variant="h3" sx={{ fontWeight: 'bold', mb: 1 }}>
                 {globalData.co2Prevented}M
@@ -200,7 +200,7 @@ const StoreGlobalImpact: React.FC = () => {
                   mb: 2,
                 }}
               >
-                <Typography sx={{ fontSize: 24 }}>👥</Typography>
+                <Users size={24} />
               </Box>
               <Typography variant="h3" sx={{ fontWeight: 'bold', mb: 1 }}>
                 {globalData.mealsProvided}M
@@ -305,7 +305,7 @@ const StoreGlobalImpact: React.FC = () => {
                   {/* Miles Not Driven */}
                   <Card sx={{ borderRadius: 3, bgcolor: '#E8F5E8', p: 3 }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                      <Typography sx={{ fontSize: 24, color: '#4CAF50' }}>🚗</Typography>
+                      <Car size={24} style={{ color: '#4CAF50' }} />
                       <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#333' }}>
                         {globalData.milesNotDriven}M miles not driven
                       </Typography>
@@ -315,7 +315,7 @@ const StoreGlobalImpact: React.FC = () => {
                   {/* Water Saved */}
                   <Card sx={{ borderRadius: 3, bgcolor: '#E3F2FD', p: 3 }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                      <Typography sx={{ fontSize: 24, color: '#2196F3' }}>💧</Typography>
+                      <Droplets size={24} style={{ color: '#2196F3' }} />
                       <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#333' }}>
                         {globalData.waterSaved}M gallons water saved
                       </Typography>
@@ -325,7 +325,7 @@ const StoreGlobalImpact: React.FC = () => {
                   {/* Trees Equivalent */}
                   <Card sx={{ borderRadius: 3, bgcolor: '#F3E5F5', p: 3 }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                      <Typography sx={{ fontSize: 24, color: '#9C27B0' }}>🌳</Typography>
+                      <TreePine size={24} style={{ color: '#9C27B0' }} />
                       <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#333' }}>
                         {globalData.treesEquivalent}K trees planted equivalent
                       </Typography>
@@ -335,7 +335,7 @@ const StoreGlobalImpact: React.FC = () => {
                   {/* Homes Powered */}
                   <Card sx={{ borderRadius: 3, bgcolor: '#FFF8E1', p: 3 }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                      <Typography sx={{ fontSize: 24, color: '#FF9800' }}>🏠</Typography>
+                      <Building size={24} style={{ color: '#FF9800' }} />
                       <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#333' }}>
                         {globalData.homesPowered}K homes powered for a year
                       </Typography>
