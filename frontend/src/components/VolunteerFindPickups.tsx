@@ -451,7 +451,7 @@ const VolunteerFindPickups: React.FC = () => {
                         fontFamily: '"Helvetica Neue", "Helvetica", "Arial", sans-serif',
                       }}
                     >
-                      Restaurant Locations
+                        Open Map
                     </Typography>
                   </Box>
                   <Chip

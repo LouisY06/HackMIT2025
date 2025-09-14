@@ -236,14 +236,21 @@ const VolunteerRewards: React.FC = () => {
             background: 'rgba(0, 0, 0, 0.7)',
             backdropFilter: 'blur(10px)',
             borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
-            p: 3,
+            p: { xs: 2, md: 3 },
           }}
         >
           <Container maxWidth="xl">
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Box sx={{ 
+              display: 'flex', 
+              justifyContent: 'space-between', 
+              alignItems: 'center',
+              flexDirection: { xs: 'column', sm: 'row' },
+              gap: { xs: 2, sm: 0 }
+            }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1.5, sm: 2 } }}>
                 <IconButton
                   onClick={() => navigate('/volunteer/dashboard')}
+                  size="small"
                   sx={{
                     background: 'rgba(132, 141, 88, 0.1)',
                     color: '#848D58',
@@ -252,12 +259,12 @@ const VolunteerRewards: React.FC = () => {
                     },
                   }}
                 >
-                  <ArrowLeft size={24} />
+                  <ArrowLeft size={20} />
                 </IconButton>
                 <Box
                   sx={{
-                    width: 50,
-                    height: 50,
+                    width: { xs: 40, sm: 50 },
+                    height: { xs: 40, sm: 50 },
                     borderRadius: '50%',
                     background: 'linear-gradient(135deg, #848D58 0%, #6F7549 100%)',
                     display: 'flex',
@@ -274,11 +281,16 @@ const VolunteerRewards: React.FC = () => {
                       fontWeight: 700,
                       color: 'white',
                       fontFamily: '"Helvetica Neue", "Helvetica", "Arial", sans-serif',
+                      fontSize: { xs: '1.5rem', sm: '2.125rem' },
                     }}
                   >
                     Rewards Store
                   </Typography>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Box sx={{ 
+                    display: { xs: 'none', sm: 'flex' }, 
+                    alignItems: 'center', 
+                    gap: 1 
+                  }}>
                     <Typography 
                       variant="subtitle1" 
                       sx={{ 
@@ -294,28 +306,31 @@ const VolunteerRewards: React.FC = () => {
                 </Box>
               </Box>
 
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                  <Chip
-                    icon={<Star size={18} />}
-                    label={`${points} points`}
-                    sx={{
-                      background: 'linear-gradient(135deg, #848D58 0%, #6F7549 100%)',
-                      color: 'white',
-                      fontWeight: 600,
-                      fontSize: '1rem',
-                      px: 1,
-                      '& .MuiChip-icon': { color: 'white' },
-                    }}
-                  />
-                </motion.div>
+              <Box sx={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: { xs: 1, sm: 2 },
+                justifyContent: 'center'
+              }}>
+                <Chip
+                  icon={<Star size={16} />}
+                  label={`${points} pts`}
+                  sx={{
+                    background: 'linear-gradient(135deg, #848D58 0%, #6F7549 100%)',
+                    color: 'white',
+                    fontWeight: 600,
+                    fontSize: { xs: '0.8rem', sm: '1rem' },
+                    px: 1,
+                    '& .MuiChip-icon': { color: 'white' },
+                  }}
+                />
               </Box>
             </Box>
           </Container>
         </Box>
       </motion.div>
 
-      <Container maxWidth="xl" sx={{ mt: 4 }}>
+      <Container maxWidth="xl" sx={{ mt: { xs: 2, md: 4 }, px: { xs: 2, md: 3 } }}>
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -540,43 +555,348 @@ const VolunteerRewards: React.FC = () => {
         </motion.div>
       </Container>
 
-      {/* Confirmation Dialog */}
-      <Dialog open={confirmDialogOpen} onClose={() => setConfirmDialogOpen(false)}>
-        <DialogTitle>Confirm Redemption</DialogTitle>
-        <DialogContent>
-          <Typography>
-            Are you sure you want to redeem "{selectedReward?.title}" for {selectedReward?.points} points?
+      {/* Confirmation Dialog - Modern iOS Style */}
+      <Dialog 
+        open={confirmDialogOpen} 
+        onClose={() => setConfirmDialogOpen(false)}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{
+          sx: {
+            borderRadius: 4,
+            padding: 2,
+            background: 'linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%)',
+            boxShadow: '0 20px 60px rgba(0, 0, 0, 0.1)',
+          }
+        }}
+      >
+        <Box sx={{ textAlign: 'center', p: 2 }}>
+          {/* Icon */}
+          <Box
+            sx={{
+              width: 80,
+              height: 80,
+              borderRadius: '50%',
+              background: 'linear-gradient(135deg, #848D58 0%, #6F7549 100%)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              mx: 'auto',
+              mb: 3,
+              boxShadow: '0 8px 24px rgba(132, 141, 88, 0.3)',
+            }}
+          >
+            {selectedReward && getIcon(selectedReward.icon, 36, 'white')}
+          </Box>
+
+          {/* Title */}
+          <Typography 
+            variant="h5" 
+            sx={{ 
+              fontWeight: 700, 
+              mb: 1,
+              color: '#1a1a1a',
+              fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+            }}
+          >
+            Redeem Reward?
           </Typography>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setConfirmDialogOpen(false)}>Cancel</Button>
-          <Button onClick={confirmRedeem} variant="contained" sx={{ background: '#848D58' }}>
-            Redeem
-          </Button>
-        </DialogActions>
+
+          {/* Description */}
+          <Typography 
+            variant="body1" 
+            sx={{ 
+              color: '#6b7280',
+              mb: 3,
+              lineHeight: 1.5,
+              fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+            }}
+          >
+            You're about to redeem <strong>"{selectedReward?.title}"</strong> for <strong>{selectedReward?.points} points</strong>.
+          </Typography>
+
+          {/* Reward Preview Card */}
+          <Box
+            sx={{
+              background: 'rgba(132, 141, 88, 0.05)',
+              border: '2px solid rgba(132, 141, 88, 0.1)',
+              borderRadius: 3,
+              p: 3,
+              mb: 4,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 2,
+            }}
+          >
+            <Box
+              sx={{
+                width: 48,
+                height: 48,
+                borderRadius: 2,
+                background: selectedReward ? getCategoryColor(selectedReward.category) : '#848D58',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              {selectedReward && getIcon(selectedReward.icon, 24, 'white')}
+            </Box>
+            <Box sx={{ flex: 1, textAlign: 'left' }}>
+              <Typography variant="h6" sx={{ fontWeight: 600, mb: 0.5 }}>
+                {selectedReward?.title}
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                {selectedReward?.provider}
+              </Typography>
+            </Box>
+            <Chip
+              label={`${selectedReward?.points} pts`}
+              sx={{
+                background: 'linear-gradient(135deg, #848D58 0%, #6F7549 100%)',
+                color: 'white',
+                fontWeight: 600,
+              }}
+            />
+          </Box>
+
+          {/* Action Buttons */}
+          <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center' }}>
+            <Button
+              onClick={() => setConfirmDialogOpen(false)}
+              variant="outlined"
+              sx={{
+                minWidth: 120,
+                py: 1.5,
+                borderRadius: 3,
+                borderColor: '#e5e7eb',
+                color: '#6b7280',
+                fontWeight: 600,
+                textTransform: 'none',
+                fontSize: '1rem',
+                '&:hover': {
+                  borderColor: '#d1d5db',
+                  background: '#f9fafb',
+                },
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={confirmRedeem}
+              variant="contained"
+              sx={{
+                minWidth: 120,
+                py: 1.5,
+                borderRadius: 3,
+                background: 'linear-gradient(135deg, #848D58 0%, #6F7549 100%)',
+                fontWeight: 600,
+                textTransform: 'none',
+                fontSize: '1rem',
+                boxShadow: '0 4px 16px rgba(132, 141, 88, 0.3)',
+                '&:hover': {
+                  background: 'linear-gradient(135deg, #6F7549 0%, #5A5F3A 100%)',
+                  boxShadow: '0 6px 20px rgba(132, 141, 88, 0.4)',
+                },
+              }}
+            >
+              Redeem Now
+            </Button>
+          </Box>
+        </Box>
       </Dialog>
 
       {/* Loading Dialog */}
-      <Dialog open={loadingDialogOpen}>
+      <Dialog 
+        open={loadingDialogOpen}
+        PaperProps={{
+          sx: {
+            borderRadius: 4,
+            padding: 2,
+            background: 'linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%)',
+            boxShadow: '0 20px 60px rgba(0, 0, 0, 0.1)',
+          }
+        }}
+      >
         <DialogContent sx={{ textAlign: 'center', p: 4 }}>
-          <CircularProgress sx={{ color: '#848D58', mb: 2 }} />
-          <Typography>Processing your redemption...</Typography>
+          <Box
+            sx={{
+              width: 80,
+              height: 80,
+              borderRadius: '50%',
+              background: 'linear-gradient(135deg, #848D58 0%, #6F7549 100%)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              mx: 'auto',
+              mb: 3,
+              position: 'relative',
+            }}
+          >
+            <CircularProgress 
+              size={60} 
+              sx={{ 
+                color: 'white',
+                position: 'absolute',
+              }} 
+            />
+            <Zap size={24} color="white" />
+          </Box>
+          <Typography 
+            variant="h6" 
+            sx={{ 
+              fontWeight: 600,
+              color: '#1a1a1a',
+              fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+            }}
+          >
+            Processing your redemption...
+          </Typography>
+          <Typography 
+            variant="body2" 
+            sx={{ 
+              color: '#6b7280',
+              mt: 1,
+              fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+            }}
+          >
+            Please wait while we process your reward
+          </Typography>
         </DialogContent>
       </Dialog>
 
       {/* Success Dialog */}
-      <Dialog open={successDialogOpen} onClose={() => setSuccessDialogOpen(false)}>
-        <DialogTitle>Redemption Successful! 🎉</DialogTitle>
-        <DialogContent>
-          <Typography>
+      <Dialog 
+        open={successDialogOpen} 
+        onClose={() => setSuccessDialogOpen(false)}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{
+          sx: {
+            borderRadius: 4,
+            padding: 2,
+            background: 'linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%)',
+            boxShadow: '0 20px 60px rgba(0, 0, 0, 0.1)',
+          }
+        }}
+      >
+        <Box sx={{ textAlign: 'center', p: 2 }}>
+          {/* Success Icon */}
+          <Box
+            sx={{
+              width: 80,
+              height: 80,
+              borderRadius: '50%',
+              background: 'linear-gradient(135deg, #4CAF50 0%, #45a049 100%)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              mx: 'auto',
+              mb: 3,
+              boxShadow: '0 8px 24px rgba(76, 175, 80, 0.3)',
+            }}
+          >
+            <CheckCircle size={36} color="white" />
+          </Box>
+
+          {/* Title */}
+          <Typography 
+            variant="h5" 
+            sx={{ 
+              fontWeight: 700, 
+              mb: 1,
+              color: '#1a1a1a',
+              fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+            }}
+          >
+            Redemption Successful!
+          </Typography>
+
+          {/* Description */}
+          <Typography 
+            variant="body1" 
+            sx={{ 
+              color: '#6b7280',
+              mb: 4,
+              lineHeight: 1.5,
+              fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+            }}
+          >
             Your reward has been redeemed successfully! Check your email for the redemption code.
           </Typography>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setSuccessDialogOpen(false)} variant="contained" sx={{ background: '#848D58' }}>
-            Great!
+
+          {/* Success Features */}
+          <Box
+            sx={{
+              background: 'rgba(76, 175, 80, 0.05)',
+              border: '2px solid rgba(76, 175, 80, 0.1)',
+              borderRadius: 3,
+              p: 3,
+              mb: 4,
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 2,
+            }}
+          >
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <Box
+                sx={{
+                  width: 32,
+                  height: 32,
+                  borderRadius: '50%',
+                  background: '#4CAF50',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <Sparkles size={16} color="white" />
+              </Box>
+              <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                Reward code sent to your email
+              </Typography>
+            </Box>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <Box
+                sx={{
+                  width: 32,
+                  height: 32,
+                  borderRadius: '50%',
+                  background: '#4CAF50',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <Target size={16} color="white" />
+              </Box>
+              <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                Points deducted from your balance
+              </Typography>
+            </Box>
+          </Box>
+
+          {/* Action Button */}
+          <Button
+            onClick={() => setSuccessDialogOpen(false)}
+            variant="contained"
+            sx={{
+              minWidth: 120,
+              py: 1.5,
+              borderRadius: 3,
+              background: 'linear-gradient(135deg, #4CAF50 0%, #45a049 100%)',
+              fontWeight: 600,
+              textTransform: 'none',
+              fontSize: '1rem',
+              boxShadow: '0 4px 16px rgba(76, 175, 80, 0.3)',
+              '&:hover': {
+                background: 'linear-gradient(135deg, #45a049 0%, #3d8b40 100%)',
+                boxShadow: '0 6px 20px rgba(76, 175, 80, 0.4)',
+              },
+            }}
+          >
+            Awesome!
           </Button>
-        </DialogActions>
+        </Box>
       </Dialog>
     </Box>
   );

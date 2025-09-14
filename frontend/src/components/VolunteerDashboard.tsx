@@ -113,22 +113,32 @@ const VolunteerDashboard: React.FC = () => {
   // Get user location
   const getUserLocation = (): Promise<{lat: number, lng: number}> => {
     return new Promise((resolve) => {
+      console.log('📍 Requesting user location...');
+      
       if (!navigator.geolocation) {
+        console.log('❌ Geolocation not supported, using default location');
         resolve({ lat: 42.3601, lng: -71.0589 }); // Default to Cambridge, MA
         return;
       }
 
       navigator.geolocation.getCurrentPosition(
         (position) => {
-          resolve({
+          const location = {
             lat: position.coords.latitude,
             lng: position.coords.longitude
-          });
+          };
+          console.log('✅ Location obtained:', location);
+          resolve(location);
         },
-        () => {
+        (error) => {
+          console.log('❌ Location error:', error.message, 'Using fallback location');
           resolve({ lat: 42.3601, lng: -71.0589 }); // Fallback
         },
-        { enableHighAccuracy: true, timeout: 10000, maximumAge: 300000 }
+        { 
+          enableHighAccuracy: false, // Use false for faster response on mobile
+          timeout: 15000, // Longer timeout for mobile
+          maximumAge: 60000 // 1 minute cache
+        }
       );
     });
   };
@@ -154,19 +164,20 @@ const VolunteerDashboard: React.FC = () => {
     }
   };
 
-  // Fetch data
-  const fetchData = async () => {
+  // Fetch data with specific location
+  const fetchDataWithLocation = async (location: {lat: number, lng: number}) => {
     try {
+      console.log('🔄 Fetching packages with location:', location);
       const user = auth.currentUser;
-      if (!user) return;
-
-      // Use existing user location or get it if not available
-      const location = userLocation || await getUserLocation();
-      if (!userLocation) setUserLocation(location);
+      if (!user) {
+        console.log('❌ No authenticated user');
+        return;
+      }
 
       // Fetch available packages
       const packagesResponse = await fetch(`${API_BASE_URL}/api/packages/available`);
       const packagesData = await packagesResponse.json();
+      console.log('📦 Packages response:', packagesData);
       
       if (packagesData.success) {
         const formattedPackages = packagesData.packages.map((pkg: any) => {
@@ -202,6 +213,7 @@ const VolunteerDashboard: React.FC = () => {
           return aDist - bDist;
         });
         
+        console.log(`✅ Updated ${formattedPackages.length} available packages with distances`);
         setAvailablePackages(formattedPackages);
       }
 
@@ -253,20 +265,50 @@ const VolunteerDashboard: React.FC = () => {
     }
   };
 
+  // Fallback fetch data function (uses existing location)
+  const fetchData = async () => {
+    const location = userLocation || { lat: 42.3601, lng: -71.0589 };
+    await fetchDataWithLocation(location);
+  };
+
+  // Manual location refresh
+  const refreshLocation = async () => {
+    console.log('🔄 Manually refreshing location...');
+    setLoading(true);
+    try {
+      const location = await getUserLocation();
+      setUserLocation(location);
+      await fetchDataWithLocation(location);
+    } catch (error) {
+      console.error('Error refreshing location:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Prompt for location on initial load
   useEffect(() => {
     const promptForLocation = async () => {
       if (!locationPrompted) {
         setLocationPrompted(true);
-        const location = await getUserLocation();
-        setUserLocation(location);
-        // Now fetch data with location
-        fetchData();
+        try {
+          console.log('🚀 Initial location setup...');
+          const location = await getUserLocation();
+          setUserLocation(location);
+          // Fetch data immediately with the new location
+          await fetchDataWithLocation(location);
+        } catch (error) {
+          console.error('Error getting location:', error);
+          // Fallback to default location
+          const defaultLocation = { lat: 42.3601, lng: -71.0589 };
+          setUserLocation(defaultLocation);
+          await fetchDataWithLocation(defaultLocation);
+        }
       }
     };
     
     promptForLocation();
-  }, [locationPrompted]);
+  }, []);
 
   // PIN entry functions for pickup confirmation
   const handleEnterPin = (packageId: number) => {
@@ -698,11 +740,26 @@ const VolunteerDashboard: React.FC = () => {
                           Available Pickups
                         </Typography>
                       </Box>
-                      <Chip 
-                        label={`${availablePackages.length} packages`}
-                        variant="outlined"
-                        sx={{ borderColor: '#848D58', color: '#848D58', fontWeight: 600 }}
-                      />
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <IconButton
+                          onClick={refreshLocation}
+                          size="small"
+                          sx={{
+                            color: '#848D58',
+                            '&:hover': {
+                              background: 'rgba(132, 141, 88, 0.1)',
+                            },
+                          }}
+                          title="Refresh location & packages"
+                        >
+                          <RefreshCw size={18} />
+                        </IconButton>
+                        <Chip 
+                          label={`${availablePackages.length} packages`}
+                          variant="outlined"
+                          sx={{ borderColor: '#848D58', color: '#848D58', fontWeight: 600 }}
+                        />
+                      </Box>
                     </Box>
                     
                     <Box sx={{ maxHeight: 500, overflowY: 'auto', pr: 1 }}>

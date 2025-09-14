@@ -206,14 +206,21 @@ const VolunteerLeaderboard: React.FC = () => {
             background: 'rgba(0, 0, 0, 0.7)',
             backdropFilter: 'blur(10px)',
             borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
-            p: 3,
+            p: { xs: 2, md: 3 },
           }}
         >
           <Container maxWidth="xl">
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Box sx={{ 
+              display: 'flex', 
+              justifyContent: 'space-between', 
+              alignItems: 'center',
+              flexDirection: { xs: 'column', sm: 'row' },
+              gap: { xs: 2, sm: 0 }
+            }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1.5, sm: 2 } }}>
                 <IconButton
                   onClick={() => navigate('/volunteer/dashboard')}
+                  size="small"
                   sx={{
                     background: 'rgba(132, 141, 88, 0.1)',
                     color: '#848D58',
@@ -222,12 +229,12 @@ const VolunteerLeaderboard: React.FC = () => {
                     },
                   }}
                 >
-                  <ArrowLeft size={24} />
+                  <ArrowLeft size={20} />
                 </IconButton>
                 <Box
                   sx={{
-                    width: 50,
-                    height: 50,
+                    width: { xs: 40, sm: 50 },
+                    height: { xs: 40, sm: 50 },
                     borderRadius: '50%',
                     background: 'linear-gradient(135deg, #848D58 0%, #6F7549 100%)',
                     display: 'flex',
@@ -244,11 +251,16 @@ const VolunteerLeaderboard: React.FC = () => {
                       fontWeight: 700,
                       color: 'white',
                       fontFamily: '"Helvetica Neue", "Helvetica", "Arial", sans-serif',
+                      fontSize: { xs: '1.5rem', sm: '2.125rem' },
                     }}
                   >
                     Volunteer Leaderboard
                   </Typography>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Box sx={{ 
+                    display: { xs: 'none', sm: 'flex' }, 
+                    alignItems: 'center', 
+                    gap: 1 
+                  }}>
                     <Typography 
                       variant="subtitle1" 
                       sx={{ 
@@ -268,7 +280,7 @@ const VolunteerLeaderboard: React.FC = () => {
         </Box>
       </motion.div>
 
-      <Container maxWidth="xl" sx={{ mt: 4 }}>
+      <Container maxWidth="xl" sx={{ mt: { xs: 2, md: 4 }, px: { xs: 2, md: 3 } }}>
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
