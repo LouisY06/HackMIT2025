@@ -3,26 +3,22 @@ frontend:
   phases:
     preBuild:
       commands:
-        - echo "=== PreBuild Phase ==="
-        - echo "Current working directory:"
-        - pwd
-        - echo "Directory contents:"
-        - ls -la
-        - echo "Checking frontend directory:"
-        - test -d frontend && echo "✅ Frontend directory exists" || echo "❌ Frontend directory missing"
-        - echo "Navigating to frontend directory..."
+        - echo "Starting preBuild phase..."
+        - echo "Current directory:" && pwd
+        - echo "Directory listing:" && ls -la
+        - echo "Checking for frontend directory..."
+        - if [ -d "frontend" ]; then echo "Frontend directory found"; else echo "Frontend directory not found - listing contents:" && ls -la; fi
+        - echo "Installing frontend dependencies..."
         - cd frontend
-        - echo "Frontend directory contents:"
-        - ls -la
-        - echo "Installing dependencies..."
-        - npm ci
+        - echo "In frontend directory:" && pwd && ls -la
+        - npm install
     build:
       commands:
-        - echo "=== Build Phase ==="
-        - echo "Building React application..."
+        - echo "Starting build phase..."
         - cd frontend
+        - echo "Building React app..."
         - npm run build
-        - echo "Build completed. Checking build output:"
+        - echo "Build completed. Checking output:"
         - ls -la build/
   artifacts:
     baseDirectory: frontend/build
