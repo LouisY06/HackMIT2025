@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Gift, PartyPopper } from 'lucide-react';
 import {
   Box,
   Typography,
@@ -59,7 +60,7 @@ const VolunteerRewards: React.FC = () => {
     },
     {
       id: 4,
-      icon: "🎬",
+      icon: "movie",
       title: "Free Movie Ticket",
       provider: "AMC Theatres",
       description: "One free standard movie ticket",
@@ -315,7 +316,7 @@ const VolunteerRewards: React.FC = () => {
       <Dialog open={confirmDialogOpen} onClose={handleCloseConfirm} maxWidth="sm" fullWidth>
         <DialogTitle sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <Typography sx={{ mr: 1 }}>🎁</Typography>
+            <Gift size={20} style={{ marginRight: '8px' }} />
             <Typography variant="h6">Redeem Reward</Typography>
           </Box>
           <IconButton onClick={handleCloseConfirm} size="small">
@@ -373,7 +374,9 @@ const VolunteerRewards: React.FC = () => {
       {/* Success Dialog */}
       <Dialog open={successDialogOpen} onClose={handleCloseSuccess} maxWidth="sm" fullWidth>
         <DialogTitle sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <Typography variant="h6">Reward Redeemed! 🎉</Typography>
+          <Typography variant="h6" sx={{ display: 'flex', alignItems: 'center' }}>
+            Reward Redeemed! <PartyPopper size={20} style={{ marginLeft: '8px' }} />
+          </Typography>
           <IconButton onClick={handleCloseSuccess} size="small">
             ✕
           </IconButton>

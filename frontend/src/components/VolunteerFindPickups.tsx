@@ -24,6 +24,7 @@ import {
   Person,
   Logout 
 } from '@mui/icons-material';
+import { Package, Leaf } from 'lucide-react';
 import GoogleMapsComponent from './GoogleMapsComponent';
 
 const VolunteerFindPickups: React.FC = () => {
@@ -303,13 +304,13 @@ const VolunteerFindPickups: React.FC = () => {
                       {/* Metrics */}
                       <Box sx={{ display: 'flex', gap: 3, mb: 2 }}>
                         <Typography variant="body2" color="text.secondary">
-                          📦 {pickup.weight}
+                          <Package size={16} style={{ marginRight: '4px' }} /> {pickup.weight}
                         </Typography>
                         <Typography variant="body2" color="text.secondary">
                           ⏱️ {pickup.duration}
                         </Typography>
                         <Typography variant="body2" color="text.secondary">
-                          🌱 {pickup.co2Saved}
+                          <Leaf size={16} style={{ marginRight: '4px' }} /> {pickup.co2Saved}
                         </Typography>
                       </Box>
 
