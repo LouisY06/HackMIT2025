@@ -668,10 +668,6 @@ def get_volunteer_packages(volunteer_id):
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
 
-@app.route('/api/health', methods=['GET'])
-def health_check():
-    """Health check endpoint"""
-    return jsonify({'success': True, 'message': 'Backend is running'})
 
 @app.route('/uploads/<filename>')
 def serve_qr_code(filename):
