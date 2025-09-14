@@ -81,75 +81,76 @@ const VolunteerFindPickups: React.FC = () => {
     });
   };
 
-  // Fetch packages
-  useEffect(() => {
-    const fetchPackages = async () => {
-      try {
-        const location = await getUserLocation();
-        setUserLocation(location);
+  // Fetch packages function
+  const fetchPackages = async () => {
+    try {
+      const location = await getUserLocation();
+      setUserLocation(location);
 
-        const response = await fetch(`${API_BASE_URL}/api/packages/available`);
-        const data = await response.json();
+      const response = await fetch(`${API_BASE_URL}/api/packages/available`);
+      const data = await response.json();
+      
+      if (data.success) {
+        const formattedPackages = data.packages.map((pkg: any) => {
+          let distance = "Unknown";
+          if (pkg.store_lat && pkg.store_lng) {
+            const dist = calculateDistance(location.lat, location.lng, pkg.store_lat, pkg.store_lng);
+            distance = `${dist.toFixed(1)} mi`;
+          }
+          
+          return {
+            id: pkg.id,
+            storeName: pkg.store_name,
+            address: pkg.store_address,
+            distance,
+            foodType: pkg.food_type,
+            weight: pkg.weight_lbs,
+            points: Math.floor(pkg.weight_lbs * 5) + 50,
+            urgency: pkg.urgency || 'medium',
+            pickupWindow: {
+              start: pkg.pickup_window_start,
+              end: pkg.pickup_window_end,
+            },
+            lat: pkg.store_lat,
+            lng: pkg.store_lng,
+          };
+        });
         
-        if (data.success) {
-          const formattedPackages = data.packages.map((pkg: any) => {
-            let distance = "Unknown";
-            if (pkg.store_lat && pkg.store_lng) {
-              const dist = calculateDistance(location.lat, location.lng, pkg.store_lat, pkg.store_lng);
-              distance = `${dist.toFixed(1)} mi`;
-            }
-            
-            return {
-              id: pkg.id,
-              storeName: pkg.store_name,
-              address: pkg.store_address,
-              distance,
-              foodType: pkg.food_type,
-              weight: pkg.weight_lbs,
-              points: Math.floor(pkg.weight_lbs * 5) + 50,
-              urgency: pkg.urgency || 'medium',
-              pickupWindow: {
-                start: pkg.pickup_window_start,
-                end: pkg.pickup_window_end,
-              },
-              lat: pkg.store_lat,
-              lng: pkg.store_lng,
-            };
-          });
-          
-          formattedPackages.sort((a: any, b: any) => {
-            const aDist = parseFloat(a.distance);
-            const bDist = parseFloat(b.distance);
-            if (isNaN(aDist)) return 1;
-            if (isNaN(bDist)) return -1;
-            return aDist - bDist;
-          });
-          
-          setPackages(formattedPackages);
-        }
-      } catch (error) {
-        console.error('Error fetching packages:', error);
-        // Fallback data
-        setPackages([
-          {
-            id: 1,
-            storeName: "Whole Foods Market",
-            address: "123 Main St, Cambridge, MA",
-            distance: "0.8 mi",
-            foodType: "Mixed Produce",
-            weight: 12,
-            points: 110,
-            urgency: 'high',
-            pickupWindow: { start: new Date(), end: new Date(Date.now() + 2 * 60 * 60 * 1000) },
-            lat: 42.3601,
-            lng: -71.0589,
-          },
-        ]);
-      } finally {
-        setLoading(false);
+        formattedPackages.sort((a: any, b: any) => {
+          const aDist = parseFloat(a.distance);
+          const bDist = parseFloat(b.distance);
+          if (isNaN(aDist)) return 1;
+          if (isNaN(bDist)) return -1;
+          return aDist - bDist;
+        });
+        
+        setPackages(formattedPackages);
       }
-    };
+    } catch (error) {
+      console.error('Error fetching packages:', error);
+      // Fallback data
+      setPackages([
+        {
+          id: 1,
+          storeName: "Whole Foods Market",
+          address: "123 Main St, Cambridge, MA",
+          distance: "0.8 mi",
+          foodType: "Mixed Produce",
+          weight: 12,
+          points: 110,
+          urgency: 'high',
+          pickupWindow: { start: new Date(), end: new Date(Date.now() + 2 * 60 * 60 * 1000) },
+          lat: 42.3601,
+          lng: -71.0589,
+        },
+      ]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  // Fetch packages on component mount
+  useEffect(() => {
     fetchPackages();
   }, []);
 
