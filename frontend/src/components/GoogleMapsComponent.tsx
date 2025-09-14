@@ -26,25 +26,30 @@ const GoogleMapsComponent: React.FC<GoogleMapsComponentProps> = ({
   height = '300px'
 }) => {
   const mapRef = useRef<HTMLDivElement>(null);
-  const mapInstanceRef = useRef<google.maps.Map | null>(null);
+  const mapInstanceRef = useRef<any>(null);
   const [isLoading, setIsLoading] = React.useState(true);
   const [hasError, setHasError] = React.useState(false);
 
   useEffect(() => {
+    console.log('GoogleMapsComponent: API Key received:', apiKey ? 'Yes' : 'No');
+    console.log('GoogleMapsComponent: API Key value:', apiKey);
+    
     const initMap = () => {
       if (!mapRef.current) {
+        console.log('GoogleMapsComponent: No map ref');
         setHasError(true);
         setIsLoading(false);
         return;
       }
       
-      if (!window.google || !window.google.maps) {
+      if (!(window as any).google || !(window as any).google.maps) {
+        console.log('GoogleMapsComponent: Google Maps not loaded');
         setHasError(true);
         setIsLoading(false);
         return;
       }
       
-      const map = new window.google.maps.Map(mapRef.current, {
+      const map = new (window as any).google.maps.Map(mapRef.current, {
         center: center,
         zoom: zoom,
         styles: [
@@ -86,12 +91,12 @@ const GoogleMapsComponent: React.FC<GoogleMapsComponentProps> = ({
 
       // Add markers for pickups
       pickups.forEach(pickup => {
-        const marker = new window.google.maps.Marker({
+        const marker = new (window as any).google.maps.Marker({
           position: { lat: pickup.lat, lng: pickup.lng },
           map: map,
           title: pickup.storeName,
           icon: {
-            path: window.google.maps.SymbolPath.CIRCLE,
+            path: (window as any).google.maps.SymbolPath.CIRCLE,
             fillColor: '#4CAF50',
             fillOpacity: 1,
             strokeColor: '#ffffff',
@@ -100,7 +105,7 @@ const GoogleMapsComponent: React.FC<GoogleMapsComponentProps> = ({
           }
         });
 
-        const infoWindow = new window.google.maps.InfoWindow({
+        const infoWindow = new (window as any).google.maps.InfoWindow({
           content: `
             <div style="padding: 8px; max-width: 200px;">
               <h3 style="margin: 0 0 4px 0; color: #333;">${pickup.storeName}</h3>
@@ -122,7 +127,7 @@ const GoogleMapsComponent: React.FC<GoogleMapsComponentProps> = ({
 
     const loadGoogleMaps = () => {
       // Check if already loaded
-      if (window.google && window.google.maps) {
+      if ((window as any).google && (window as any).google.maps) {
         initMap();
         return;
       }

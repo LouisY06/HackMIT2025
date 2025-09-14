@@ -257,6 +257,7 @@ const VolunteerFindPickups: React.FC = () => {
               pickups={mapPickups}
               height="300px"
             />
+            {/* Debug: API Key loaded: {process.env.REACT_APP_GOOGLE_MAPS_API_KEY ? 'Yes' : 'No'} */}
           </Box>
         </Box>
 
