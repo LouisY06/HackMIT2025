@@ -13,6 +13,9 @@ import StorePackages from './components/StorePackages';
 import StoreImpact from './components/StoreImpact';
 import StoreGlobalImpact from './components/StoreGlobalImpact';
 import FoodBankLogin from './components/FoodBankLogin';
+import FoodBankDashboard from './components/FoodBankDashboard';
+import FoodBankDeliveryLog from './components/FoodBankDeliveryLog';
+import FoodBankGlobalImpact from './components/FoodBankGlobalImpact';
 
 const theme = createTheme({
   palette: {
@@ -42,6 +45,9 @@ function App() {
           <Route path="/store/impact" element={<StoreImpact />} />
           <Route path="/store/global-impact" element={<StoreGlobalImpact />} />
           <Route path="/foodbank" element={<FoodBankLogin />} />
+          <Route path="/foodbank/dashboard" element={<FoodBankDashboard />} />
+          <Route path="/foodbank/delivery-log" element={<FoodBankDeliveryLog />} />
+          <Route path="/foodbank/global-impact" element={<FoodBankGlobalImpact />} />
         </Routes>
       </Router>
     </ThemeProvider>
