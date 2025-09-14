@@ -24,6 +24,7 @@ import {
   Person,
   Logout 
 } from '@mui/icons-material';
+import GoogleMapsComponent from './GoogleMapsComponent';
 
 const VolunteerFindPickups: React.FC = () => {
   const navigate = useNavigate();
@@ -32,7 +33,7 @@ const VolunteerFindPickups: React.FC = () => {
   const [maxDistance, setMaxDistance] = useState('Any Distance');
   const [sortBy, setSortBy] = useState('Distance');
 
-  // Mock data for available pickups
+  // Mock data for available pickups with coordinates
   const availablePickups = [
     {
       id: 1,
@@ -49,7 +50,9 @@ const VolunteerFindPickups: React.FC = () => {
       destination: "Cambridge Food Bank",
       destinationAddress: "1234 Main St, Cambridge, MA",
       expiresSoon: true,
-      timeLeft: "Expires soon"
+      timeLeft: "Expires soon",
+      lat: 42.3601,
+      lng: -71.0589
     },
     {
       id: 2,
@@ -66,9 +69,22 @@ const VolunteerFindPickups: React.FC = () => {
       destination: "Cambridge Food Bank",
       destinationAddress: "1234 Main St, Cambridge, MA",
       expiresSoon: false,
-      timeLeft: "1h left"
+      timeLeft: "1h left",
+      lat: 42.3736,
+      lng: -71.1097
     }
   ];
+
+  // Convert pickup data for Google Maps component
+  const mapPickups = availablePickups.map(pickup => ({
+    id: pickup.id.toString(),
+    storeName: pickup.storeName,
+    lat: pickup.lat,
+    lng: pickup.lng,
+    foodType: pickup.foodType,
+    weight: pickup.weight,
+    timeWindow: pickup.timeWindow
+  }));
 
   const handleAcceptMission = (pickupId: number) => {
     console.log(`Accepting mission ${pickupId}`);
@@ -87,32 +103,68 @@ const VolunteerFindPickups: React.FC = () => {
   return (
     <Box sx={{ minHeight: '100vh', backgroundColor: '#f5f5f5' }}>
       {/* Header/Navigation */}
-      <AppBar position="static" sx={{ backgroundColor: 'white', boxShadow: 1 }}>
+      <AppBar position="static" sx={{ backgroundColor: '#4CAF50' }}>
         <Toolbar>
           <Box sx={{ display: 'flex', alignItems: 'center', mr: 4 }}>
-            <Typography variant="h6" sx={{ color: '#4CAF50', fontWeight: 'bold', mr: 1 }}>
+            <Typography variant="h6" sx={{ color: 'white', fontWeight: 'bold', mr: 1 }}>
               Waste→Worth
             </Typography>
-            <Typography sx={{ color: '#4CAF50' }}>🌿</Typography>
+            <Typography sx={{ color: 'white' }}>🌿</Typography>
           </Box>
           
           <Box sx={{ display: 'flex', gap: 2, flex: 1 }}>
-            <Button color="inherit" onClick={() => navigate('/volunteer/dashboard')}>
+            <Button 
+              color="inherit" 
+              onClick={() => navigate('/volunteer/dashboard')}
+              sx={{ '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.1)' } }}
+            >
               Dashboard
             </Button>
-            <Button color="inherit" sx={{ color: '#4CAF50', fontWeight: 'bold' }}>
+            <Button 
+              color="inherit" 
+              sx={{ 
+                backgroundColor: 'rgba(255, 255, 255, 0.2)', 
+                '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.3)' }
+              }}
+            >
               📱 Find Tasks
             </Button>
-            <Button color="inherit">Rewards</Button>
-            <Button color="inherit">Leaderboard</Button>
-            <Button color="inherit">Global Impact</Button>
+            <Button 
+              color="inherit" 
+              onClick={() => navigate('/volunteer/rewards')}
+              sx={{ '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.1)' } }}
+            >
+              Rewards
+            </Button>
+            <Button 
+              color="inherit" 
+              onClick={() => navigate('/volunteer/leaderboard')}
+              sx={{ '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.1)' } }}
+            >
+              Leaderboard
+            </Button>
+            <Button 
+              color="inherit" 
+              onClick={() => navigate('/volunteer/global-impact')}
+              sx={{ '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.1)' } }}
+            >
+              Global Impact
+            </Button>
           </Box>
 
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <Typography variant="body2" sx={{ color: '#666' }}>
-              Marcus Chen Level 3 1250 pts
+            <Typography variant="body2" sx={{ color: 'white' }}>
+              Marcus Chen Level 3
             </Typography>
-            <IconButton onClick={handleLogout} color="primary">
+            <Chip 
+              label="1250 pts" 
+              sx={{ 
+                backgroundColor: '#FFF9C4', 
+                color: '#F57F17',
+                fontWeight: 'bold'
+              }} 
+            />
+            <IconButton onClick={handleLogout} color="inherit">
               <Logout />
             </IconButton>
           </Box>
@@ -198,27 +250,13 @@ const VolunteerFindPickups: React.FC = () => {
               </Typography>
             </Box>
             
-            <Box
-              sx={{
-                height: '300px',
-                backgroundColor: '#f0f0f0',
-                borderRadius: 2,
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                border: '2px dashed #ccc',
-                position: 'relative'
-              }}
-            >
-              <LocationOn sx={{ fontSize: 60, color: '#ccc', mb: 1 }} />
-              <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center' }}>
-                Interactive map coming soon!
-              </Typography>
-              <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center' }}>
-                Showing {availablePickups.length} nearby pickups
-              </Typography>
-            </Box>
+            <GoogleMapsComponent
+              apiKey={process.env.REACT_APP_GOOGLE_MAPS_API_KEY || ''}
+              center={{ lat: 42.3601, lng: -71.0589 }}
+              zoom={13}
+              pickups={mapPickups}
+              height="300px"
+            />
           </Box>
         </Box>
 

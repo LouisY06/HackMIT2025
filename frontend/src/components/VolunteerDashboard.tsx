@@ -329,6 +329,22 @@ const VolunteerDashboard: React.FC = () => {
                     </Card>
                   ))}
                 </Box>
+                
+                {/* See More Rewards Button */}
+                <Box sx={{ mt: 2, textAlign: 'center' }}>
+                  <Button
+                    variant="text"
+                    onClick={() => navigate('/volunteer/rewards')}
+                    sx={{
+                      color: '#4CAF50',
+                      textTransform: 'none',
+                      fontSize: '0.9rem',
+                      fontWeight: 'bold'
+                    }}
+                  >
+                    See More Rewards →
+                  </Button>
+                </Box>
               </CardContent>
             </Card>
 
@@ -365,6 +381,23 @@ const VolunteerDashboard: React.FC = () => {
                     </ListItem>
                   ))}
                 </List>
+                <Box sx={{ mt: 2, textAlign: 'center' }}>
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    onClick={() => navigate('/volunteer/leaderboard')}
+                    sx={{
+                      color: '#9C27B0',
+                      borderColor: '#9C27B0',
+                      '&:hover': {
+                        borderColor: '#7B1FA2',
+                        backgroundColor: 'rgba(156, 39, 176, 0.04)'
+                      }
+                    }}
+                  >
+                    See More
+                  </Button>
+                </Box>
               </CardContent>
             </Card>
           </Box>
