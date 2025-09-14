@@ -12,6 +12,8 @@ const firebaseConfig = {
 };
 
 console.log('Initializing Firebase with config:', firebaseConfig);
+console.log('User Agent:', navigator.userAgent);
+console.log('Is Mobile:', /iPhone|iPad|iPod|Android/i.test(navigator.userAgent));
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
@@ -23,5 +25,7 @@ export const auth = getAuth(app);
 export const googleProvider = new GoogleAuthProvider();
 
 console.log('Firebase auth initialized:', !!auth);
+console.log('Current URL:', window.location.href);
+console.log('Environment:', process.env.NODE_ENV);
 
 export default app;
