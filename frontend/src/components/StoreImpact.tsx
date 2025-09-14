@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Leaf, Package, DollarSign, Recycle, Home, BarChart3, TrendingUp, LogOut } from 'lucide-react';
+import { Leaf, Package, DollarSign, Recycle, Home, BarChart3, TrendingUp, LogOut, Users, Trees, Droplets } from 'lucide-react';
 import {
   Box,
   Typography,
@@ -125,7 +125,7 @@ const StoreImpact: React.FC = () => {
           
           <Card sx={{ flex: '1 1 200px', minWidth: '200px', borderRadius: 4, bgcolor: '#4CAF50' }}>
             <CardContent sx={{ textAlign: 'center', py: 4, color: 'white' }}>
-              <Typography sx={{ fontSize: 32, mb: 2 }}>👥</Typography>
+              <Users size={32} style={{ marginBottom: '16px' }} />
               <Typography variant="h3" sx={{ fontWeight: 'bold', mb: 1 }}>
                 {impactData.mealsProvided}
               </Typography>
@@ -197,7 +197,7 @@ const StoreImpact: React.FC = () => {
             <Card sx={{ flex: '1 1 400px', minWidth: '400px', borderRadius: 4, bgcolor: '#f8f9fa' }}>
               <CardContent sx={{ p: 4 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3 }}>
-                  <Typography sx={{ fontSize: 24 }}>🌳</Typography>
+                  <Trees size={24} />
                   <Box>
                     <Typography variant="h5" sx={{ fontWeight: 'bold', color: '#333' }}>
                       Environmental Impact
@@ -230,7 +230,7 @@ const StoreImpact: React.FC = () => {
                   {/* Water Saved */}
                   <Card sx={{ borderRadius: 3, bgcolor: 'white', p: 3 }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                      <Typography sx={{ fontSize: 24, color: '#2196F3' }}>💧</Typography>
+                      <Droplets size={24} style={{ color: '#2196F3' }} />
                       <Box sx={{ flex: 1 }}>
                         <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#333' }}>
                           Water Saved
@@ -270,7 +270,7 @@ const StoreImpact: React.FC = () => {
             <Card sx={{ flex: '1 1 400px', minWidth: '400px', borderRadius: 4, bgcolor: '#f8f9fa' }}>
               <CardContent sx={{ p: 4 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3 }}>
-                  <Typography sx={{ fontSize: 24 }}>👥</Typography>
+                  <Users size={24} />
                   <Box>
                     <Typography variant="h5" sx={{ fontWeight: 'bold', color: '#333' }}>
                       Community Impact

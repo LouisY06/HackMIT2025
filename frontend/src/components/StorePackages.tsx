@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Leaf, Package, Printer, Home, BarChart3, TrendingUp, LogOut } from 'lucide-react';
+import { Leaf, Package, Printer, Home, BarChart3, TrendingUp, LogOut, Search, Calendar, Smartphone, Users, Download } from 'lucide-react';
 import {
   Box,
   Typography,
@@ -291,7 +291,7 @@ const StorePackages: React.FC = () => {
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
-                  🔍
+                  <Search size={16} />
                 </InputAdornment>
               ),
             }}
@@ -375,7 +375,7 @@ const StorePackages: React.FC = () => {
                         </TableCell>
                         <TableCell>
                           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                            📅 {formatDate(pkg.created_at)}
+                            <Calendar size={16} style={{ marginRight: '4px' }} /> {formatDate(pkg.created_at)}
                           </Box>
                         </TableCell>
                         <TableCell>
@@ -390,7 +390,7 @@ const StorePackages: React.FC = () => {
                               }}
                               title="View QR Code"
                             >
-                              📱
+                              <Smartphone size={16} />
                             </IconButton>
                             <IconButton
                               size="small"
@@ -401,7 +401,7 @@ const StorePackages: React.FC = () => {
                               }}
                               title="Assign Volunteer"
                             >
-                              👥
+                              <Users size={16} />
                             </IconButton>
                             <IconButton
                               size="small"
@@ -513,7 +513,7 @@ const StorePackages: React.FC = () => {
               {/* Header */}
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 3 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <Typography sx={{ fontSize: 24 }}>📱</Typography>
+                  <Smartphone size={24} />
                   <Box>
                     <Typography variant="h5" sx={{ fontWeight: 'bold', color: '#333', mb: 0.5 }}>
                       Package QR Code
@@ -596,7 +596,7 @@ const StorePackages: React.FC = () => {
                 <Button
                   variant="outlined"
                   onClick={handleDownloadQrCode}
-                  startIcon={<span>📥</span>}
+                  startIcon={<Download size={16} />}
                   sx={{
                     borderRadius: 3,
                     borderColor: '#333',

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Leaf, Trophy, PartyPopper } from 'lucide-react';
+import { Leaf, Trophy, PartyPopper, LogOut, Globe, Trees, Users, Store, Car, Droplets, TreePine, Building } from 'lucide-react';
 import {
   Box,
   Typography,
@@ -36,7 +36,7 @@ const VolunteerGlobalImpact: React.FC = () => {
             <Typography variant="h6" sx={{ color: 'white', fontWeight: 'bold', mr: 1 }}>
               Waste→Worth
             </Typography>
-            <Typography sx={{ color: 'white' }}>🌿</Typography>
+            <Leaf size={20} style={{ color: 'white' }} />
           </Box>
           
           <Box sx={{ display: 'flex', gap: 2, flex: 1 }}>
@@ -92,7 +92,7 @@ const VolunteerGlobalImpact: React.FC = () => {
               }} 
             />
             <IconButton onClick={handleLogout} color="inherit">
-              🚪
+              <LogOut size={16} />
             </IconButton>
           </Box>
         </Toolbar>
@@ -101,7 +101,7 @@ const VolunteerGlobalImpact: React.FC = () => {
       <Box sx={{ p: 4 }}>
         {/* Header Section */}
         <Box sx={{ textAlign: 'center', mb: 4 }}>
-          <Typography sx={{ fontSize: 80, mb: 2 }}>🌍</Typography>
+          <Globe size={80} style={{ marginBottom: '16px' }} />
           <Typography variant="h3" sx={{ fontWeight: 'bold', mb: 2 }}>
             Global Impact Dashboard
           </Typography>
@@ -126,7 +126,7 @@ const VolunteerGlobalImpact: React.FC = () => {
 
           <Card sx={{ flex: 1, background: 'linear-gradient(135deg, #2196F3 0%, #42A5F5 100%)', color: 'white' }}>
             <CardContent sx={{ textAlign: 'center', p: 3 }}>
-              <Typography sx={{ fontSize: 40, mb: 2 }}>🌳</Typography>
+              <Trees size={40} style={{ marginBottom: '16px' }} />
               <Typography variant="h3" sx={{ fontWeight: 'bold', mb: 1 }}>
                 25.5M
               </Typography>
@@ -138,7 +138,7 @@ const VolunteerGlobalImpact: React.FC = () => {
 
           <Card sx={{ flex: 1, background: 'linear-gradient(135deg, #9C27B0 0%, #BA68C8 100%)', color: 'white' }}>
             <CardContent sx={{ textAlign: 'center', p: 3 }}>
-              <Typography sx={{ fontSize: 40, mb: 2 }}>👥</Typography>
+              <Users size={40} style={{ marginBottom: '16px' }} />
               <Typography variant="h3" sx={{ fontWeight: 'bold', mb: 1 }}>
                 2.3M
               </Typography>
