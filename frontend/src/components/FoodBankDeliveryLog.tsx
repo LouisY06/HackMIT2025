@@ -225,24 +225,24 @@ const FoodBankDeliveryLog: React.FC = () => {
 
           <Card sx={{ flex: '1 1 200px', minWidth: '200px', borderRadius: 3, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
             <CardContent sx={{ textAlign: 'center', py: 3 }}>
-              <Person sx={{ fontSize: 40, color: '#9C27B0', mb: 2 }} />
+              <Home sx={{ fontSize: 40, color: '#4CAF50', mb: 2 }} />
               <Typography variant="h4" sx={{ fontWeight: 'bold', mb: 1 }}>
-                {deliveryMetrics.pointsAwarded}
+                {deliveryMetrics.co2Prevented ? deliveryMetrics.co2Prevented.split(' ')[0] : '0'} lbs
               </Typography>
               <Typography variant="body1" sx={{ color: '#666' }}>
-                Points Awarded
+                CO₂ Prevented
               </Typography>
             </CardContent>
           </Card>
 
           <Card sx={{ flex: '1 1 200px', minWidth: '200px', borderRadius: 3, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
             <CardContent sx={{ textAlign: 'center', py: 3 }}>
-              <Home sx={{ fontSize: 40, color: '#4CAF50', mb: 2 }} />
+              <Person sx={{ fontSize: 40, color: '#9C27B0', mb: 2 }} />
               <Typography variant="h4" sx={{ fontWeight: 'bold', mb: 1 }}>
-                {deliveryMetrics.co2Prevented}
+                {deliveryMetrics.pointsAwarded}
               </Typography>
               <Typography variant="body1" sx={{ color: '#666' }}>
-                CO₂ Prevented
+                Points Awarded
               </Typography>
             </CardContent>
           </Card>
@@ -331,9 +331,9 @@ const FoodBankDeliveryLog: React.FC = () => {
                   variant="contained"
                   onClick={handleResetFilters}
                   sx={{
-                    bgcolor: '#424242',
+                    bgcolor: '#4CAF50',
                     borderRadius: 2,
-                    '&:hover': { bgcolor: '#303030' }
+                    '&:hover': { bgcolor: '#45a049' }
                   }}
                 >
                   Reset Filters
