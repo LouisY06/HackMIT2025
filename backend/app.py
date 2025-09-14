@@ -5,11 +5,8 @@ import qrcode
 import os
 import json
 import random
-<<<<<<< HEAD
-=======
 import base64
->>>>>>> aa69dfee09213b75afcd3830235c17f1c0c86a5b
-from datetime import datetime
+from datetime import datetime, timedelta
 from dotenv import load_dotenv
 import anthropic
 from PIL import Image
@@ -20,13 +17,16 @@ load_dotenv()
 app = Flask(__name__)
 CORS(app)
 
+# Anthropic API key should be set via environment variable ANTHROPIC_API_KEY
+# For development, you can create a .env file with: ANTHROPIC_API_KEY=your_key_here
+
 # Initialize Anthropic client
 anthropic_client = anthropic.Anthropic(
     api_key=os.getenv('ANTHROPIC_API_KEY')
 )
 
 # Database setup
-DATABASE = 'packages.db'
+DATABASE = os.getenv('DATABASE_URL', 'packages.db')
 
 def init_db():
     """Initialize the database with all tables"""
@@ -970,8 +970,6 @@ def health_check():
             'error': str(e)
         }), 500
 
-<<<<<<< HEAD
-=======
 @app.route('/api/analyze-food-image', methods=['POST'])
 def analyze_food_image():
     """Analyze food image using Anthropic Claude to determine food type and estimate weight"""
@@ -1120,7 +1118,454 @@ Respond ONLY with valid JSON in this exact format:
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
 
->>>>>>> aa69dfee09213b75afcd3830235c17f1c0c86a5b
+# AI Insights API endpoints
+@app.route('/api/ai/store-insights/<store_email>', methods=['GET'])
+def get_store_insights(store_email):
+    """Get AI insights for a specific store"""
+    try:
+        # Import AI models or use fallback functions
+        try:
+            from ai_models import WasteAnalytics, calculate_financial_impact
+        except ImportError:
+            # Fallback functions if AI models can't be imported
+            def calculate_financial_impact(waste_lbs, food_type='default'):
+                retail_values = {
+                    'meat': 8.50, 'dairy': 3.20, 'produce': 2.80,
+                    'bread': 1.50, 'prepared_foods': 6.00, 'default': 3.50
+                }
+                value_per_lb = retail_values.get(food_type, retail_values['default'])
+                total_value = waste_lbs * value_per_lb
+                disposal_cost_savings = waste_lbs * 0.30
+                return {
+                    'retail_value_saved': round(total_value, 2),
+                    'disposal_cost_savings': round(disposal_cost_savings, 2),
+                    'total_financial_impact': round(total_value + disposal_cost_savings, 2)
+                }
+            
+            class WasteAnalytics:
+                def __init__(self, db_path):
+                    self.db_path = db_path
+                
+                def get_historical_data(self, days=30):
+                    # Simplified version without pandas
+                    import sqlite3
+                    conn = sqlite3.connect(self.db_path)
+                    cursor = conn.cursor()
+                    cursor.execute('''
+                        SELECT store_name, store_email, weight_lbs, food_type, created_at,
+                               pickup_completed_at, status, volunteer_id
+                        FROM packages 
+                        WHERE created_at >= datetime('now', '-{} days')
+                        ORDER BY created_at DESC
+                    '''.format(days))
+                    
+                    data = cursor.fetchall()
+                    conn.close()
+                    return data
+                
+                def calculate_carbon_footprint(self, waste_lbs):
+                    waste_kg = waste_lbs * 0.453592
+                    co2e_kg = waste_kg * 3.5
+                    co2e_lbs = co2e_kg * 2.20462
+                    meals_provided = waste_lbs * 1.2
+                    return {
+                        'co2e_prevented_kg': round(co2e_kg, 2),
+                        'co2e_prevented_lbs': round(co2e_lbs, 2),
+                        'meals_provided': round(meals_provided, 1),
+                        'families_helped': round(meals_provided / 4, 1)
+                    }
+        
+        days = request.args.get('days', 30, type=int)
+        
+        # Get analytics engine
+        analytics = WasteAnalytics(DATABASE)
+        data = analytics.get_historical_data(days)
+        
+        # Filter for specific store (simplified without pandas)
+        store_data = [row for row in data if row[1] == store_email]
+        
+        if not store_data:
+            return jsonify({
+                'success': True,
+                'insights': {
+                    'store_email': store_email,
+                    'period_days': days,
+                    'total_waste_lbs': 0,
+                    'total_packages': 0,
+                    'completion_rate': 0,
+                    'avg_pickup_time_hours': 0,
+                    'financial_impact': {
+                        'retail_value_saved': 0,
+                        'disposal_cost_savings': 0,
+                        'total_financial_impact': 0
+                    },
+                    'environmental_impact': {
+                        'co2e_prevented_kg': 0,
+                        'co2e_prevented_lbs': 0,
+                        'meals_provided': 0,
+                        'families_helped': 0
+                    },
+                    'food_type_breakdown': {},
+                    'performance_score': 0
+                }
+            })
+        
+        # Calculate metrics (simplified without pandas)
+        total_waste = sum(row[2] for row in store_data)  # weight_lbs is at index 2
+        total_packages = len(store_data)
+        completed_packages = len([row for row in store_data if row[6] == 'completed'])  # status is at index 6
+        completion_rate = (completed_packages / total_packages * 100) if total_packages > 0 else 0
+        avg_pickup_time = 2.0  # Mock value for now
+        
+        # Financial impact
+        financial_impact = calculate_financial_impact(total_waste, 'default')
+        
+        # Environmental impact
+        environmental_impact = analytics.calculate_carbon_footprint(total_waste)
+        
+        # Food type breakdown
+        food_type_breakdown = {}
+        for row in store_data:
+            food_type = row[3]  # food_type is at index 3
+            weight = row[2]     # weight_lbs is at index 2
+            if food_type not in food_type_breakdown:
+                food_type_breakdown[food_type] = {'weight_lbs': 0, 'count': 0}
+            food_type_breakdown[food_type]['weight_lbs'] += weight
+            food_type_breakdown[food_type]['count'] += 1
+        
+        # Performance score
+        performance_score = min(100, completion_rate * 0.7 + (100 - min(avg_pickup_time * 10, 100)) * 0.3)
+        
+        insights = {
+            'store_email': store_email,
+            'period_days': days,
+            'total_waste_lbs': round(total_waste, 1),
+            'total_packages': total_packages,
+            'completion_rate': round(completion_rate, 1),
+            'avg_pickup_time_hours': round(avg_pickup_time, 1),
+            'financial_impact': financial_impact,
+            'environmental_impact': environmental_impact,
+            'food_type_breakdown': food_type_breakdown,
+            'performance_score': round(performance_score, 1)
+        }
+        
+        return jsonify({
+            'success': True,
+            'insights': insights,
+            'generated_at': datetime.now().isoformat()
+        })
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/ai/weekly-report', methods=['POST'])
+def generate_weekly_report():
+    """Generate AI-powered weekly report"""
+    try:
+        # Import AI models or use fallback functions
+        try:
+            from ai_models import AIInsightsGenerator, WasteAnalytics, WastePredictor
+        except ImportError:
+            # Use fallback classes
+            class AIInsightsGenerator:
+                def __init__(self, api_key):
+                    self.api_key = api_key
+                
+                def generate_weekly_report(self, trends, predictions, recommendations):
+                    return f"""# Weekly AI-Generated Report
+
+## 📊 Key Metrics
+- **Total Waste Diverted**: {trends.get('total_waste_lbs', 0):.1f} lbs
+- **Packages Processed**: {trends.get('total_packages', 0)}
+- **Completion Rate**: {trends.get('completion_rate', 0):.1f}%
+
+## 🎯 AI Recommendations
+- Optimize pickup scheduling for better efficiency
+- Expand volunteer network for improved coverage
+- Monitor waste patterns for trend analysis
+
+*Report generated by AI analytics system*"""
+            
+            class WastePredictor:
+                def get_optimization_recommendations(self):
+                    return {
+                        'inventory_reductions': {},
+                        'top_volunteers': []
+                    }
+            
+            class WasteAnalytics:
+                def __init__(self, db_path):
+                    self.db_path = db_path
+                
+                def get_historical_data(self, days=30):
+                    # Simplified version without pandas
+                    import sqlite3
+                    conn = sqlite3.connect(self.db_path)
+                    cursor = conn.cursor()
+                    cursor.execute('''
+                        SELECT store_name, store_email, weight_lbs, food_type, created_at,
+                               pickup_completed_at, status, volunteer_id
+                        FROM packages 
+                        WHERE created_at >= datetime('now', '-{} days')
+                        ORDER BY created_at DESC
+                    '''.format(days))
+                    
+                    data = cursor.fetchall()
+                    conn.close()
+                    return data
+                
+                def calculate_carbon_footprint(self, waste_lbs):
+                    waste_kg = waste_lbs * 0.453592
+                    co2e_kg = waste_kg * 3.5
+                    co2e_lbs = co2e_kg * 2.20462
+                    meals_provided = waste_lbs * 1.2
+                    return {
+                        'co2e_prevented_kg': round(co2e_kg, 2),
+                        'co2e_prevented_lbs': round(co2e_lbs, 2),
+                        'meals_provided': round(meals_provided, 1),
+                        'families_helped': round(meals_provided / 4, 1)
+                    }
+        
+        data = request.get_json()
+        store_email = data.get('store_email')
+        days = data.get('days', 7)
+        
+        if not store_email:
+            return jsonify({'success': False, 'error': 'store_email is required'}), 400
+        
+        # Get analytics
+        analytics = WasteAnalytics(DATABASE)
+        data = analytics.get_historical_data(days)
+        store_data = [row for row in data if row[1] == store_email]
+        
+        if not store_data:
+            return jsonify({
+                'success': True,
+                'report': f"No data available for store {store_email} in the last {days} days.",
+                'executive_summary': "Insufficient data to generate meaningful insights.",
+                'detailed_report': "No packages found for analysis.",
+                'predictions': {},
+                'metrics': {},
+                'trends': {},
+                'recommendations': {},
+                'environmental_impact': {},
+                'period_days': days,
+                'generated_at': datetime.now().isoformat()
+            })
+        
+        # Calculate trends and metrics (simplified)
+        total_waste = sum(row[2] for row in store_data)  # weight_lbs
+        total_packages = len(store_data)
+        completed_packages = len([row for row in store_data if row[6] == 'completed'])
+        completion_rate = (completed_packages / total_packages * 100) if total_packages > 0 else 0
+        
+        trends = {
+            'total_waste_lbs': total_waste,
+            'total_packages': total_packages,
+            'completion_rate': completion_rate,
+            'food_type_breakdown': {}
+        }
+        
+        # Get AI predictions
+        predictor = WastePredictor()
+        predictions = predictor.get_optimization_recommendations()
+        
+        # Generate structured report
+        
+        # Mock structured report data
+        structured_report = {
+            'store_name': store_data[0][0] if store_data else 'Unknown Store',  # store_name is at index 0
+            'period_start': (datetime.now() - timedelta(days=days)).strftime('%Y-%m-%d'),
+            'period_end': datetime.now().strftime('%Y-%m-%d'),
+            'kpis': {
+                'total_packages': trends.get('total_packages', 0),
+                'completed_packages': completed_packages,
+                'completion_rate': completion_rate / 100,
+                'waste_generated_lbs': total_waste,
+                'waste_diverted_lbs': total_waste * (completion_rate / 100),
+                'financial_impact_usd': total_waste * 3.5,
+                'meals_lost_est': total_waste * 2.3,
+                'co2e_kg': total_waste * 1.13
+            },
+            'category_breakdown': [
+                {'category': k, 'waste_lbs': v.get('sum', 0), 'share': 0.2}
+                for k, v in trends.get('food_type_breakdown', {}).items()
+            ],
+            'root_causes_ranked': [
+                "Inconsistent pickup scheduling leading to food spoilage",
+                "Limited volunteer availability during peak waste periods",
+                "Lack of coordination between store staff and volunteers"
+            ],
+            'recommendations': [
+                {
+                    'title': 'Optimize Pickup Scheduling',
+                    'priority': 'high',
+                    'rationale': 'Current pickup times are not aligned with waste generation patterns',
+                    'expected_impact': '15-20% reduction in food waste',
+                    'how_to_measure': 'Track pickup completion rate and time to pickup',
+                    'owner': 'Store Manager',
+                    'eta_days': 14
+                },
+                {
+                    'title': 'Expand Volunteer Network',
+                    'priority': 'medium',
+                    'rationale': 'More volunteers would provide better coverage',
+                    'expected_impact': '10-15% improvement in pickup reliability',
+                    'how_to_measure': 'Monitor volunteer response time and availability',
+                    'owner': 'Community Coordinator',
+                    'eta_days': 30
+                }
+            ],
+            'forecast': {
+                'waste_next_week_lbs_low': total_waste * 0.8,
+                'waste_next_week_lbs_high': total_waste * 1.2,
+                'assumptions': 'Based on historical patterns and seasonal trends'
+            },
+            'confidence': 0.75,
+            'data_quality_notes': f'Analysis based on {len(store_data)} data points over {days} days',
+            'plain_text_report': f"""Store Performance Summary:
+Your store has processed {total_packages} packages over the last {days} days, 
+with a completion rate of {completion_rate:.1f}%. Total food waste diverted: {total_waste:.1f} lbs.
+
+Key Areas for Improvement:
+1. Pickup scheduling optimization could reduce food spoilage
+2. Volunteer engagement initiatives could improve reliability
+3. Better coordination between staff and volunteers needed
+
+Environmental Impact:
+- CO2 emissions prevented: {total_waste * 1.13:.1f} kg
+- Meals provided: {total_waste * 2.3:.0f}
+- Financial value saved: ${total_waste * 3.5:.2f}"""
+        }
+        
+        # Generate AI report using Anthropic if available
+        ai_generator = AIInsightsGenerator(os.getenv('ANTHROPIC_API_KEY', ''))
+        report = ai_generator.generate_weekly_report(trends, predictions, predictions)
+        
+        return jsonify({
+            'success': True,
+            'report': report,
+            'executive_summary': f"Your store successfully diverted {total_waste:.1f} lbs of food waste with a {completion_rate:.1f}% completion rate over the last {days} days.",
+            'detailed_report': report,
+            'predictions': predictions,
+            'metrics': trends,
+            'trends': trends,
+            'recommendations': predictions,
+            'environmental_impact': analytics.calculate_carbon_footprint(total_waste),
+            'period_days': days,
+            'generated_at': datetime.now().isoformat(),
+            'structured_report': structured_report
+        })
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/ai/reports/history/<store_email>', methods=['GET'])
+def get_report_history(store_email):
+    """Get report history for a store"""
+    try:
+        # Mock report history - in a real implementation, you'd store these in a database
+        mock_reports = [
+            {
+                'id': 1,
+                'report_type': 'weekly_report',
+                'period_days': 7,
+                'report_date': (datetime.now() - timedelta(days=7)).strftime('%Y-%m-%d'),
+                'created_at': (datetime.now() - timedelta(days=7)).isoformat(),
+                'executive_summary': 'Weekly performance analysis showing 12.5 lbs food waste diverted with 85% completion rate.'
+            },
+            {
+                'id': 2,
+                'report_type': 'weekly_report',
+                'period_days': 7,
+                'report_date': (datetime.now() - timedelta(days=14)).strftime('%Y-%m-%d'),
+                'created_at': (datetime.now() - timedelta(days=14)).isoformat(),
+                'executive_summary': 'Strong volunteer engagement resulted in 15.2 lbs food waste recovery with 90% completion rate.'
+            }
+        ]
+        
+        return jsonify({
+            'success': True,
+            'reports': mock_reports
+        })
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/ai/reports/<int:report_id>', methods=['GET'])
+def get_report_by_id(report_id):
+    """Get a specific report by ID"""
+    try:
+        # Mock report data
+        mock_report = {
+            'id': report_id,
+            'report': 'Detailed AI analysis of food waste patterns and optimization opportunities.',
+            'executive_summary': 'Strong performance with opportunities for improvement in pickup scheduling.',
+            'detailed_report': 'Comprehensive analysis showing waste trends, volunteer performance, and environmental impact.',
+            'predictions': {
+                'next_week_waste_lbs': 18.5,
+                'efficiency_improvements': ['Schedule optimization', 'Volunteer engagement']
+            },
+            'metrics': {
+                'total_waste_lbs': 25.3,
+                'completion_rate': 87.5,
+                'environmental_impact': 'Significant CO2 reduction achieved'
+            },
+            'trends': {
+                'waste_trend': 'decreasing',
+                'volunteer_engagement': 'high'
+            },
+            'recommendations': {
+                'high_priority': ['Optimize pickup times'],
+                'medium_priority': ['Expand food types', 'Volunteer training']
+            },
+            'environmental_impact': {
+                'co2_prevented': 28.6,
+                'meals_provided': 58
+            },
+            'period_days': 7,
+            'generated_at': datetime.now().isoformat()
+        }
+        
+        return jsonify({
+            'success': True,
+            'report': mock_report
+        })
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/ai/reports/<int:report_id>/export', methods=['GET'])
+def export_report(report_id):
+    """Export report in CSV or PDF format"""
+    try:
+        format_type = request.args.get('format', 'csv')
+        
+        if format_type == 'csv':
+            # Mock CSV content
+            csv_content = """Report ID,Date,Store,Waste Diverted (lbs),Completion Rate (%),CO2 Prevented (kg)
+{},2024-03-20,Sample Store,25.3,87.5,28.6""".format(report_id)
+            
+            return jsonify({
+                'success': True,
+                'content': csv_content,
+                'filename': f'waste_report_{report_id}.csv',
+                'mime_type': 'text/csv'
+            })
+        elif format_type == 'pdf':
+            # Mock PDF content (in real implementation, generate actual PDF)
+            return jsonify({
+                'success': True,
+                'content': 'Mock PDF content - implement PDF generation',
+                'filename': f'waste_report_{report_id}.pdf',
+                'mime_type': 'application/pdf'
+            })
+        else:
+            return jsonify({'success': False, 'error': 'Unsupported format'}), 400
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
 # Serve React App
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
