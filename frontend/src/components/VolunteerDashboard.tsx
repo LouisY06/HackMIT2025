@@ -22,6 +22,7 @@ import { LocalShipping } from '@mui/icons-material';
 import { Gift, Trophy, Utensils, ShoppingBag, Coffee, CreditCard, MapPin, Smartphone, RotateCcw, TrendingUp, ShoppingCart, Ticket, Receipt, DollarSign } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { auth } from '../config/firebase';
+import { API_BASE_URL } from '../config/api';
 import QRCodeScanner from './QRCodeScanner';
 
 const VolunteerDashboard: React.FC = () => {
@@ -90,7 +91,7 @@ const VolunteerDashboard: React.FC = () => {
       const user = auth.currentUser;
       if (!user) return;
 
-      const response = await fetch(`http://localhost:5001/api/packages/volunteer/${user.uid}`);
+      const response = await fetch(`${API_BASE_URL}/api/packages/volunteer/${user.uid}`);
       const data = await response.json();
       
       if (data.success) {
@@ -112,7 +113,7 @@ const VolunteerDashboard: React.FC = () => {
         setUserLocation(location);
 
         // Fetch available packages
-        const response = await fetch('http://localhost:5001/api/packages/available');
+        const response = await fetch(`${API_BASE_URL}/api/packages/available`);
         const data = await response.json();
         
         if (data.success) {
@@ -244,7 +245,7 @@ const VolunteerDashboard: React.FC = () => {
       
       if (isAssignedTask) {
         // This is completing an assigned task
-        const response = await fetch(`http://localhost:5001/api/packages/${selectedPackageId}/complete`, {
+        const response = await fetch(`${API_BASE_URL}/api/packages/${selectedPackageId}/complete`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -269,7 +270,7 @@ const VolunteerDashboard: React.FC = () => {
         }
       } else {
         // This is accepting a new mission
-        const response = await fetch(`http://localhost:5001/api/packages/${selectedPackageId}/assign`, {
+        const response = await fetch(`${API_BASE_URL}/api/packages/${selectedPackageId}/assign`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
