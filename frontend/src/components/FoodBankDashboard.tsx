@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { BrowserMultiFormatReader, Result } from '@zxing/browser';
+import { BrowserMultiFormatReader } from '@zxing/browser';
+import { Result } from '@zxing/library';
 import {
   Box,
   Typography,
